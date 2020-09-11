@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2016 MediaTek Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+#ifndef _CONN_DEDICATED_LOG_EMI_H_
+#define _CONN_DEDICATED_LOG_EMI_H_
+
+#define CONNLOG_EMI_SIZE (192*1024) /* 192KB */
+#define CONNLOG_EMI_LOG_BASE_OFFSET 0x36500
+#define CONNLOG_EMI_32_BYTE_ALIGNED 32 /* connsys EMI cache is 32-byte aligned */
+#define CONNLOG_CONTROL_RING_BUFFER_BASE_SIZE 64 /* Reserve for setup ring buffer base address  */
+#define CONNLOG_CONTROL_RING_BUFFER_RESERVE_SIZE 32
+#define CONNLOG_IRQ_COUNTER_BASE 48
+#define CONNLOG_READY_PATTERN_BASE 56
+#define CONNLOG_READY_PATTERN_BASE_SIZE 8
+
+/* define subsys EMI log buffer size */
+#define CONNLOG_EMI_MCU_SIZE        (16*1024)
+#define CONNLOG_EMI_WIFI_SIZE       (64*1024)
+#define CONNLOG_EMI_BT_SIZE         (64*1024)
+#define CONNLOG_EMI_GPS_SIZE        (32*1024)
+
+#define CONNLOG_EMI_MCU_BASE_OFFESET CONNLOG_CONTROL_RING_BUFFER_BASE_SIZE
+#define CONNLOG_EMI_MCU_READ         (CONNLOG_EMI_MCU_BASE_OFFESET + 0)
+#define CONNLOG_EMI_MCU_WRITE        (CONNLOG_EMI_MCU_BASE_OFFESET + 4)
+#define CONNLOG_EMI_MCU_BUF          (CONNLOG_EMI_MCU_BASE_OFFESET + \
+				      CONNLOG_EMI_32_BYTE_ALIGNED)
+
+#define CONNLOG_EMI_WIFI_BASE_OFFESET (CONNLOG_EMI_MCU_BASE_OFFESET + \
+				       CONNLOG_EMI_MCU_SIZE + \
+				       CONNLOG_EMI_32_BYTE_ALIGNED + \
+				       CONNLOG_CONTROL_RING_BUFFER_RESERVE_SIZE)
+#define CONNLOG_EMI_WIFI_READ         (CONNLOG_EMI_WIFI_BASE_OFFESET + 0)
+#define CONNLOG_EMI_WIFI_WRITE        (CONNLOG_EMI_WIFI_BASE_OFFESET + 4)
+#define CONNLOG_EMI_WIFI_BUF          (CONNLOG_EMI_WIFI_BASE_OFFESET + \
+				       CONNLOG_EMI_32_BYTE_ALIGNED)
+
+#define CONNLOG_EMI_BT_BASE_OFFESET (CONNLOG_EMI_WIFI_BASE_OFFESET + \
+				     CONNLOG_EMI_WIFI_SIZE + \
+				     CONNLOG_EMI_32_BYTE_ALIGNED + \
+				     CONNLOG_CONTROL_RING_BUFFER_RESERVE_SIZE)
+#define CONNLOG_EMI_BT_READ         (CONNLOG_EMI_BT_BASE_OFFESET + 0)
+#define CONNLOG_EMI_BT_WRITE        (CONNLOG_EMI_BT_BASE_OFFESET + 4)
+#define CONNLOG_EMI_BT_BUF          (CONNLOG_EMI_BT_BASE_OFFESET + \
+				     CONNLOG_EMI_32_BYTE_ALIGNED)
+
+#define CONNLOG_EMI_GPS_BASE_OFFESET (CONNLOG_EMI_BT_BASE_OFFESET + \
+				      CONNLOG_EMI_BT_SIZE + \
+				      CONNLOG_EMI_32_BYTE_ALIGNED + \
+				      CONNLOG_CONTROL_RING_BUFFER_RESERVE_SIZE)
+#define CONNLOG_EMI_GPS_READ         (CONNLOG_EMI_GPS_BASE_OFFESET + 0)
+#define CONNLOG_EMI_GPS_WRITE        (CONNLOG_EMI_GPS_BASE_OFFESET + 4)
+#define CONNLOG_EMI_GPS_BUF          (CONNLOG_EMI_GPS_BASE_OFFESET + \
+				      CONNLOG_EMI_32_BYTE_ALIGNED)
+
+#endif

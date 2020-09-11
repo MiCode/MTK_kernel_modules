@@ -1,0 +1,3 @@
+# load bt_drv
+on property:vendor.connsys.driver.ready=yes
+  insmod /vendor/lib/modules/bt_drv.ko
