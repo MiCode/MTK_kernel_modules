@@ -4,3 +4,4 @@
 | begonia-q-oss | Redmi Note 8 Pro | Android Q | MTK | [begonia-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/begonia-q-oss) |
 | bomb-q-oss | Redmi 10X, Redmi 10X Pro | Android Q | MTK | [bomb-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bomb-q-oss) |
 | cezanne-q-oss | Redmi K30 Ultra | Android Q | MTK | [cezanne-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cezanne-q-oss) |
+| lancelot-q-oss | Redmi 10X 4G,Redmi 9,Redmi POCO M2 | Android Q | MTK | [lancelot-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/lancelot-q-oss) |
