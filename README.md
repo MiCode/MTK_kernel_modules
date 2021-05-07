@@ -1,5 +1,6 @@
 | Branch | Device | Android version | Base tag | Link |
 | :-: | :-: | :-: | :-: | :-: |
+| ares-r-oss | Redmi K40 Gaming | Android R | MTK | [ares-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ares-r-oss) |
 | begonia-p-oss | Redmi Note 8 Pro | Android P | MTK | [begonia-p-oss](https://github.com/MiCode/MTK_kernel_modules/tree/begonia-p-oss) |
 | begonia-q-oss | Redmi Note 8 Pro | Android Q | MTK | [begonia-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/begonia-q-oss) |
 | bomb-q-oss | Redmi 10X, Redmi 10X Pro | Android Q | MTK | [bomb-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bomb-q-oss) |
