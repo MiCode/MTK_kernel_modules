@@ -8,3 +8,4 @@
 | cezanne-q-oss | Redmi K30 Ultra | Android Q | MTK | [cezanne-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cezanne-q-oss) |
 | dandelion-q-oss | Redmi 9C, Redmi POCO C3, Redmi 9A | Android Q | MTK | [dandelion-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/dandelion-q-oss) |
 | lancelot-q-oss | Redmi 10X 4G,Redmi 9,Redmi POCO M2 | Android Q | MTK | [lancelot-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/lancelot-q-oss) |
+| rosemary-r-oss | Redmi Note 10S | Android R | MTK | [rosemary-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rosemary-r-oss) |
