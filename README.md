@@ -6,8 +6,10 @@
 | bomb-q-oss | Redmi 10X, Redmi 10X Pro | Android Q | MTK | [bomb-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bomb-q-oss) |
 | biloba-r-oss | Redmi Note 8 | Android R | MTK | [biloba-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/biloba-r-oss) |
 | cannon-q-oss | Redmi Note 9 | Android Q | MTK | [cannon-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cannon-q-oss) |
-| cezanne-q-oss | Redmi K30 Ultra | Android Q | MTK | [cezanne-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cezanne-q-oss) |
 | camellia-r-oss | Redmi Note 10 | Android R | MTK | [camellia-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/camellia-r-oss) |
+| cannon-r-oss | Redmi Note 9 | Android R | MTK | [merlin-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cannon-r-oss) |
+| cezanne-q-oss | Redmi K30 Ultra | Android Q | MTK | [cezanne-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cezanne-q-oss) |
+| cezanne-r-oss | Redmi 10X, Redmi 10X Pro, Redmi K30 Ultra | Android R | MTK | [cezanne-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/cezanne-r-oss) |
 | chopin-r-oss | Redmi Note 10 Pro | Android R | MTK | [chopin-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/chopin-r-oss) |
 | dandelion-q-oss | Redmi 9C, Redmi POCO C3, Redmi 9A | Android Q | MTK | [dandelion-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/dandelion-q-oss) |
 | lancelot-q-oss | Redmi 10X 4G,Redmi 9,Redmi POCO M2 | Android Q | MTK | [lancelot-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/lancelot-q-oss) |
