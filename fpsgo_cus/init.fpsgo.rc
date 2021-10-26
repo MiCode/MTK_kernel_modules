@@ -1,0 +1,5 @@
+
+on init
+    insmod /vendor/lib/modules/fpsgo.ko
+
+
