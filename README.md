@@ -15,4 +15,5 @@
 | dandelion-q-oss | Redmi 9C, Redmi POCO C3, Redmi 9A | Android Q | MTK | [dandelion-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/dandelion-q-oss) |
 | lancelot-q-oss | Redmi 10X 4G,Redmi 9,Redmi POCO M2 | Android Q | MTK | [lancelot-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/lancelot-q-oss) |
 | merlin-r-oss | Redmi 10X 4G, Redmi 9 and POCO M2 | Android R | MTK | [merlin-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/merlin-r-oss) |
+| pissarro-r-oss | Redmi Note 11 Pro, Redmi Note 11 Pro+ | Android R | MTK | [pissarro-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/pissarro-r-oss) |
 | rosemary-r-oss | Redmi Note 10S | Android R | MTK | [rosemary-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rosemary-r-oss) |
