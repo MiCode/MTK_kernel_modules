@@ -19,3 +19,4 @@
 | rosemary-r-oss | Redmi Note 10S | Android R | MTK | [rosemary-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rosemary-r-oss) |
 | selene-r-oss | Redmi 10 Prime | Android R | MTK | [selene-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/selene-r-oss) |
 | xaga-s-oss | Redmi Note 11T Pro  | Android S | MTK | [xaga-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/xaga-s-oss) |
+| rubens-s-oss | Redmi K50  | Android S | MTK | [rubens-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rubens-s-oss) |
