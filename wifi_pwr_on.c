@@ -34,7 +34,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define WIFI_FW_LOG_WARN            1
 #define WIFI_FW_LOG_ERR             0
 
-uint32_t DbgLevel = WIFI_FW_LOG_DBG;
+uint32_t DbgLevel = WIFI_FW_LOG_INFO;
 
 #define WIFI_DBG_FUNC(fmt, arg...)	\
 	do { \
