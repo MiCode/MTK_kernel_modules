@@ -222,9 +222,9 @@ void fw_log_connsys_coredump_deinit(void)
 }
 EXPORT_SYMBOL(fw_log_connsys_coredump_deinit);
 
-void fw_log_connsys_coredump_start(char *reason)
+void fw_log_connsys_coredump_start(unsigned int drv, char *reason)
 {
-	connsys_coredump_start(g_wifi_coredump_handler, 0, CONNDRV_TYPE_WIFI, reason);
+	connsys_coredump_start(g_wifi_coredump_handler, 0, (enum consys_drv_type)drv, reason);
 }
 EXPORT_SYMBOL(fw_log_connsys_coredump_start);
 #endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
