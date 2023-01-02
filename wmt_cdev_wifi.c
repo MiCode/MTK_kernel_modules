@@ -103,8 +103,10 @@ static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
 static uint32_t driver_loaded;
 static int32_t low_latency_mode;
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 static uint8_t  driver_resetting;
-
+static uint8_t  write_processing;
+#endif
 /*******************************************************************
  */
 enum ENUM_RESET_STATUS {
@@ -185,6 +187,12 @@ int32_t get_wifi_powered_status(void)
 	return powered;
 }
 EXPORT_SYMBOL(get_wifi_powered_status);
+int32_t get_wifi_process_status(void)
+{
+	WIFI_INFO_FUNC("wifi write status: %d\n", write_processing);
+	return write_processing;
+}
+EXPORT_SYMBOL(get_wifi_process_status);
 
 #endif
 
@@ -385,7 +393,6 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 		goto done;
 	}
 #endif
-
 	copy_size = min(sizeof(local) - 1, count);
 	if (copy_from_user(local, buf, copy_size) == 0) {
 		local[copy_size] = '\0';
@@ -393,6 +400,9 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			local, count, copy_size);
 
 		if (local[0] == '0') {
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+			write_processing = 1;
+#endif
 			if (powered == 0) {
 				WIFI_INFO_FUNC("WIFI is already power off!\n");
 				retval = count;
@@ -432,6 +442,9 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 				wlan_mode = WLAN_MODE_HALT;
 			}
 		} else if (local[0] == '1') {
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+			write_processing = 1;
+#endif
 			if (powered == 1) {
 				WIFI_INFO_FUNC("WIFI is already power on!\n");
 				retval = count;
@@ -652,7 +665,9 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 done:
 	if (netdev != NULL)
 		dev_put(netdev);
-
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+	write_processing = 0;
+#endif
 	up(&wr_mtx);
 	return retval;
 }
