@@ -29,7 +29,6 @@
 #include <linux/inetdevice.h>
 #include <linux/string.h>
 
-#include "fw_log_wifi.h"
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
 #include "wifi_pwr_on.h"
 #else
@@ -836,12 +835,6 @@ static int WIFI_init(void)
 	WIFI_INFO_FUNC("%s driver(major %d %d) installed.\n", WIFI_DRIVER_NAME,
 			WIFI_major, MAJOR(wifi_devno));
 
-#ifdef CFG_MTK_CONNSYS_DEDICATED_LOG_PATH
-	if (fw_log_wifi_init() < 0) {
-		WIFI_INFO_FUNC("connsys debug node init failed!!\n");
-		goto error;
-	}
-#endif
 	return 0;
 
 error:
@@ -882,9 +875,6 @@ static void WIFI_exit(void)
 
 	WIFI_INFO_FUNC("%s driver removed\n", WIFI_DRIVER_NAME);
 
-#ifdef CFG_MTK_CONNSYS_DEDICATED_LOG_PATH
-	fw_log_wifi_deinit();
-#endif
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
 	wifi_pwr_on_deinit();
 #endif

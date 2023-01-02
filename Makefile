@@ -61,10 +61,6 @@ endif
 # Wi-Fi character device driver
 $(MODULE_NAME)-objs += wmt_cdev_wifi.o
 
-ifeq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH), y)
-    $(MODULE_NAME)-objs += fw_log_wifi.o
-endif
-
 ifneq ($(CONNAC_VER), 1_0)
     $(MODULE_NAME)-objs += wifi_pwr_on.o
 endif
