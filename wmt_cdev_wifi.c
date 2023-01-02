@@ -226,15 +226,20 @@ uint8_t get_pre_cal_status(void)
 EXPORT_SYMBOL(get_pre_cal_status);
 #endif
 
-void update_wr_mtx_down_up_status(uint8_t ucDownUp)
+int32_t update_wr_mtx_down_up_status(uint8_t ucDownUp, uint8_t ucIsBlocking)
 {
 	if (ucDownUp == 0) {
 		WIFI_INFO_FUNC("Try to down wr_mtx\n");
-		down(&wr_mtx);
+		if (ucIsBlocking == 1)
+			down(&wr_mtx);
+		else if (ucIsBlocking == 0)
+			return down_trylock(&wr_mtx);
 	} else if (ucDownUp == 1) {
 		up(&wr_mtx);
 		WIFI_INFO_FUNC("Up wr_mtx\n");
 	}
+
+	return 0;
 }
 EXPORT_SYMBOL(update_wr_mtx_down_up_status);
 
