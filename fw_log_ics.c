@@ -113,7 +113,7 @@ struct ics_dev {
 
 /* global variable of ics log */
 static struct ics_dev *gIcsDev;
-uint32_t icsDbgLevel = ICS_FW_LOG_DBG;
+uint32_t icsDbgLevel = ICS_FW_LOG_INFO;
 
 /* ring related function */
 static int ics_ring_init(struct ics_ring *iRing, size_t size)
