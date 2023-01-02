@@ -19,10 +19,10 @@ ifeq ($(CONNAC_VER), 3_0)
     CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH := n
 else ifeq ($(CONNAC_VER), 2_0)
     ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/connsyslog
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump
     ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
     ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
     ccflags-y += -DCFG_SUPPORT_CONNAC2X=1
