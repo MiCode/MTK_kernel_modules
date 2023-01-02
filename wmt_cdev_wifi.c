@@ -179,6 +179,13 @@ void update_driver_reset_status(uint8_t fgIsResetting)
 	driver_resetting = fgIsResetting;
 }
 EXPORT_SYMBOL(update_driver_reset_status);
+int32_t get_wifi_powered_status(void)
+{
+	WIFI_INFO_FUNC("wifi power status : %d\n", powered);
+	return powered;
+}
+EXPORT_SYMBOL(get_wifi_powered_status);
+
 #endif
 
 enum ENUM_WLAN_DRV_BUF_TYPE_T {

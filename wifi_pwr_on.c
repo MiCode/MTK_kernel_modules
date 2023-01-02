@@ -202,6 +202,7 @@ int mtk_wcn_wlan_func_ctrl(enum ENUM_WLAN_OPID opId)
 {
 	bool bRet = MTK_WCN_BOOL_TRUE;
 	uint32_t waitRet = 0;
+	reinit_completion(&wlan_pendComp);
 
 	kalSetOnoffEvent(opId);
 	waitRet = wait_for_completion_timeout(&wlan_pendComp, MSEC_TO_JIFFIES(WIFI_PWR_ON_TIMEOUT));
