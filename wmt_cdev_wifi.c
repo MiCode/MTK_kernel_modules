@@ -233,6 +233,7 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 			}
 
 			netdev = dev_get_by_name(&init_net, ifname);
+			wait_cnt = 0;
 			while (netdev == NULL && wait_cnt < 10) {
 				WIFI_ERR_FUNC("Fail to get %s net device, sleep 300ms\n", ifname);
 				msleep(300);
@@ -376,8 +377,20 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			if (!strncmp(&local[7], "NVRAM", 5)) {
 				copy_size = count - 12;
 				buf += 12;
-				handler = buf_handler[BUF_TYPE_NVRAM];
-				ctx = buf_handler_ctx[BUF_TYPE_NVRAM];
+				wait_cnt = 0;
+				while (wait_cnt < 20) {
+					handler = buf_handler[BUF_TYPE_NVRAM];
+					ctx = buf_handler_ctx[BUF_TYPE_NVRAM];
+					if (handler)
+						break;
+					msleep(100);
+					wait_cnt++;
+				}
+
+				if (!handler)
+					WIFI_ERR_FUNC("Wi-Fi driver is not ready for write NVRAM\n");
+				else
+					WIFI_INFO_FUNC("Wi-Fi handler = %p\n", handler);
 			} else if (!strncmp(&local[7], "DRVCFG", 6)) {
 				copy_size = count - 13;
 				buf += 13;
@@ -434,6 +447,7 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			}
 
 			netdev = dev_get_by_name(&init_net, ifname);
+			wait_cnt = 0;
 			while (netdev == NULL && wait_cnt < 10) {
 				WIFI_ERR_FUNC("Fail to get %s net device, sleep 300ms\n", ifname);
 				msleep(300);
