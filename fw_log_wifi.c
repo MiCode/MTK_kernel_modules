@@ -170,7 +170,8 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 		if (pfFwEventFuncCB) {
 			WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke:%d\n", (int)log_on_off);
 			pfFwEventFuncCB(WIFI_FW_LOG_CMD_ON_OFF, log_on_off);
-		}
+		} else
+			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke failed\n");
 
 		WIFI_INFO_FUNC("fw_log_wifi_unlocked_ioctl WIFI_FW_LOG_IOCTL_ON_OFF end\n");
 		break;
@@ -183,7 +184,8 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 		if (pfFwEventFuncCB) {
 			WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_SET_LEVEL invoke:%d\n", (int)log_level);
 			pfFwEventFuncCB(WIFI_FW_LOG_CMD_SET_LEVEL, log_level);
-		}
+		} else
+			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke failed\n");
 
 		WIFI_INFO_FUNC("fw_log_wifi_unlocked_ioctl WIFI_FW_LOG_IOCTL_SET_LEVEL end\n");
 		break;
@@ -261,13 +263,23 @@ EXPORT_SYMBOL(fw_log_connsys_coredump_start);
 static long fw_log_wifi_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	long ret = 0;
+	int32_t wait_cnt = 0;
 
 	WIFI_INFO_FUNC("COMPAT fw_log_wifi_compact_ioctl cmd --> %d\n", cmd);
 
 	if (!filp->f_op || !filp->f_op->unlocked_ioctl)
 		return -ENOTTY;
 
+	while (wait_cnt < 2000) {
+		if (pfFwEventFuncCB)
+			break;
+		if (wait_cnt % 20 == 0)
+			WIFI_ERR_FUNC("Wi-Fi driver is not ready for 2s\n");
+		msleep(100);
+		wait_cnt++;
+	}
 	fw_log_wifi_unlocked_ioctl(filp, cmd, arg);
+
 	return ret;
 }
 #endif
