@@ -37,6 +37,7 @@
 
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 #include "fw_log_wifi.h"
+#include "conninfra.h"
 #endif
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -96,7 +97,10 @@ static struct semaphore ioctl_mtx;
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
 struct connsys_dump_ctx *g_wifi_coredump_handler;
-struct coredump_event_cb *g_wifi_coredump_cb;
+struct coredump_event_cb g_wifi_coredump_cb = {
+	.reg_readable = fw_log_reg_readable,
+	.poll_cpupcr = NULL,
+};
 #endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
 #endif /* CFG_ANDORID_CONNINFRA_SUPPORT */
 
@@ -198,9 +202,15 @@ int fw_log_wifi_irq_handler(void)
 EXPORT_SYMBOL(fw_log_wifi_irq_handler);
 
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+
+int fw_log_reg_readable(void)
+{
+	return conninfra_reg_readable();
+}
+
 void fw_log_connsys_coredump_init(void)
 {
-	g_wifi_coredump_handler = connsys_coredump_init(CONN_DEBUG_TYPE_WIFI, NULL);
+	g_wifi_coredump_handler = connsys_coredump_init(CONN_DEBUG_TYPE_WIFI, &g_wifi_coredump_cb);
 	if (g_wifi_coredump_handler == NULL)
 		WIFI_INFO_FUNC("connsys_coredump_init init fail!\n");
 }
@@ -214,7 +224,7 @@ EXPORT_SYMBOL(fw_log_connsys_coredump_deinit);
 
 void fw_log_connsys_coredump_start(void)
 {
-	connsys_coredump_start(g_wifi_coredump_handler);
+	connsys_coredump_start(g_wifi_coredump_handler, 0, -1, NULL);
 }
 EXPORT_SYMBOL(fw_log_connsys_coredump_start);
 #endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */

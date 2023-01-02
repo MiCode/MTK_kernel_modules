@@ -28,6 +28,7 @@ int fw_log_wifi_irq_handler(void);
 void fw_log_connsys_coredump_init(void);
 void fw_log_connsys_coredump_deinit(void);
 void fw_log_connsys_coredump_start(void);
+int fw_log_reg_readable(void);
 #endif
 
 #endif /*_FW_LOG_WIFI_H_*/

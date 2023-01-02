@@ -15,6 +15,7 @@ ccflags-y += \
     -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
 
 ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
@@ -34,7 +35,7 @@ endif
 
 ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
 ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
-ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=0
+ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
 else
 ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=0
 ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=0
