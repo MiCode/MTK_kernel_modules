@@ -47,6 +47,8 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define WIFI_FW_LOG_ERR             0
 
 uint32_t fwDbgLevel = WIFI_FW_LOG_DBG;
+unsigned int gLastFWLogOnOff;
+int gFwLogOnOffStatus;	/* 0: default, 1: success, -1: fail */
 
 #define WIFI_DBG_FUNC(fmt, arg...)	\
 	do { \
@@ -140,6 +142,7 @@ static ssize_t fw_log_wifi_read(struct file *filp, char __user *buf, size_t len,
 	size_t ret = 0;
 
 	WIFI_INFO_FUNC_LIMITED("fw_log_wifi_read len --> %d\n", (uint32_t) len);
+	WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF result=%d, last value=%d\n", gFwLogOnOffStatus, gLastFWLogOnOff);
 
 	ret = connsys_log_read_to_user(CONNLOG_TYPE_WIFI, buf, len);
 
@@ -170,9 +173,12 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 		if (pfFwEventFuncCB) {
 			WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke:%d\n", (int)log_on_off);
 			pfFwEventFuncCB(WIFI_FW_LOG_CMD_ON_OFF, log_on_off);
-		} else
-			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke failed\n");
-
+			gFwLogOnOffStatus = 1;
+		} else {
+			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke:%d failed\n", (int)log_on_off);
+			gFwLogOnOffStatus = -1;
+		}
+		gLastFWLogOnOff = log_on_off;
 		WIFI_INFO_FUNC("fw_log_wifi_unlocked_ioctl WIFI_FW_LOG_IOCTL_ON_OFF end\n");
 		break;
 	}
@@ -185,7 +191,7 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 			WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_SET_LEVEL invoke:%d\n", (int)log_level);
 			pfFwEventFuncCB(WIFI_FW_LOG_CMD_SET_LEVEL, log_level);
 		} else
-			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke failed\n");
+			WIFI_ERR_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF invoke:%d failed\n", (int)log_level);
 
 		WIFI_INFO_FUNC("fw_log_wifi_unlocked_ioctl WIFI_FW_LOG_IOCTL_SET_LEVEL end\n");
 		break;
@@ -355,6 +361,8 @@ int fw_log_wifi_init(void)
 	connsys_log_register_event_cb(CONNLOG_TYPE_WIFI, fw_log_wifi_event_cb);
 	sema_init(&ioctl_mtx, 1);
 	pfFwEventFuncCB = NULL;
+	gLastFWLogOnOff = 0;
+	gFwLogOnOffStatus = 0;
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
 	gpfn_check_bus_hang = NULL;
 #endif
