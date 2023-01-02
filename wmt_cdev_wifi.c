@@ -702,6 +702,8 @@ static int WIFI_init(void)
 
 	low_latency_mode = 0;
 
+	sema_init(&wr_mtx, 1);
+
 	/* Allocate char device */
 	if (WIFI_major) {
 		wifi_devno = MKDEV(WIFI_major, 0);
@@ -732,8 +734,6 @@ static int WIFI_init(void)
 	if (IS_ERR(wmtwifi_dev))
 		goto error;
 #endif
-
-	sema_init(&wr_mtx, 1);
 
 	WIFI_INFO_FUNC("%s driver(major %d %d) installed.\n", WIFI_DRIVER_NAME,
 			WIFI_major, MAJOR(wifi_devno));
