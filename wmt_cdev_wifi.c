@@ -363,15 +363,6 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_AP);
 					ret = 0;
 				}
-			} else if (wlan_mode == WLAN_MODE_STA_AP_P2P) {
-				p2pmode.u4Enable = 1;
-				p2pmode.u4Mode = 3;
-				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
-					WIFI_ERR_FUNC("Set wlan mode 3 fail\n");
-				} else {
-					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_STA_AP_P2P);
-					ret = 0;
-				}
 			} else
 				ret = 0;
 done:
