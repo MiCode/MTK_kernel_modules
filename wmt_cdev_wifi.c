@@ -488,18 +488,20 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 				copy_size = count - 12;
 				buf += 12;
 				wait_cnt = 0;
-				while (wait_cnt < 20) {
+				while (wait_cnt < 2000) {
 					handler = buf_handler[BUF_TYPE_NVRAM];
 					ctx = buf_handler_ctx[BUF_TYPE_NVRAM];
 					if (handler)
 						break;
+					if (wait_cnt % 20 == 0)
+						WIFI_ERR_FUNC("Wi-Fi driver is not ready for 2s\n");
 					msleep(100);
 					wait_cnt++;
 				}
 
-				if (!handler)
+				if (!handler) {
 					WIFI_ERR_FUNC("Wi-Fi driver is not ready for write NVRAM\n");
-				else
+				} else
 					WIFI_INFO_FUNC("Wi-Fi handler = %p\n", handler);
 			} else if (!strncmp(&local[7], "DRVCFG", 6)) {
 				copy_size = count - 13;
