@@ -106,6 +106,25 @@ VOID register_set_p2p_mode_handler(set_p2p_mode handler)
 }
 EXPORT_SYMBOL(register_set_p2p_mode_handler);
 
+enum ENUM_WLAN_DRV_BUF_TYPE_T {
+	BUF_TYPE_NVRAM,
+	BUF_TYPE_DRV_CFG,
+	BUF_TYPE_FW_CFG,
+	BUF_TYPE_NUM
+};
+
+typedef uint8_t(*file_buf_handler)(void *ctx, const char __user *buf, uint16_t length);
+static file_buf_handler buf_handler[BUF_TYPE_NUM];
+static void *buf_handler_ctx[BUF_TYPE_NUM];
+void register_file_buf_handler(file_buf_handler handler, void *handler_ctx, uint8_t ucType)
+{
+	if (ucType < BUF_TYPE_NUM) {
+		buf_handler[ucType] = handler;
+		buf_handler_ctx[ucType] = handler_ctx;
+	}
+}
+EXPORT_SYMBOL(register_file_buf_handler);
+
 /*******************************************************************
  *  WHOLE CHIP RESET PROCEDURE:
  *
@@ -246,8 +265,8 @@ static int WIFI_close(struct inode *inode, struct file *file)
 
 ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
-	int32_t retval = -EIO;
-	char local[12] = { 0 };
+	INT32 retval = -EIO;
+	INT8 local[20] = { 0 };
 	struct net_device *netdev = NULL;
 	struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode;
 	int32_t wait_cnt = 0;
@@ -261,7 +280,7 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 
 	copy_size = min(sizeof(local) - 1, count);
 	if (copy_from_user(local, buf, copy_size) == 0) {
-		WIFI_INFO_FUNC("WIFI_write %s\n", local);
+		WIFI_INFO_FUNC("WIFI_write %s, length %zu\n", local, count);
 
 		if (local[0] == '0') {
 			if (powered == 0) {
@@ -313,6 +332,46 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 				WIFI_INFO_FUNC("WMT turn on WIFI success!\n");
 				wlan_mode = WLAN_MODE_HALT;
 			}
+		} else if (!strncmp(local, "WR-BUF:", 7)) {
+			file_buf_handler handler = NULL;
+			VOID *ctx = NULL;
+
+			if (!strncmp(&local[7], "NVRAM", 5)) {
+				copy_size = count - 12;
+				buf += 12;
+				handler = buf_handler[BUF_TYPE_NVRAM];
+				ctx = buf_handler_ctx[BUF_TYPE_NVRAM];
+			} else if (!strncmp(&local[7], "DRVCFG", 6)) {
+				copy_size = count - 13;
+				buf += 13;
+				handler = buf_handler[BUF_TYPE_DRV_CFG];
+				ctx = buf_handler_ctx[BUF_TYPE_DRV_CFG];
+			} else if (!strncmp(&local[7], "FWCFG", 5)) {
+				copy_size = count - 12;
+				buf += 12;
+				handler = buf_handler[BUF_TYPE_FW_CFG];
+				ctx = buf_handler_ctx[BUF_TYPE_FW_CFG];
+			}
+			if (handler && !handler(ctx, buf, (UINT16)copy_size))
+				retval = count;
+			else
+				retval = -ENOTSUPP;
+		} else if (!strncmp(local, "RM-BUF:", 7)) {
+			file_buf_handler handler = NULL;
+			VOID *ctx = NULL;
+
+			if (!strncmp(&local[7], "DRVCFG", 6)) {
+				handler = buf_handler[BUF_TYPE_DRV_CFG];
+				ctx = buf_handler_ctx[BUF_TYPE_DRV_CFG];
+			} else if (!strncmp(&local[7], "FWCFG", 5)) {
+				handler = buf_handler[BUF_TYPE_FW_CFG];
+				ctx = buf_handler_ctx[BUF_TYPE_FW_CFG];
+			}
+
+			if (handler && !handler(ctx, NULL, 0))
+				retval = count;
+			else
+				retval = -ENOTSUPP;
 		} else if (local[0] == 'S' || local[0] == 'P' || local[0] == 'A') {
 			if (powered == 0) {
 				/* If WIFI is off, turn on WIFI first */

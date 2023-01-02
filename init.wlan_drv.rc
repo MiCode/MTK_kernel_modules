@@ -3,3 +3,4 @@
 on property:vendor.connsys.driver.ready=yes
   insmod /vendor/lib/modules/wmt_chrdev_wifi.ko
   insmod /vendor/lib/modules/wlan_drv_${ro.vendor.wlan.gen}.ko
+  start wlan_assistant
