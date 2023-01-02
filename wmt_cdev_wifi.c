@@ -29,6 +29,7 @@
 #include <linux/inetdevice.h>
 #include <linux/string.h>
 
+#include "fw_log_wifi.h"
 #include "wmt_exp.h"
 #include "stp_exp.h"
 
@@ -43,7 +44,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define WIFI_LOG_WARN                 1
 #define WIFI_LOG_ERR                  0
 
-UINT32 gDbgLevel = WIFI_LOG_DBG;
+uint32_t gDbgLevel = WIFI_LOG_DBG;
 
 #define WIFI_DBG_FUNC(fmt, arg...)	\
 	do { if (gDbgLevel >= WIFI_LOG_DBG) pr_debug(PFX "%s: " fmt, __func__, ##arg); } while (0)
@@ -56,8 +57,8 @@ UINT32 gDbgLevel = WIFI_LOG_DBG;
 
 #define VERSION "2.0"
 
-static INT32 WIFI_devs = 1;
-static INT32 WIFI_major = WIFI_DEV_MAJOR;
+static int32_t WIFI_devs = 1;
+static int32_t WIFI_major = WIFI_DEV_MAJOR;
 module_param(WIFI_major, uint, 0);
 static struct cdev WIFI_cdev;
 #if CREATE_NODE_DYNAMIC
@@ -75,27 +76,27 @@ enum {
 	WLAN_MODE_STA_P2P,
 	WLAN_MODE_MAX
 };
-static INT32 wlan_mode = WLAN_MODE_HALT;
-static INT32 powered;
-static INT8 *ifname = WLAN_IFACE_NAME;
+static int32_t wlan_mode = WLAN_MODE_HALT;
+static int32_t powered;
+static char *ifname = WLAN_IFACE_NAME;
 
 /*******************************************************************
  */
-typedef enum _ENUM_RESET_STATUS_T {
+enum ENUM_RESET_STATUS {
 	RESET_FAIL,
 	RESET_SUCCESS
-} ENUM_RESET_STATUS_T;
+};
 
 /*
  *  enable = 1, mode = 0  => init P2P network
  *  enable = 1, mode = 1  => init Soft AP network
  *  enable = 0  => uninit P2P/AP network
  */
-typedef struct _PARAM_CUSTOM_P2P_SET_STRUCT_T {
-	UINT32 u4Enable;
-	UINT32 u4Mode;
-} PARAM_CUSTOM_P2P_SET_STRUCT_T, *P_PARAM_CUSTOM_P2P_SET_STRUCT_T;
-typedef INT32(*set_p2p_mode) (struct net_device *netdev, PARAM_CUSTOM_P2P_SET_STRUCT_T p2pmode);
+struct PARAM_CUSTOM_P2P_SET_STRUCT {
+	uint32_t u4Enable;
+	uint32_t u4Mode;
+};
+typedef int32_t(*set_p2p_mode) (struct net_device *netdev, struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode);
 
 static set_p2p_mode pf_set_p2p_mode;
 VOID register_set_p2p_mode_handler(set_p2p_mode handler)
@@ -119,10 +120,10 @@ EXPORT_SYMBOL(register_set_p2p_mode_handler);
  *  Receiving RESET_START message
  */
 /*-----------------------------------------------------------------*/
-INT32 wifi_reset_start(VOID)
+int32_t wifi_reset_start(VOID)
 {
 	struct net_device *netdev = NULL;
-	PARAM_CUSTOM_P2P_SET_STRUCT_T p2pmode;
+	struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode;
 
 	down(&wr_mtx);
 
@@ -156,12 +157,12 @@ EXPORT_SYMBOL(wifi_reset_start);
  *  Receiving RESET_END/RESET_END_FAIL message
  */
 /*-----------------------------------------------------------------*/
-INT32 wifi_reset_end(ENUM_RESET_STATUS_T status)
+int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 {
 	struct net_device *netdev = NULL;
-	PARAM_CUSTOM_P2P_SET_STRUCT_T p2pmode;
-	INT32 wait_cnt = 0;
-	INT32 ret = -1;
+	struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode;
+	int32_t wait_cnt = 0;
+	int32_t ret = -1;
 
 	if (status == RESET_FAIL) {
 		/* whole chip reset fail, donot recover WIFI */
@@ -245,11 +246,11 @@ static int WIFI_close(struct inode *inode, struct file *file)
 
 ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
-	INT32 retval = -EIO;
-	INT8 local[12] = { 0 };
+	int32_t retval = -EIO;
+	char local[12] = { 0 };
 	struct net_device *netdev = NULL;
-	PARAM_CUSTOM_P2P_SET_STRUCT_T p2pmode;
-	INT32 wait_cnt = 0;
+	struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode;
+	int32_t wait_cnt = 0;
 	int copy_size = 0;
 
 	down(&wr_mtx);
@@ -401,8 +402,8 @@ const struct file_operations WIFI_fops = {
 static int WIFI_init(void)
 {
 	dev_t dev = MKDEV(WIFI_major, 0);
-	INT32 alloc_ret = 0;
-	INT32 cdev_err = 0;
+	int32_t alloc_ret = 0;
+	int32_t cdev_err = 0;
 
 	/* Allocate char device */
 	alloc_ret = register_chrdev_region(dev, WIFI_devs, WIFI_DRIVER_NAME);
@@ -430,6 +431,13 @@ static int WIFI_init(void)
 	sema_init(&wr_mtx, 1);
 
 	WIFI_INFO_FUNC("%s driver(major %d) installed\n", WIFI_DRIVER_NAME, WIFI_major);
+
+#ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
+	if (fw_log_wifi_init() < 0) {
+		WIFI_INFO_FUNC("connsys debug node init failed!!\n");
+		return -1;
+	}
+#endif
 
 	return 0;
 
@@ -472,17 +480,21 @@ static void WIFI_exit(void)
 	unregister_chrdev_region(dev, WIFI_devs);
 
 	WIFI_INFO_FUNC("%s driver removed\n", WIFI_DRIVER_NAME);
+
+#ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
+	fw_log_wifi_deinit();
+#endif
 }
 
 #ifdef MTK_WCN_BUILT_IN_DRIVER
 
-INT32 mtk_wcn_wmt_wifi_init(VOID)
+int mtk_wcn_wmt_wifi_init(void)
 {
 	return WIFI_init();
 }
 EXPORT_SYMBOL(mtk_wcn_wmt_wifi_init);
 
-VOID mtk_wcn_wmt_wifi_exit(VOID)
+void mtk_wcn_wmt_wifi_exit(void)
 {
 	return WIFI_exit();
 }

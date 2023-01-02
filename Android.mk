@@ -69,7 +69,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MULTILIB := first
 LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR)/lib/modules
 LOCAL_INIT_RC := init.wlan_drv.rc
-LOCAL_SRC_FILES := wmt_chrdev_wifi.c Makefile
+LOCAL_SRC_FILES := $(patsubst $(LOCAL_PATH)/%,%,$(shell find $(LOCAL_PATH) -type f -name '*.[cho]')) Makefile
 LOCAL_REQUIRED_MODULES := wmt_drv.ko
 
 LOCAL_POST_INSTALL_CMD := $(hide)$(TARGET_STRIP) --strip-unneeded $(LOCAL_MODULE_PATH)/$(LOCAL_MODULE)
