@@ -34,8 +34,10 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 #define ICS_FW_LOG_IOC_MAGIC        (0xfc)
 #define ICS_FW_LOG_IOCTL_ON_OFF     _IOW(ICS_FW_LOG_IOC_MAGIC, 0, int)
+#define ICS_FW_LOG_IOCTL_SET_LEVEL  _IOW(ICS_FW_LOG_IOC_MAGIC, 1, int)
 
 #define ICS_LOG_CMD_ON_OFF        0
+#define ICS_LOG_CMD_SET_LEVEL     1
 
 #define PFX                        "[ICS-FW] "
 #define ICS_FW_LOG_DBG             3
@@ -293,6 +295,22 @@ static long fw_log_ics_unlocked_ioctl(struct file *filp, unsigned int cmd,
 
 	down(&gIcsDev->ioctl_mtx);
 	switch (cmd) {
+	case ICS_FW_LOG_IOCTL_SET_LEVEL:{
+		unsigned int level = (unsigned int) arg;
+
+		ICS_INFO("ICS_FW_LOG_IOCTL_SET_LEVEL start\n");
+
+		if (gIcsDev->pfFwEventFuncCB) {
+			ICS_INFO("ICS_FW_LOG_IOCTL_SET_LEVEL invoke:%d\n",
+				(int)level);
+			gIcsDev->pfFwEventFuncCB(ICS_LOG_CMD_SET_LEVEL, level);
+		} else
+			ICS_ERR(
+				"ICS_FW_LOG_IOCTL_SET_LEVEL invoke failed\n");
+
+		ICS_INFO("ICS_FW_LOG_IOCTL_SET_LEVEL end\n");
+		break;
+	}
 	case ICS_FW_LOG_IOCTL_ON_OFF:{
 		unsigned int log_on_off = (unsigned int) arg;
 
