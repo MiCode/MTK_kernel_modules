@@ -35,6 +35,10 @@
 #include "stp_exp.h"
 #include "connsys_debug_utility.h"
 
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+#include "fw_log_wifi.h"
+#endif
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 #define PFX                         "[WIFI-FW] "
@@ -79,11 +83,22 @@ uint32_t fwDbgLevel = WIFI_FW_LOG_DBG;
 #define WIFI_FW_LOG_CMD_ON_OFF        0
 #define WIFI_FW_LOG_CMD_SET_LEVEL     1
 
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+#define CONNLOG_TYPE_WIFI 0 /* CONN_DEBUG_TYPE_WIFI */
+#endif
+
 typedef void (*wifi_fwlog_event_func_cb)(int, int);
 wifi_fwlog_event_func_cb pfFwEventFuncCB;
 static wait_queue_head_t wq;
 
 static struct semaphore ioctl_mtx;
+
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+#if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+struct connsys_dump_ctx *g_wifi_coredump_handler;
+struct coredump_event_cb *g_wifi_coredump_cb;
+#endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
+#endif /* CFG_ANDORID_CONNINFRA_SUPPORT */
 
 void wifi_fwlog_event_func_register(wifi_fwlog_event_func_cb func)
 {
@@ -173,6 +188,37 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 	up(&ioctl_mtx);
 	return ret;
 }
+
+
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+int fw_log_wifi_irq_handler(void)
+{
+	return connsys_log_irq_handler(CONN_DEBUG_TYPE_WIFI);
+}
+EXPORT_SYMBOL(fw_log_wifi_irq_handler);
+
+#if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+void fw_log_connsys_coredump_init(void)
+{
+	g_wifi_coredump_handler = connsys_coredump_init(CONN_DEBUG_TYPE_WIFI, NULL);
+	if (g_wifi_coredump_handler == NULL)
+		WIFI_INFO_FUNC("connsys_coredump_init init fail!\n");
+}
+EXPORT_SYMBOL(fw_log_connsys_coredump_init);
+
+void fw_log_connsys_coredump_deinit(void)
+{
+	connsys_coredump_deinit(g_wifi_coredump_handler);
+}
+EXPORT_SYMBOL(fw_log_connsys_coredump_deinit);
+
+void fw_log_connsys_coredump_start(void)
+{
+	connsys_coredump_start(g_wifi_coredump_handler);
+}
+EXPORT_SYMBOL(fw_log_connsys_coredump_start);
+#endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
+#endif /* CFG_ANDORID_CONNINFRA_SUPPORT */
 
 #ifdef CONFIG_COMPAT
 static long fw_log_wifi_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
