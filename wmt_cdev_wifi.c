@@ -102,6 +102,7 @@ static int32_t powered;
 static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
 static uint32_t driver_loaded;
+static int32_t low_latency_mode;
 
 /*******************************************************************
  */
@@ -135,6 +136,40 @@ void update_driver_loaded_status(uint8_t loaded)
 	driver_loaded = loaded;
 }
 EXPORT_SYMBOL(update_driver_loaded_status);
+
+static int atoh(const char *str, uint32_t *hval)
+{
+	unsigned int i;
+	uint32_t val = 0;
+
+	WIFI_INFO_FUNC("*str : %s, len = %zu\n", str,
+			strlen((const char *)str));
+	for (i = 0; i < strlen((const char *)str); i++) {
+		if (str[i] >= 'a' && str[i] <= 'f')
+			val = (val << 4) + (str[i] - 'a' + 10);
+		else if (str[i] >= 'A' && str[i] <= 'F')
+			val = (val << 4) + (str[i] - 'A' + 10);
+		else if (*(str + i) >= '0' && *(str + i) <= '9')
+			val = (val << 4) + (*(str + i) - '0');
+	}
+
+	*hval = val;
+
+	return 0;
+}
+
+void set_low_latency_mode(const char *mode)
+{
+	atoh(mode, &low_latency_mode);
+	WIFI_INFO_FUNC("LLM : %d\n", low_latency_mode);
+}
+
+uint32_t get_low_latency_mode(void)
+{
+	WIFI_INFO_FUNC("LLM : %d\n", low_latency_mode);
+	return low_latency_mode;
+}
+EXPORT_SYMBOL(get_low_latency_mode);
 
 
 enum ENUM_WLAN_DRV_BUF_TYPE_T {
@@ -325,7 +360,9 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 
 	copy_size = min(sizeof(local) - 1, count);
 	if (copy_from_user(local, buf, copy_size) == 0) {
-		WIFI_INFO_FUNC("WIFI_write %s, length %zu\n", local, count);
+		local[copy_size] = '\0';
+		WIFI_INFO_FUNC("WIFI_write %s, length %zu, copy_size %d\n",
+			local, count, copy_size);
 
 		if (local[0] == '0') {
 			if (powered == 0) {
@@ -573,6 +610,15 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			isconcurrent = 0;
 			WIFI_INFO_FUNC("Disable concurrent mode\n");
 			retval = count;
+		} else if (!strncmp(local, "LLM", 3)) {
+			WIFI_INFO_FUNC("local = %s", local);
+			if (!strncmp(local + 4, "0x", 2)) {
+				WIFI_INFO_FUNC("LLM val = %s", local + 6);
+				set_low_latency_mode(local + 6);
+				retval = count;
+			} else {
+				retval = -ENOTSUPP;
+			}
 		}
 	}
 done:
@@ -594,6 +640,8 @@ static int WIFI_init(void)
 	dev_t dev = MKDEV(WIFI_major, 0);
 	int32_t alloc_ret = 0;
 	int32_t cdev_err = 0;
+
+	low_latency_mode = 0;
 
 	/* Allocate char device */
 	alloc_ret = register_chrdev_region(dev, WIFI_devs, WIFI_DRIVER_NAME);
