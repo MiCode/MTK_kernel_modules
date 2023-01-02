@@ -447,8 +447,8 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 					WIFI_INFO_FUNC("Set wlan mode %d --> %d\n", wlan_mode, WLAN_MODE_STA_AP_P2P);
 					wlan_mode = WLAN_MODE_STA_AP_P2P;
 					retval = count;
+					goto done;
 				}
-				goto done;
 			}
 
 			if ((wlan_mode == WLAN_MODE_AP && (local[0] == 'S' || local[0] == 'P')) ||
