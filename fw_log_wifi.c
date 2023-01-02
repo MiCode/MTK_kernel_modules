@@ -349,6 +349,16 @@ int fw_log_wifi_init(void)
 		goto class_destroy;
 	}
 
+	/* integrated with common debug utility */
+	init_waitqueue_head(&wq);
+	connsys_log_init(CONNLOG_TYPE_WIFI);
+	connsys_log_register_event_cb(CONNLOG_TYPE_WIFI, fw_log_wifi_event_cb);
+	sema_init(&ioctl_mtx, 1);
+	pfFwEventFuncCB = NULL;
+#if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+	gpfn_check_bus_hang = NULL;
+#endif
+
 	cdev_init(&fw_log_wifi_dev->cdev, &fw_log_wifi_fops);
 
 	fw_log_wifi_dev->cdev.owner = THIS_MODULE;
@@ -361,15 +371,6 @@ int fw_log_wifi_init(void)
 		goto cdev_del;
 	}
 
-	/* integrated with common debug utility */
-	init_waitqueue_head(&wq);
-	connsys_log_init(CONNLOG_TYPE_WIFI);
-	connsys_log_register_event_cb(CONNLOG_TYPE_WIFI, fw_log_wifi_event_cb);
-	sema_init(&ioctl_mtx, 1);
-	pfFwEventFuncCB = NULL;
-#if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
-	gpfn_check_bus_hang = NULL;
-#endif
 	goto return_fn;
 
 cdev_del:
