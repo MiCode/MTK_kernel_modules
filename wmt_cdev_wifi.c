@@ -357,7 +357,8 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_STA_AP_P2P);
 					ret = 0;
 				}
-			}
+			} else
+				ret = 0;
 done:
 			if (netdev != NULL)
 				dev_put(netdev);
