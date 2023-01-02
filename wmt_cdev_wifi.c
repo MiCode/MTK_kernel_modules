@@ -39,7 +39,7 @@
 MODULE_LICENSE("Dual BSD/GPL");
 
 #define WIFI_DRIVER_NAME "mtk_wmt_wifi_chrdev"
-#define WIFI_DEV_MAJOR 153
+#define WIFI_DEV_MAJOR 0
 
 #define PFX                         "[MTK-WIFI] "
 #define WIFI_LOG_DBG                  3
@@ -79,6 +79,7 @@ uint32_t gDbgLevel = WIFI_LOG_DBG;
 
 static int32_t WIFI_devs = 1;
 static int32_t WIFI_major = WIFI_DEV_MAJOR;
+static dev_t wifi_devno;
 module_param(WIFI_major, uint, 0);
 static struct cdev WIFI_cdev;
 #if CREATE_NODE_DYNAMIC
@@ -692,14 +693,20 @@ const struct file_operations WIFI_fops = {
 
 static int WIFI_init(void)
 {
-	dev_t dev = MKDEV(WIFI_major, 0);
 	int32_t alloc_ret = 0;
 	int32_t cdev_err = 0;
 
 	low_latency_mode = 0;
 
 	/* Allocate char device */
-	alloc_ret = register_chrdev_region(dev, WIFI_devs, WIFI_DRIVER_NAME);
+	if (WIFI_major) {
+		wifi_devno = MKDEV(WIFI_major, 0);
+		alloc_ret = register_chrdev_region(wifi_devno, WIFI_devs,
+				WIFI_DRIVER_NAME);
+	} else {
+		alloc_ret = alloc_chrdev_region(&wifi_devno, 0, WIFI_devs,
+				WIFI_DRIVER_NAME);
+	}
 	if (alloc_ret) {
 		WIFI_ERR_FUNC("Fail to register device numbers\n");
 		return alloc_ret;
@@ -708,7 +715,7 @@ static int WIFI_init(void)
 	cdev_init(&WIFI_cdev, &WIFI_fops);
 	WIFI_cdev.owner = THIS_MODULE;
 
-	cdev_err = cdev_add(&WIFI_cdev, dev, WIFI_devs);
+	cdev_err = cdev_add(&WIFI_cdev, wifi_devno, WIFI_devs);
 	if (cdev_err)
 		goto error;
 
@@ -716,19 +723,21 @@ static int WIFI_init(void)
 	wmtwifi_class = class_create(THIS_MODULE, "wmtWifi");
 	if (IS_ERR(wmtwifi_class))
 		goto error;
-	wmtwifi_dev = device_create(wmtwifi_class, NULL, dev, NULL, "wmtWifi");
+	wmtwifi_dev = device_create(wmtwifi_class, NULL, wifi_devno, NULL,
+			"wmtWifi");
 	if (IS_ERR(wmtwifi_dev))
 		goto error;
 #endif
 
 	sema_init(&wr_mtx, 1);
 
-	WIFI_INFO_FUNC("%s driver(major %d) installed\n", WIFI_DRIVER_NAME, WIFI_major);
+	WIFI_INFO_FUNC("%s driver(major %d %d) installed.\n", WIFI_DRIVER_NAME,
+			WIFI_major, MAJOR(wifi_devno));
 
 #ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
 	if (fw_log_wifi_init() < 0) {
 		WIFI_INFO_FUNC("connsys debug node init failed!!\n");
-		return -1;
+		goto error;
 	}
 #endif
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
@@ -739,7 +748,7 @@ static int WIFI_init(void)
 error:
 #if CREATE_NODE_DYNAMIC
 	if (wmtwifi_dev && !IS_ERR(wmtwifi_dev)) {
-		device_destroy(wmtwifi_class, dev);
+		device_destroy(wmtwifi_class, wifi_devno);
 		wmtwifi_dev = NULL;
 	}
 	if (wmtwifi_class && !IS_ERR(wmtwifi_class)) {
@@ -751,18 +760,16 @@ error:
 		cdev_del(&WIFI_cdev);
 
 	if (alloc_ret == 0)
-		unregister_chrdev_region(dev, WIFI_devs);
+		unregister_chrdev_region(wifi_devno, WIFI_devs);
 
 	return -1;
 }
 
 static void WIFI_exit(void)
 {
-	dev_t dev = MKDEV(WIFI_major, 0);
-
 #if CREATE_NODE_DYNAMIC
 	if (wmtwifi_dev && !IS_ERR(wmtwifi_dev)) {
-		device_destroy(wmtwifi_class, dev);
+		device_destroy(wmtwifi_class, wifi_devno);
 		wmtwifi_dev = NULL;
 	}
 	if (wmtwifi_class && !IS_ERR(wmtwifi_class)) {
@@ -772,7 +779,7 @@ static void WIFI_exit(void)
 #endif
 
 	cdev_del(&WIFI_cdev);
-	unregister_chrdev_region(dev, WIFI_devs);
+	unregister_chrdev_region(wifi_devno, WIFI_devs);
 
 	WIFI_INFO_FUNC("%s driver removed\n", WIFI_DRIVER_NAME);
 
