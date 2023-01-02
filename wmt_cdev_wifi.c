@@ -487,9 +487,11 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 		} else if (local[0] == 'C') {
 			isconcurrent = 1;
 			WIFI_INFO_FUNC("Enable concurrent mode\n");
+			retval = count;
 		} else if (local[0] == 'N') {
 			isconcurrent = 0;
 			WIFI_INFO_FUNC("Disable concurrent mode\n");
+			retval = count;
 		}
 	}
 done:
