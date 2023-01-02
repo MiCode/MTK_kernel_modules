@@ -168,6 +168,10 @@ int mtk_wland_thread_main(void *data)
 		if (test_and_clear_bit(ADAPTOR_FLAG_ON_BIT, &g_ulOnoffFlag)) {
 			if (!g_fgIsWiFiOn) {
 				if (mtk_wlan_probe_function != NULL) {
+					while (get_pre_cal_status() == 1) {
+						WIFI_DBG_FUNC("Precal is ongoing.\n");
+						msleep(300);
+					}
 					g_data = (*mtk_wlan_probe_function)();
 					if (g_data == 0)
 						g_fgIsWiFiOn = MTK_WCN_BOOL_TRUE;

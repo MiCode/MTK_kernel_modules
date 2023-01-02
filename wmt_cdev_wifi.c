@@ -106,6 +106,7 @@ static int32_t low_latency_mode;
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 static uint8_t  driver_resetting;
 static uint8_t  write_processing;
+static uint8_t  pre_cal_ongoing;
 #endif
 /*******************************************************************
  */
@@ -193,7 +194,18 @@ int32_t get_wifi_process_status(void)
 	return write_processing;
 }
 EXPORT_SYMBOL(get_wifi_process_status);
-
+void update_pre_cal_status(uint8_t fgIsPreCal)
+{
+	WIFI_INFO_FUNC("update_pre_cal_status: %d\n", fgIsPreCal);
+	pre_cal_ongoing = fgIsPreCal;
+}
+EXPORT_SYMBOL(update_pre_cal_status);
+uint8_t get_pre_cal_status(void)
+{
+	WIFI_INFO_FUNC("pre cal status: %d\n", pre_cal_ongoing);
+	return pre_cal_ongoing;
+}
+EXPORT_SYMBOL(get_pre_cal_status);
 #endif
 
 enum ENUM_WLAN_DRV_BUF_TYPE_T {

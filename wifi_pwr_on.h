@@ -28,6 +28,8 @@ struct MTK_WCN_WLAN_CB_INFO {
 };
 extern int mtk_wcn_wlan_reg(struct MTK_WCN_WLAN_CB_INFO *pWlanCbInfo);
 
+extern uint8_t get_pre_cal_status(void);
+
 enum ENUM_WLAN_OPID {
 	WLAN_OPID_FUNC_ON = 0,
 	WLAN_OPID_FUNC_OFF = 1,
