@@ -268,6 +268,12 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 		if (powered == 1) {
 			/* WIFI is on before whole chip reset, reopen it now */
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+			/*
+			 * mtk_wland_thread_main will check this flag for current state.
+			 * if this flag is TRUE, mtk_wland_thread_main will not do power on again.
+			 * Set this flag to FALSE to finish the reset procedure
+			 */
+			g_fgIsWiFiOn = MTK_WCN_BOOL_FALSE;
 			if (mtk_wcn_wlan_func_ctrl(WLAN_OPID_FUNC_ON) == MTK_WCN_BOOL_FALSE) {
 #else
 			if (mtk_wcn_wmt_func_on(WMTDRV_TYPE_WIFI) == MTK_WCN_BOOL_FALSE) {
