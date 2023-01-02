@@ -91,10 +91,12 @@ enum {
 	WLAN_MODE_HALT,
 	WLAN_MODE_AP,
 	WLAN_MODE_STA_P2P,
+	WLAN_MODE_STA_AP_P2P,
 	WLAN_MODE_MAX
 };
 static int32_t wlan_mode = WLAN_MODE_HALT;
 static int32_t powered;
+static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
 
 /*******************************************************************
@@ -237,7 +239,7 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 				p2pmode.u4Enable = 1;
 				p2pmode.u4Mode = 0;
 				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
-					WIFI_ERR_FUNC("Set wlan mode fail\n");
+					WIFI_ERR_FUNC("Set wlan mode 0 fail\n");
 				} else {
 					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_STA_P2P);
 					ret = 0;
@@ -246,9 +248,18 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 				p2pmode.u4Enable = 1;
 				p2pmode.u4Mode = 1;
 				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
-					WIFI_ERR_FUNC("Set wlan mode fail\n");
+					WIFI_ERR_FUNC("Set wlan mode 1 fail\n");
 				} else {
 					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_AP);
+					ret = 0;
+				}
+			} else if (wlan_mode == WLAN_MODE_STA_AP_P2P) {
+				p2pmode.u4Enable = 1;
+				p2pmode.u4Mode = 3;
+				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
+					WIFI_ERR_FUNC("Set wlan mode 3 fail\n");
+				} else {
+					WIFI_WARN_FUNC("Set wlan mode %d\n", WLAN_MODE_STA_AP_P2P);
 					ret = 0;
 				}
 			}
@@ -420,9 +431,23 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			}
 
 			if ((wlan_mode == WLAN_MODE_STA_P2P && (local[0] == 'S' || local[0] == 'P')) ||
-			    (wlan_mode == WLAN_MODE_AP && (local[0] == 'A'))) {
+			    (wlan_mode == WLAN_MODE_AP && (local[0] == 'A')) ||
+			    (wlan_mode == WLAN_MODE_STA_AP_P2P)) {
 				WIFI_INFO_FUNC("WIFI is already in mode %d!\n", wlan_mode);
 				retval = count;
+				goto done;
+			}
+
+			if (isconcurrent) {
+				p2pmode.u4Enable = 1;
+				p2pmode.u4Mode = 3;
+				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
+					WIFI_ERR_FUNC("Set wlan mode fail\n");
+				} else {
+					WIFI_INFO_FUNC("Set wlan mode %d --> %d\n", wlan_mode, WLAN_MODE_STA_AP_P2P);
+					wlan_mode = WLAN_MODE_STA_AP_P2P;
+					retval = count;
+				}
 				goto done;
 			}
 
@@ -459,6 +484,12 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			}
 			dev_put(netdev);
 			netdev = NULL;
+		} else if (local[0] == 'C') {
+			isconcurrent = 1;
+			WIFI_INFO_FUNC("Enable concurrent mode\n");
+		} else if (local[0] == 'N') {
+			isconcurrent = 0;
+			WIFI_INFO_FUNC("Disable concurrent mode\n");
 		}
 	}
 done:
