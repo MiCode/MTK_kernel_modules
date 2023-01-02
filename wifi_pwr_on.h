@@ -60,5 +60,5 @@ extern bool g_fgIsWiFiOn;
 #define ADAPTOR_FLAG_ON_OFF_PROCESS (ADAPTOR_FLAG_HALT |\
 				     ADAPTOR_FLAG_ON |\
 				     ADAPTOR_FLAG_OFF)
-
+#define ADAPTOR_INVALID_POINTER 0xdeaddead
 #endif /*_WIFI_PWR_ON_H_*/

@@ -172,6 +172,7 @@ int mtk_wland_thread_main(void *data)
 					if (g_data == 0)
 						g_fgIsWiFiOn = MTK_WCN_BOOL_TRUE;
 				} else {
+					g_data = ADAPTOR_INVALID_POINTER;
 					WIFI_ERR_FUNC("Invalid pointer\n");
 				}
 			} else {
@@ -184,6 +185,7 @@ int mtk_wland_thread_main(void *data)
 					if (g_data == 0)
 						g_fgIsWiFiOn = MTK_WCN_BOOL_FALSE;
 				} else {
+					g_data = ADAPTOR_INVALID_POINTER;
 					WIFI_ERR_FUNC("Invalid pointer\n");
 				}
 			} else {
