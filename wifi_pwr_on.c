@@ -73,7 +73,6 @@ int g_data;
 
 wait_queue_head_t g_waitq_onoff;
 unsigned long g_ulOnoffFlag;
-struct completion g_RstOffComp;
 bool g_fgIsWiFiOn;
 struct task_struct *wland_thread;
 
