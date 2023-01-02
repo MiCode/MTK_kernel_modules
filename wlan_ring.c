@@ -9,7 +9,7 @@
 #include <linux/kernel.h>
 #include <linux/bug.h>
 
-void ring_init(void *base, unsigned int max_size, unsigned int read,
+void wlan_ring_init(void *base, unsigned int max_size, unsigned int read,
 	unsigned int write, struct ring *ring)
 {
 	WARN_ON(!base);
@@ -26,13 +26,13 @@ void ring_init(void *base, unsigned int max_size, unsigned int read,
 	ring->max_size = max_size;
 }
 
-void ring_dump(const char *title, struct ring *ring)
+void wlan_ring_dump(const char *title, struct ring *ring)
 {
 	pr_info("[%s] ring:{write=%d, read=%d, max_size=%d}\n",
 			title, ring->write, ring->read, ring->max_size);
 }
 
-void ring_dump_segment(const char *title, struct ring_segment *seg)
+void wlan_ring_dump_segment(const char *title, struct ring_segment *seg)
 {
 	pr_info("[%s] seg:{ring_pt=0x%p, data_pos=%d, sz=%d, remain=%d}\n",
 			title, seg->ring_pt, seg->data_pos,
@@ -43,7 +43,7 @@ void ring_dump_segment(const char *title, struct ring_segment *seg)
  * Function prepares the ring_segment and
  * returns the number of valid bytes for read.
  */
-unsigned int ring_read_prepare(unsigned int sz,
+unsigned int wlan_ring_read_prepare(unsigned int sz,
 					struct ring_segment *seg,
 					struct ring *ring)
 {
@@ -54,8 +54,8 @@ unsigned int ring_read_prepare(unsigned int sz,
 	if (sz > wt - rd)
 		sz = wt - rd;
 	seg->remain = sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 	return seg->remain;
 }
 
@@ -63,7 +63,7 @@ unsigned int ring_read_prepare(unsigned int sz,
  * Function prepares the ring_segment and
  * returns the number of bytes available for write.
  */
-unsigned int ring_write_prepare(unsigned int sz,
+unsigned int wlan_ring_write_prepare(unsigned int sz,
 						struct ring_segment *seg,
 						struct ring *ring)
 {
@@ -74,12 +74,12 @@ unsigned int ring_write_prepare(unsigned int sz,
 	if (sz > ring->max_size - (wt - rd))
 		sz = ring->max_size - (wt - rd);
 	seg->remain = sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 	return seg->remain;
 }
 
-unsigned int ring_overwrite_prepare(unsigned int sz, struct ring_segment *seg,
+unsigned int wlan_ring_overwrite_prepare(unsigned int sz, struct ring_segment *seg,
 						      struct ring *ring)
 {
 	unsigned int wt = ring->write;
@@ -89,12 +89,12 @@ unsigned int ring_overwrite_prepare(unsigned int sz, struct ring_segment *seg,
 	if (sz > ring->max_size - (wt - rd))
 		ring->read += sz - (ring->max_size - (wt - rd));
 	seg->remain = sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 	return seg->remain;
 }
 
-void __ring_segment_prepare(unsigned int from, unsigned int sz,
+void __wlan_ring_segment_prepare(unsigned int from, unsigned int sz,
 						struct ring_segment *seg,
 						struct ring *ring)
 {
@@ -107,37 +107,37 @@ void __ring_segment_prepare(unsigned int from, unsigned int sz,
 	else
 		seg->sz = ring->max_size - ring_pos;
 	seg->remain -= seg->sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 }
 
-void _ring_segment_prepare(unsigned int from,
+void _wlan_ring_segment_prepare(unsigned int from,
 					struct ring_segment *seg,
 					struct ring *ring)
 {
-	__ring_segment_prepare(from, seg->remain, seg, ring);
+	__wlan_ring_segment_prepare(from, seg->remain, seg, ring);
 }
 
-void _ring_segment_prepare_item(unsigned int from,
+void _wlan_ring_segment_prepare_item(unsigned int from,
 					struct ring_segment *seg,
 					struct ring *ring)
 {
 	unsigned int size;
 
 	size = (seg->remain ? 1 : 0);
-	__ring_segment_prepare(from, size, seg, ring);
+	__wlan_ring_segment_prepare(from, size, seg, ring);
 }
 
-void _ring_read_commit(struct ring_segment *seg, struct ring *ring)
+void _wlan_ring_read_commit(struct ring_segment *seg, struct ring *ring)
 {
 	ring->read += seg->sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 }
-void _ring_write_commit(struct ring_segment *seg, struct ring *ring)
+void _wlan_ring_write_commit(struct ring_segment *seg, struct ring *ring)
 {
 	ring->write += seg->sz;
-	/* ring_dump(__func__, ring); */
-	/* ring_dump_segment(__func__, seg); */
+	/* wlan_ring_dump(__func__, ring); */
+	/* wlan_ring_dump_segment(__func__, seg); */
 }
 

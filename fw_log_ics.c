@@ -23,7 +23,7 @@
 #include <linux/inetdevice.h>
 #include <linux/string.h>
 #include "fw_log_ics.h"
-#include "ring.h"
+#include "wlan_ring.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -134,7 +134,7 @@ static int ics_ring_init(struct ics_ring *iRing, size_t size)
 		else {
 			iRing->ring_base = pBuffer;
 			iRing->ring_size = size;
-			ring_init(
+			RING_INIT(
 				iRing->ring_base,
 				iRing->ring_size,
 				0,
@@ -159,7 +159,7 @@ static ssize_t ics_ring_read(struct ics_ring *iRing, char __user *buf,
 		left_to_read = count < RING_SIZE(ring)
 				? count : RING_SIZE(ring);
 		if (RING_EMPTY(ring) ||
-			!ring_read_prepare(left_to_read, &ring_seg, ring)) {
+			!RING_READ_PREPARE(left_to_read, &ring_seg, ring)) {
 			ICS_INFO("no data? taken by other reader?\n");
 			goto return_fn;
 		}
@@ -171,7 +171,7 @@ static ssize_t ics_ring_read(struct ics_ring *iRing, char __user *buf,
 				goto return_fn;
 			left_to_read -= ring_seg.sz;
 			read += ring_seg.sz;
-			ICS_INFO_LIMITED("read:%d left:%d\n", read,
+			ICS_DBG_LIMITED("read:%d left:%d\n", read,
 				left_to_read);
 		}
 	} else {
@@ -180,7 +180,7 @@ static ssize_t ics_ring_read(struct ics_ring *iRing, char __user *buf,
 	}
 
 return_fn:
-	ICS_INFO("[Done] read:%d left:%d\n", read, left_to_read);
+	ICS_DBG("[Done] read:%d left:%d\n", read, left_to_read);
 	return read;
 }
 
@@ -197,7 +197,7 @@ static ssize_t ics_ring_write(struct ics_ring *iRing, char *buf,
 			memcpy(ring_seg.ring_pt, buf, ring_seg.sz);
 			left_to_write -= ring_seg.sz;
 			written += ring_seg.sz;
-			ICS_INFO_LIMITED("written:%d left:%d\n", written,
+			ICS_DBG_LIMITED("written:%d left:%d\n", written,
 				left_to_write);
 		}
 
@@ -206,7 +206,7 @@ static ssize_t ics_ring_write(struct ics_ring *iRing, char *buf,
 		written = -EPERM;
 	}
 
-	ICS_INFO("[Done] written:%d left:%d\n", written,
+	ICS_DBG("[Done] written:%d left:%d\n", written,
 		left_to_write);
 	return written;
 }
@@ -246,8 +246,6 @@ ssize_t wifi_ics_fwlog_write(char *buf, size_t count)
 	ret = ics_ring_write(&gIcsDev->iRing, buf, count);
 	if (ret > 0)
 		wake_up_interruptible(&gIcsDev->wq);
-	else
-		ICS_INFO("ics_fwlog_write ring is not ready\n");
 
 	return ret;
 }
@@ -273,7 +271,7 @@ static ssize_t fw_log_ics_read(struct file *filp, char __user *buf,
 {
 	size_t ret = 0;
 
-	ICS_INFO_LIMITED("fw_log_ics_read len --> %d\n",
+	ICS_DBG_LIMITED("fw_log_ics_read len --> %d\n",
 		(uint32_t) len);
 	ret = ics_ring_read(&gIcsDev->iRing, buf, len);
 	return ret;

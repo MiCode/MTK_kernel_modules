@@ -62,7 +62,7 @@ $(MODULE_NAME)-objs += wmt_cdev_wifi.o
 ifneq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH),)
 $(MODULE_NAME)-objs += fw_log_wifi.o
 $(MODULE_NAME)-objs += fw_log_ics.o
-$(MODULE_NAME)-objs += ring.o
+$(MODULE_NAME)-objs += wlan_ring.o
 endif
 ifeq ($(CONNAC_VER), 2_0)
 $(MODULE_NAME)-objs += wifi_pwr_on.o
