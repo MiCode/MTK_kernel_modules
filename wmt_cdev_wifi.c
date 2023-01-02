@@ -98,6 +98,7 @@ static int32_t wlan_mode = WLAN_MODE_HALT;
 static int32_t powered;
 static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
+static uint32_t driver_loaded;
 
 /*******************************************************************
  */
@@ -124,6 +125,14 @@ VOID register_set_p2p_mode_handler(set_p2p_mode handler)
 	pf_set_p2p_mode = handler;
 }
 EXPORT_SYMBOL(register_set_p2p_mode_handler);
+
+VOID update_driver_loaded_status(uint8_t loaded)
+{
+	WIFI_INFO_FUNC("update_driver_loaded_status: %d\n", loaded);
+	driver_loaded = loaded;
+}
+EXPORT_SYMBOL(update_driver_loaded_status);
+
 
 enum ENUM_WLAN_DRV_BUF_TYPE_T {
 	BUF_TYPE_NVRAM,
@@ -401,6 +410,12 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			else
 				retval = -ENOTSUPP;
 		} else if (local[0] == 'S' || local[0] == 'P' || local[0] == 'A') {
+			if (powered == 1 && driver_loaded == 0) {
+				WIFI_INFO_FUNC("In fact wifi is already turned off! reset related states.\n");
+				powered = 0;
+				wlan_mode = WLAN_MODE_HALT;
+			}
+
 			if (powered == 0) {
 				/* If WIFI is off, turn on WIFI first */
 				if (mtk_wcn_wmt_func_on(WMTDRV_TYPE_WIFI) == MTK_WCN_BOOL_FALSE) {
