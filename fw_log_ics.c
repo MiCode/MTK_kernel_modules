@@ -171,7 +171,7 @@ static ssize_t ics_ring_read(struct ics_ring *iRing, char __user *buf,
 				goto return_fn;
 			left_to_read -= ring_seg.sz;
 			read += ring_seg.sz;
-			ICS_DBG_LIMITED("read:%d left:%d\n", read,
+			ICS_DBG_LIMITED("read:%ld left:%ld\n", read,
 				left_to_read);
 		}
 	} else {
@@ -180,7 +180,7 @@ static ssize_t ics_ring_read(struct ics_ring *iRing, char __user *buf,
 	}
 
 return_fn:
-	ICS_DBG("[Done] read:%d left:%d\n", read, left_to_read);
+	ICS_DBG("[Done] read:%ld left:%ld\n", read, left_to_read);
 	return read;
 }
 
@@ -197,7 +197,7 @@ static ssize_t ics_ring_write(struct ics_ring *iRing, char *buf,
 			memcpy(ring_seg.ring_pt, buf, ring_seg.sz);
 			left_to_write -= ring_seg.sz;
 			written += ring_seg.sz;
-			ICS_DBG_LIMITED("written:%d left:%d\n", written,
+			ICS_DBG_LIMITED("written:%ld left:%ld\n", written,
 				left_to_write);
 		}
 
@@ -206,7 +206,7 @@ static ssize_t ics_ring_write(struct ics_ring *iRing, char *buf,
 		written = -EPERM;
 	}
 
-	ICS_DBG("[Done] written:%d left:%d\n", written,
+	ICS_DBG("[Done] written:%ld left:%ld\n", written,
 		left_to_write);
 	return written;
 }
