@@ -30,6 +30,9 @@
 #include <linux/string.h>
 
 #include "fw_log_wifi.h"
+#ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
+#include "fw_log_ics.h"
+#endif
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 #include "wifi_pwr_on.h"
 #else
@@ -775,6 +778,10 @@ static int WIFI_init(void)
 		WIFI_INFO_FUNC("connsys debug node init failed!!\n");
 		goto error;
 	}
+	if (fw_log_ics_init() < 0) {
+		WIFI_INFO_FUNC("ics log node init failed!!\n");
+		goto error;
+	}
 #endif
 	return 0;
 
@@ -818,6 +825,7 @@ static void WIFI_exit(void)
 
 #ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
 	fw_log_wifi_deinit();
+	fw_log_ics_deinit();
 #endif
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 	wifi_pwr_on_deinit();
