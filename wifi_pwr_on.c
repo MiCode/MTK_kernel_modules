@@ -126,7 +126,6 @@ static int mtk_wland_thread(void *pvData)
 			g_data = (*mtk_wlan_probe_function)();
 		} else {
 			WIFI_ERR_FUNC("Invalid pointer\n");
-			complete(&wlan_pendComp);
 		}
 		break;
 	case WLAN_OPID_FUNC_OFF:
@@ -134,7 +133,6 @@ static int mtk_wland_thread(void *pvData)
 			g_data = (*mtk_wlan_remove_function)();
 		} else {
 			WIFI_ERR_FUNC("Invalid pointer\n");
-			complete(&wlan_pendComp);
 		}
 		break;
 	default:
