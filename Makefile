@@ -1,16 +1,17 @@
 ###############################################################################
 # Necessary Check
 
-ifneq ($(KERNEL_OUT),)
-    ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
+ifeq ($(AUTOCONF_H),)
+    $(error AUTOCONF_H is not defined)
 endif
 
+ccflags-y += -imacros $(AUTOCONF_H)
 
 # Force build fail on modpost warning
 KBUILD_MODPOST_FAIL_ON_WARNINGS := y
 
 ccflags-y += \
-    -I$(KERNEL_DIR)/drivers/misc/mediatek/include/mt-plat \
+    -I$(srctree)/drivers/misc/mediatek/include/mt-plat \
     -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/include \
     -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
 
