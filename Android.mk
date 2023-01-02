@@ -7,7 +7,7 @@ LOCAL_MODULE := wmt_chrdev_wifi.ko
 LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := mtk
 LOCAL_INIT_RC := init.wlan_drv.rc
-ifeq ($(filter $(WIFI_CHIP),CONNAC2X2_SOC3_0))
+ifeq ($(WIFI_CHIP), CONNAC2X2_SOC3_0)
 LOCAL_REQUIRED_MODULES := conninfra.ko
 else
 LOCAL_REQUIRED_MODULES := wmt_drv.ko
