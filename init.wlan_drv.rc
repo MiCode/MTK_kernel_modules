@@ -1,0 +1,5 @@
+
+# load wifi driver after wmt_loader finish
+on property:service.wcn.driver.ready=yes
+  insmod /vendor/lib/modules/wmt_chrdev_wifi.ko
+  insmod /vendor/lib/modules/wlan_drv_${ro.wlan.gen}.ko
