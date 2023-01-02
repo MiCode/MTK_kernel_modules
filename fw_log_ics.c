@@ -435,9 +435,9 @@ int fw_log_ics_deinit(void)
 	device_destroy(gIcsDev->driver_class, gIcsDev->devno);
 	class_destroy(gIcsDev->driver_class);
 	cdev_del(&gIcsDev->cdev);
-	kfree(gIcsDev);
 	unregister_chrdev_region(MKDEV(gIcsDev->major, 0), 1);
 	ICS_INFO("unregister_chrdev_region major %d\n", gIcsDev->major);
+	kfree(gIcsDev);
 	return 0;
 }
 EXPORT_SYMBOL(fw_log_ics_deinit);
