@@ -226,6 +226,18 @@ uint8_t get_pre_cal_status(void)
 EXPORT_SYMBOL(get_pre_cal_status);
 #endif
 
+void update_wr_mtx_down_up_status(uint8_t ucDownUp)
+{
+	if (ucDownUp == 0) {
+		WIFI_INFO_FUNC("Try to down wr_mtx\n");
+		down(&wr_mtx);
+	} else if (ucDownUp == 1) {
+		up(&wr_mtx);
+		WIFI_INFO_FUNC("Up wr_mtx\n");
+	}
+}
+EXPORT_SYMBOL(update_wr_mtx_down_up_status);
+
 enum ENUM_WLAN_DRV_BUF_TYPE_T {
 	BUF_TYPE_NVRAM,
 	BUF_TYPE_DRV_CFG,
