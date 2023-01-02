@@ -23,6 +23,12 @@ ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debu
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump
+else ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC5_0)
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
+ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump
 endif
 
 ifneq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH),)
@@ -37,6 +43,9 @@ else
 endif
 
 ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
+ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
+ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
+else ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC5_0)
 ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
 ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
 else
@@ -63,5 +72,7 @@ ifneq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH),)
 $(MODULE_NAME)-objs += fw_log_wifi.o
 endif
 ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
+$(MODULE_NAME)-objs += wifi_pwr_on.o
+else ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC5_0)
 $(MODULE_NAME)-objs += wifi_pwr_on.o
 endif
