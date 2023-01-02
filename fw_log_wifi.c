@@ -31,7 +31,6 @@
 #include <linux/inetdevice.h>
 #include <linux/string.h>
 
-#include "wmt_exp.h"
 #include "stp_exp.h"
 #include "connsys_debug_utility.h"
 
