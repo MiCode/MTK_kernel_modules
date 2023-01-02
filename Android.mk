@@ -7,6 +7,10 @@ ifeq ($(WLAN_BUILD_COMMON), true)
 	CONNAC_VER := 2_0
 	WIFI_NAME := wmt_chrdev_wifi_connac2
 	include $(LOCAL_PATH)/build_cdev_wifi.mk
+
+	CONNAC_VER := 1_0
+	WIFI_NAME := wmt_chrdev_wifi
+	include $(LOCAL_PATH)/build_cdev_wifi.mk
 else
 	WIFI_NAME := wmt_chrdev_wifi
 	include $(LOCAL_PATH)/build_cdev_wifi.mk
