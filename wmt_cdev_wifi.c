@@ -103,6 +103,7 @@ static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
 static uint32_t driver_loaded;
 static int32_t low_latency_mode;
+static uint8_t  driver_resetting;
 
 /*******************************************************************
  */
@@ -171,6 +172,14 @@ uint32_t get_low_latency_mode(void)
 }
 EXPORT_SYMBOL(get_low_latency_mode);
 
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+void update_driver_reset_status(uint8_t fgIsResetting)
+{
+	WIFI_INFO_FUNC("update_driver_reset_status: %d\n", fgIsResetting);
+	driver_resetting = fgIsResetting;
+}
+EXPORT_SYMBOL(update_driver_reset_status);
+#endif
 
 enum ENUM_WLAN_DRV_BUF_TYPE_T {
 	BUF_TYPE_NVRAM,
@@ -357,6 +366,12 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 		WIFI_ERR_FUNC("WIFI_write invalid param\n");
 		goto done;
 	}
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+	if (driver_resetting == 1) {
+		WIFI_ERR_FUNC("Wi-Fi is resetting\n");
+		goto done;
+	}
+#endif
 
 	copy_size = min(sizeof(local) - 1, count);
 	if (copy_from_user(local, buf, copy_size) == 0) {
