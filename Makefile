@@ -24,6 +24,12 @@ else
     ccflags-y += -D WMT_IDC_SUPPORT=0
 endif
 
+ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
+ccflags-y += -D CFG_ANDORID_CONNINFRA_SUPPORT=1
+else
+ccflags-y += -D CFG_ANDORID_CONNINFRA_SUPPORT=0
+endif
+
 ccflags-y += -D MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
 ccflags-y += -D CREATE_NODE_DYNAMIC=1
@@ -42,4 +48,6 @@ $(MODULE_NAME)-objs += wmt_cdev_wifi.o
 ifneq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH),)
 $(MODULE_NAME)-objs += fw_log_wifi.o
 endif
-
+ifeq ($(ADAPTOR_OPTS),CONNAC2X2_SOC3_0)
+$(MODULE_NAME)-objs += wifi_pwr_on.o
+endif
