@@ -92,6 +92,11 @@ typedef void (*wifi_fwlog_event_func_cb)(int, int);
 wifi_fwlog_event_func_cb pfFwEventFuncCB;
 static wait_queue_head_t wq;
 
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+typedef int (*wifi_fwlog_chkbushang_func_cb)(void *, uint8_t);
+wifi_fwlog_chkbushang_func_cb gpfn_check_bus_hang;
+#endif
+
 static struct semaphore ioctl_mtx;
 
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
@@ -203,9 +208,32 @@ EXPORT_SYMBOL(fw_log_wifi_irq_handler);
 
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
 
+void fw_log_bug_hang_register(void *func)
+{
+	WIFI_INFO_FUNC("fw_log_bug_hang_register: %p\n", func);
+	gpfn_check_bus_hang = (wifi_fwlog_chkbushang_func_cb)func;
+}
+EXPORT_SYMBOL(fw_log_bug_hang_register);
+
 int fw_log_reg_readable(void)
 {
-	return conninfra_reg_readable();
+	int ret = 1;
+
+	if (conninfra_reg_readable() == 0) {
+		WIFI_INFO_FUNC("conninfra_reg_readable: 0\n");
+		ret = 0;
+	}
+
+	if (gpfn_check_bus_hang) {
+		if (gpfn_check_bus_hang(NULL, 0) != 0) {
+			WIFI_INFO_FUNC("gpfn_check_bus_hang: 1\n");
+			ret = 0;
+		}
+	}
+
+	WIFI_INFO_FUNC("fw_log_reg_readable: %d\n", ret);
+
+	return ret;
 }
 
 void fw_log_connsys_coredump_init(void)
@@ -329,7 +357,9 @@ int fw_log_wifi_init(void)
 	connsys_log_register_event_cb(CONNLOG_TYPE_WIFI, fw_log_wifi_event_cb);
 	sema_init(&ioctl_mtx, 1);
 	pfFwEventFuncCB = NULL;
-
+#if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+	gpfn_check_bus_hang = NULL;
+#endif
 	goto return_fn;
 
 cdev_del:
