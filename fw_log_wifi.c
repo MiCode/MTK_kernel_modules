@@ -142,7 +142,8 @@ static ssize_t fw_log_wifi_read(struct file *filp, char __user *buf, size_t len,
 	size_t ret = 0;
 
 	WIFI_INFO_FUNC_LIMITED("fw_log_wifi_read len --> %d\n", (uint32_t) len);
-	WIFI_INFO_FUNC("WIFI_FW_LOG_IOCTL_ON_OFF result=%d, last value=%d\n", gFwLogOnOffStatus, gLastFWLogOnOff);
+	WIFI_INFO_FUNC_LIMITED("WIFI_FW_LOG_IOCTL_ON_OFF result=%d, last value=%d\n",
+						gFwLogOnOffStatus, gLastFWLogOnOff);
 
 	ret = connsys_log_read_to_user(CONNLOG_TYPE_WIFI, buf, len);
 
@@ -162,6 +163,16 @@ static unsigned int fw_log_wifi_poll(struct file *filp, poll_table *wait)
 static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	int ret = 0;
+	int32_t wait_cnt = 0;
+
+	while (wait_cnt < 2000) {
+		if (pfFwEventFuncCB)
+			break;
+		if (wait_cnt % 20 == 0)
+			WIFI_ERR_FUNC("Wi-Fi driver is not ready for 2s\n");
+		msleep(100);
+		wait_cnt++;
+	}
 
 	down(&ioctl_mtx);
 	switch (cmd) {
@@ -269,21 +280,12 @@ EXPORT_SYMBOL(fw_log_connsys_coredump_start);
 static long fw_log_wifi_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	long ret = 0;
-	int32_t wait_cnt = 0;
 
 	WIFI_INFO_FUNC("COMPAT fw_log_wifi_compact_ioctl cmd --> %d\n", cmd);
 
 	if (!filp->f_op || !filp->f_op->unlocked_ioctl)
 		return -ENOTTY;
 
-	while (wait_cnt < 2000) {
-		if (pfFwEventFuncCB)
-			break;
-		if (wait_cnt % 20 == 0)
-			WIFI_ERR_FUNC("Wi-Fi driver is not ready for 2s\n");
-		msleep(100);
-		wait_cnt++;
-	}
 	fw_log_wifi_unlocked_ioctl(filp, cmd, arg);
 
 	return ret;
