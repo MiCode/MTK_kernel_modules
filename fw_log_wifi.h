@@ -27,7 +27,7 @@ int fw_log_wifi_irq_handler(void);
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
 void fw_log_connsys_coredump_init(void);
 void fw_log_connsys_coredump_deinit(void);
-void fw_log_connsys_coredump_start(void);
+void fw_log_connsys_coredump_start(char *);
 int fw_log_reg_readable(void);
 #endif
 

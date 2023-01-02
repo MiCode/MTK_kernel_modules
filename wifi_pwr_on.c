@@ -148,7 +148,7 @@ struct task_struct *wland_thread;
 
 
 static int data;
-#define WIFI_PWR_ON_TIMEOUT 4000
+#define WIFI_PWR_ON_TIMEOUT 10000
 
 int mtk_wcn_wlan_func_ctrl(enum ENUM_WLAN_OPID opId)
 {
