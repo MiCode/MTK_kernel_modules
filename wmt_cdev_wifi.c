@@ -104,6 +104,7 @@ static int32_t isconcurrent;
 static char *ifname = WLAN_IFACE_NAME;
 static uint32_t driver_loaded;
 static int32_t low_latency_mode;
+static int32_t wifi_standalone_log_mode;
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 static uint8_t  driver_resetting;
 static uint8_t  write_processing;
@@ -175,6 +176,17 @@ uint32_t get_low_latency_mode(void)
 	return low_latency_mode;
 }
 EXPORT_SYMBOL(get_low_latency_mode);
+
+void set_wifi_standalone_log_mode(const int mode)
+{
+	wifi_standalone_log_mode = mode;
+}
+
+uint32_t get_wifi_standalone_log_mode(void)
+{
+	return wifi_standalone_log_mode;
+}
+EXPORT_SYMBOL(get_wifi_standalone_log_mode);
 
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 void update_driver_reset_status(uint8_t fgIsResetting)
@@ -680,6 +692,18 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 			} else {
 				retval = -ENOTSUPP;
 			}
+		} else if (!strncmp(local, "wifiSLog", 8)) {
+			if (!strncmp(local + 9, "1", 1)) {
+				WIFI_INFO_FUNC("local = %s, wifiSLog val = %s", local, local + 9);
+				set_wifi_standalone_log_mode(1);
+				retval = count;
+			} else if (!strncmp(local + 9, "0", 1)) {
+				WIFI_INFO_FUNC("local = %s, wifiSLog val = %s", local, local + 9);
+				set_wifi_standalone_log_mode(0);
+				retval = count;
+			} else {
+				retval = -ENOTSUPP;
+			}
 		}
 	}
 done:
@@ -704,6 +728,7 @@ static int WIFI_init(void)
 	int32_t cdev_err = 0;
 
 	low_latency_mode = 0;
+	wifi_standalone_log_mode = 0;
 
 	sema_init(&wr_mtx, 1);
 
