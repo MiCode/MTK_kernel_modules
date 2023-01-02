@@ -58,8 +58,7 @@ uint32_t DbgLevel = WIFI_FW_LOG_INFO;
 	} while (0)
 #define WIFI_ERR_FUNC(fmt, arg...)	\
 	do { \
-		if (DbgLevel >= WIFI_FW_LOG_ERR) \
-			pr_info(PFX "%s[E]: " fmt, __func__, ##arg); \
+		pr_info(PFX "%s[E]: " fmt, __func__, ##arg); \
 	} while (0)
 
 
