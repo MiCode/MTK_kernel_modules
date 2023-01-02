@@ -705,6 +705,10 @@ static int WIFI_init(void)
 
 	sema_init(&wr_mtx, 1);
 
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+	wifi_pwr_on_init();
+#endif
+
 	/* Allocate char device */
 	if (WIFI_major) {
 		wifi_devno = MKDEV(WIFI_major, 0);
@@ -744,9 +748,6 @@ static int WIFI_init(void)
 		WIFI_INFO_FUNC("connsys debug node init failed!!\n");
 		goto error;
 	}
-#endif
-#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
-	wifi_pwr_on_init();
 #endif
 	return 0;
 
