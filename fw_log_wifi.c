@@ -12,7 +12,7 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH
+#ifdef CFG_MTK_CONNSYS_DEDICATED_LOG_PATH
 
 #include <linux/init.h>
 #include <linux/module.h>
@@ -215,16 +215,17 @@ static long fw_log_wifi_unlocked_ioctl(struct file *filp, unsigned int cmd, unsi
 	return ret;
 }
 
-
-#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 int fw_log_wifi_irq_handler(void)
 {
+#if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
 	return connsys_log_irq_handler(CONN_DEBUG_TYPE_WIFI);
+#else
+	return 0;
+#endif
 }
 EXPORT_SYMBOL(fw_log_wifi_irq_handler);
 
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
-
 void fw_log_bug_hang_register(void *func)
 {
 	WIFI_INFO_FUNC("fw_log_bug_hang_register: %p\n", func);
@@ -274,7 +275,6 @@ void fw_log_connsys_coredump_start(unsigned int drv, char *reason)
 }
 EXPORT_SYMBOL(fw_log_connsys_coredump_start);
 #endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
-#endif /* CFG_ANDORID_CONNINFRA_SUPPORT */
 
 #ifdef CONFIG_COMPAT
 static long fw_log_wifi_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
