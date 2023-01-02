@@ -118,16 +118,20 @@ static ssize_t fw_log_wifi_read(struct file *filp, char __user *buf, size_t len,
 	size_t ret = 0;
 
 	WIFI_INFO_FUNC_LIMITED("fw_log_wifi_read len --> %d\n", (uint32_t) len);
+#if 0
 	ret = connsys_log_read_to_user(CONNLOG_TYPE_WIFI, buf, len);
+#endif
 	return ret;
 }
 
 static unsigned int fw_log_wifi_poll(struct file *filp, poll_table *wait)
 {
+#if 0
 	poll_wait(filp, &wq, wait);
+
 	if (connsys_log_get_buf_size(CONNLOG_TYPE_WIFI) > 0)
 		return POLLIN|POLLRDNORM;
-
+#endif
 	return 0;
 }
 
@@ -266,8 +270,10 @@ int fw_log_wifi_init(void)
 
 	/* integrated with common debug utility */
 	init_waitqueue_head(&wq);
+#if 0
 	connsys_log_init(CONNLOG_TYPE_WIFI);
 	connsys_log_register_event_cb(CONNLOG_TYPE_WIFI, fw_log_wifi_event_cb);
+#endif
 	sema_init(&ioctl_mtx, 1);
 	pfFwEventFuncCB = NULL;
 
@@ -295,7 +301,9 @@ int fw_log_wifi_deinit(void)
 	WIFI_INFO_FUNC("unregister_chrdev_region major %d\n", fw_log_wifi_major);
 
 	/* integrated with common debug utility */
+#if 0
 	connsys_log_deinit(CONNLOG_TYPE_WIFI);
+#endif
 	return 0;
 }
 EXPORT_SYMBOL(fw_log_wifi_deinit);
