@@ -336,6 +336,7 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 			if (mtk_wcn_wmt_func_on(WMTDRV_TYPE_WIFI) == MTK_WCN_BOOL_FALSE) {
 #endif
 				WIFI_ERR_FUNC("WMT turn on WIFI fail!\n");
+				powered = 0;
 				goto done;
 			} else {
 				WIFI_INFO_FUNC("WMT turn on WIFI success!\n");
