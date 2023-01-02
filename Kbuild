@@ -1,4 +1,12 @@
 ###############################################################################
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+TOP := $(srctree)/..
+endif
+
 # Necessary Check
 
 $(info [wlan] CONNAC_VER=$(CONNAC_VER))
@@ -30,7 +38,7 @@ else ifeq ($(CONNAC_VER), 2_0)
     ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
     ccflags-y += -DCFG_SUPPORT_CONNAC2X=1
 else
-    ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+    ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat
     ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/include
     ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
     ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=0
