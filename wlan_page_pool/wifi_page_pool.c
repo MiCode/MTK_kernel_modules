@@ -21,29 +21,41 @@
  *                              C O N S T A N T S
  *******************************************************************************
  */
-#define CFG_CMA_ALLOC 1
-#define RX_PAGE_POOL_SIZE (32768)
+#define RX_PAGE_POOL_MAX_SIZE		(32768)
 
 /*******************************************************************************
  *                             D A T A   T Y P E S
  *******************************************************************************
  */
+struct wifi_page_pool_context;
+
+struct wifi_page_pool_ops {
+	bool (*alloc_mem)(void);
+	void (*free_mem)(void);
+	void (*release_mem)(struct device *dev);
+};
+
 struct wifi_page_pool_context {
+	struct wifi_page_pool_ops ops;
+	struct device *dev;
 	struct page_pool *pool;
-#if CFG_CMA_ALLOC
-	struct page *cma_page;
-#else
 	struct kmem_cache *cache;
-#endif
+	uint32_t max_page_num;
+	bool is_cma_mem;
+	bool is_dynamic_alloc;
+	uint32_t page_num;
+	uint32_t size;
+	spinlock_t pool_lock;
+	spinlock_t page_lock;
 };
 
 /*******************************************************************************
  *                   F U N C T I O N   D E C L A R A T I O N S
  *******************************************************************************
  */
+static void update_page_pool_page_num(void);
 static int wifi_page_pool_probe(struct platform_device *pdev);
 static int wifi_page_pool_remove(struct platform_device *pdev);
-static int page_pool_setup(struct platform_device *pdev);
 static bool is_page_pool_empty(struct page_pool *pool);
 
 /*******************************************************************************
@@ -85,9 +97,44 @@ static struct wifi_page_pool_context pool_ctx;
  *                              F U N C T I O N S
  *******************************************************************************
  */
+void wifi_page_pool_set_page_num(uint32_t num)
+{
+	if (!pool_ctx.is_dynamic_alloc)
+		return;
+
+	if (num > pool_ctx.max_page_num)
+		num = pool_ctx.max_page_num;
+	pool_ctx.size = num;
+
+	update_page_pool_page_num();
+}
+EXPORT_SYMBOL(wifi_page_pool_set_page_num);
+
+uint32_t wifi_page_pool_get_page_num(void)
+{
+	return pool_ctx.page_num;
+}
+EXPORT_SYMBOL(wifi_page_pool_get_page_num);
+
+uint32_t wifi_page_pool_get_max_page_num(void)
+{
+	return pool_ctx.max_page_num;
+}
+EXPORT_SYMBOL(wifi_page_pool_get_max_page_num);
+
+static void set_page_num(uint32_t cnt)
+{
+	unsigned long flags = 0;
+
+	spin_lock_irqsave(&pool_ctx.page_lock, flags);
+	pool_ctx.page_num = cnt;
+	spin_unlock_irqrestore(&pool_ctx.page_lock, flags);
+}
+
 struct page *wifi_page_pool_alloc_page(void)
 {
-	struct page *page;
+	struct page *page = NULL;
+	unsigned long flags = 0;
 
 	if (!pool_ctx.pool)
 		return NULL;
@@ -95,15 +142,18 @@ struct page *wifi_page_pool_alloc_page(void)
 	if (is_page_pool_empty(pool_ctx.pool))
 		return NULL;
 
+	spin_lock_irqsave(&pool_ctx.pool_lock, flags);
 	page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+	spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
 	if (!page) {
 		pr_info("%s: page alloc fail", __func__);
-		return NULL;
+		goto exit;
 	}
 
 	init_page_count(page);
 	page->pp = pool_ctx.pool;
 	page->pp_magic = PP_SIGNATURE;
+exit:
 
 	return page;
 }
@@ -117,45 +167,73 @@ static void put_page_pool(struct page_pool *pool, struct page *page)
 	page_pool_recycle_direct(pool, page);
 }
 
-#if CFG_CMA_ALLOC
-static bool alloc_page_pool_mem(struct device *dev, struct page_pool *pool)
+static void update_page_pool_page_num(void)
 {
-	uint32_t i;
-	struct page *page;
-	void *kaddr;
-	bool ret = true;
+	if (pool_ctx.size > pool_ctx.page_num)
+		pool_ctx.ops.alloc_mem();
+	else if (pool_ctx.size < pool_ctx.page_num)
+		pool_ctx.ops.free_mem();
+}
 
-	if (!dev->cma_area) {
+static bool alloc_page_pool_cma_mem(void)
+{
+	struct page *page, *pages;
+	void *kaddr;
+	uint32_t i, level, alloc_cnt = 0, req_cnt = 0;
+
+	if (!pool_ctx.dev || !pool_ctx.dev->cma_area) {
 		pr_info("%s: no cma_area", __func__);
 		return false;
 	}
-	pool_ctx.cma_page = cma_alloc(dev->cma_area, RX_PAGE_POOL_SIZE,
-				      get_order(SZ_4K), GFP_KERNEL);
-	if (!pool_ctx.cma_page) {
-		pr_info("%s: cma_page alloc fail", __func__);
-		return false;
-	}
 
-	kaddr = page_address(pool_ctx.cma_page);
-	for (i = 0; i < RX_PAGE_POOL_SIZE; i++) {
-		page = virt_to_page(kaddr);
-		if (!page) {
-			pr_info("%s: page is NULL", __func__);
+	if (pool_ctx.page_num >= pool_ctx.size)
+		return true;
+
+	req_cnt = pool_ctx.size - pool_ctx.page_num;
+	level = req_cnt;
+	while (req_cnt > alloc_cnt) {
+		while (level > (req_cnt - alloc_cnt))
+			level = level >> 1;
+
+		if (level == 0)
 			break;
-		}
-		put_page_pool(pool, page);
-		kaddr += SZ_4K;
-	}
-	pr_info("%s: alloc page num[%d]", __func__, i);
 
-	return ret;
+		pages = cma_alloc(pool_ctx.dev->cma_area, level,
+				  get_order(SZ_4K), GFP_KERNEL);
+		if (!pages) {
+			level = level >> 1;
+			continue;
+		}
+
+		kaddr = page_address(pages);
+		for (i = 0; i < level; i++) {
+			page = virt_to_page(kaddr);
+			if (!page) {
+				pr_info("%s: page is NULL", __func__);
+				break;
+			}
+			put_page_pool(pool_ctx.pool, page);
+			kaddr += SZ_4K;
+			alloc_cnt++;
+		}
+	}
+
+	set_page_num(pool_ctx.page_num + alloc_cnt);
+
+	pr_info("%s: page pool alloc[cur:%u req:%u alloc:%u]",
+		__func__, pool_ctx.page_num, req_cnt, alloc_cnt);
+
+	return true;
 }
-#else
-static bool alloc_page_pool_mem(struct device *dev, struct page_pool *pool)
+
+static bool alloc_page_pool_kernel_mem(void)
 {
-	uint32_t i;
-	void *addr;
 	struct page *page;
+	uint32_t i, alloc_cnt = 0, req_cnt = 0;
+	void *addr;
+
+	if (pool_ctx.cache)
+		goto alloc_page;
 
 	pool_ctx.cache = kmem_cache_create_usercopy(
 		"wlan_rx_skb_cache",
@@ -170,23 +248,137 @@ static bool alloc_page_pool_mem(struct device *dev, struct page_pool *pool)
 		return false;
 	}
 
-	for (i = 0; i < RX_PAGE_POOL_SIZE; i++) {
+alloc_page:
+	if (pool_ctx.page_num >= pool_ctx.size)
+		goto exit;
+
+
+	req_cnt = pool_ctx.size - pool_ctx.page_num;
+	for (i = 0; i < req_cnt; i++) {
 		addr = kmem_cache_alloc(pool_ctx.cache, GFP_KERNEL);
-		if (!addr) {
-			pr_info("%s: vir_addr is NULL", __func__);
+		if (!addr)
 			continue;
-		}
+
 		page = virt_to_page(addr);
 		if (!page) {
 			pr_info("%s: page is NULL", __func__);
+			kmem_cache_free(pool_ctx.cache, addr);
 			continue;
 		}
-		put_page_pool(pool, page);
+
+		put_page_pool(pool_ctx.pool, page);
+		alloc_cnt++;
 	}
 
+	set_page_num(pool_ctx.page_num + alloc_cnt);
+
+	pr_info("%s: page pool alloc[cur:%u req:%u alloc:%u]",
+		__func__, pool_ctx.page_num, req_cnt, alloc_cnt);
+
+exit:
 	return true;
 }
-#endif
+
+static void free_page_pool_cma_mem(void)
+{
+	struct page *page;
+	uint32_t i, release_cnt = 0, req_cnt = 0;
+	unsigned long flags = 0;
+
+	if (!pool_ctx.dev)
+		return;
+
+	if (pool_ctx.size >= pool_ctx.page_num)
+		return;
+
+	req_cnt = pool_ctx.page_num - pool_ctx.size;
+	for (i = 0; i < req_cnt; i++) {
+		if (!is_page_pool_empty(pool_ctx.pool)) {
+			spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+			spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+			if (!page) {
+				pr_info("%s: page alloc fail", __func__);
+				continue;
+			}
+			cma_release(pool_ctx.dev->cma_area, page, 1);
+			release_cnt++;
+		}
+	}
+
+	set_page_num(pool_ctx.page_num - release_cnt);
+
+	pr_info("%s: page pool release[cur:%u req:%u release:%u]",
+		__func__, pool_ctx.page_num, req_cnt, release_cnt);
+}
+
+static void free_page_pool_kernel_mem(void)
+{
+	struct page *page;
+	uint32_t i, release_cnt = 0, req_cnt = 0;
+	unsigned long flags = 0;
+
+	if (!pool_ctx.cache)
+		return;
+
+	if (pool_ctx.size >= pool_ctx.page_num)
+		return;
+
+	req_cnt = pool_ctx.page_num - pool_ctx.size;
+	for (i = 0; i < req_cnt; i++) {
+		if (!is_page_pool_empty(pool_ctx.pool)) {
+			spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+			spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+			if (!page) {
+				pr_info("%s: page alloc fail", __func__);
+				continue;
+			}
+			kmem_cache_free(pool_ctx.cache, page_to_virt(page));
+			release_cnt++;
+		}
+	}
+
+	set_page_num(pool_ctx.page_num - release_cnt);
+
+	pr_info("%s: page pool release[cur:%u req:%u release:%u]",
+		__func__, pool_ctx.page_num, req_cnt, release_cnt);
+}
+
+static void release_page_pool_cma_mem(struct device *dev)
+{
+	struct page *page;
+	unsigned long flags = 0;
+
+	if (!dev->cma_area)
+		return;
+
+	while (!is_page_pool_empty(pool_ctx.pool)) {
+		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+		cma_release(dev->cma_area, page, 1);
+	}
+}
+
+static void release_page_pool_kernel_mem(struct device *dev)
+{
+	struct page *page;
+	unsigned long flags = 0;
+
+	if (!pool_ctx.cache)
+		return;
+
+	while (!is_page_pool_empty(pool_ctx.pool)) {
+		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+		kmem_cache_free(pool_ctx.cache, page_to_virt(page));
+	}
+
+	kmem_cache_destroy(pool_ctx.cache);
+	pool_ctx.cache = NULL;
+}
 
 static bool is_page_pool_empty(struct page_pool *pool)
 {
@@ -199,7 +391,7 @@ static int create_page_pool(struct device *dev)
 
 	pp.max_len = PAGE_SIZE;
 	pp.flags = 0;
-	pp.pool_size = RX_PAGE_POOL_SIZE;
+	pp.pool_size = pool_ctx.max_page_num;
 	pp.nid = dev_to_node(dev);
 	pp.dev = dev;
 	pp.dma_dir = DMA_FROM_DEVICE;
@@ -213,7 +405,9 @@ static int create_page_pool(struct device *dev)
 		pool_ctx.pool = NULL;
 		return err;
 	}
-	alloc_page_pool_mem(dev, pool_ctx.pool);
+
+	update_page_pool_page_num();
+
 	return 0;
 }
 
@@ -222,55 +416,22 @@ static void release_page_pool(struct device *dev)
 	if (!pool_ctx.pool)
 		return;
 
-#if CFG_CMA_ALLOC
-	if (!pool_ctx.cma_page || !dev->cma_area)
-		return;
-
-	while (!is_page_pool_empty(pool_ctx.pool))
-		page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-
-	cma_release(dev->cma_area, pool_ctx.cma_page, RX_PAGE_POOL_SIZE);
-	pool_ctx.cma_page = NULL;
-#else
-	if (!pool_ctx.cache)
-		return;
-
-	while (!is_page_pool_empty(pool_ctx.pool)) {
-		struct page *page;
-
-		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-		kmem_cache_free(pool_ctx.cache, page_to_virt(page));
-	}
-
-	kmem_cache_destroy(pool_ctx.cache);
-	pool_ctx.cache = NULL;
-#endif
-
+	pool_ctx.ops.release_mem(dev);
 	page_pool_destroy(pool_ctx.pool);
 	pool_ctx.pool = NULL;
 }
 
-static int wifi_page_pool_probe(struct platform_device *pdev)
+static void wifi_page_pool_ops_init(struct device *dev)
 {
-	int ret = 0;
-
-	ret = page_pool_setup(pdev);
-	if (ret)
-		goto exit;
-
-	create_page_pool(&pdev->dev);
-
-exit:
-	pr_info("%s() done, ret: %d", __func__, ret);
-
-	return 0;
-}
-
-static int wifi_page_pool_remove(struct platform_device *pdev)
-{
-	release_page_pool(&pdev->dev);
-	platform_set_drvdata(pdev, NULL);
-	return 0;
+	if (pool_ctx.is_cma_mem) {
+		pool_ctx.ops.alloc_mem = alloc_page_pool_cma_mem;
+		pool_ctx.ops.free_mem = free_page_pool_cma_mem;
+		pool_ctx.ops.release_mem = release_page_pool_cma_mem;
+	} else {
+		pool_ctx.ops.alloc_mem = alloc_page_pool_kernel_mem;
+		pool_ctx.ops.free_mem = free_page_pool_kernel_mem;
+		pool_ctx.ops.release_mem = release_page_pool_kernel_mem;
+	}
 }
 
 static int page_pool_setup(struct platform_device *pdev)
@@ -278,6 +439,7 @@ static int page_pool_setup(struct platform_device *pdev)
 	int ret = 0;
 #ifdef CONFIG_OF
 	struct device_node *node = NULL;
+	uint32_t rsv_mem_size = 0, is_dynamic = 0;
 
 	node = pdev->dev.of_node;
 	if (!node) {
@@ -292,16 +454,60 @@ static int page_pool_setup(struct platform_device *pdev)
 	if (ret) {
 		pr_info("%s: of_reserved_mem_device_init failed(%d).",
 			__func__, ret);
-		goto exit;
 	}
+	pool_ctx.is_cma_mem = pdev->dev.cma_area ? true : false;
 
-	return ret;
+	ret = of_property_read_u32(node, "emi-size", &rsv_mem_size);
+	if (!ret)
+		pool_ctx.max_page_num = rsv_mem_size / PAGE_SIZE;
+	else
+		pool_ctx.max_page_num = RX_PAGE_POOL_MAX_SIZE;
+
+	ret = of_property_read_u32(node, "dynamic-alloc", &is_dynamic);
+	if (!ret && is_dynamic)
+		pool_ctx.is_dynamic_alloc = true;
+
+	if (!pool_ctx.is_dynamic_alloc)
+		pool_ctx.size = pool_ctx.max_page_num;
+
+	spin_lock_init(&pool_ctx.pool_lock);
+	spin_lock_init(&pool_ctx.page_lock);
+
+	pr_info("%s: reserved memory size[0x%08x] num[%u] cma[%u] dynamic[%u]",
+		__func__, rsv_mem_size, pool_ctx.max_page_num,
+		pool_ctx.is_cma_mem, pool_ctx.is_dynamic_alloc);
+	ret = 0;
 #else
 	pr_info("%s: kernel option CONFIG_OF not enabled.");
 #endif
+	pool_ctx.dev = &pdev->dev;
 
 exit:
 	return ret;
+}
+
+static int wifi_page_pool_probe(struct platform_device *pdev)
+{
+	int ret = 0;
+
+	ret = page_pool_setup(pdev);
+	if (ret)
+		goto exit;
+
+	wifi_page_pool_ops_init(&pdev->dev);
+	create_page_pool(&pdev->dev);
+
+exit:
+	pr_info("%s() done, ret: %d", __func__, ret);
+
+	return 0;
+}
+
+static int wifi_page_pool_remove(struct platform_device *pdev)
+{
+	release_page_pool(&pdev->dev);
+	platform_set_drvdata(pdev, NULL);
+	return 0;
 }
 
 static int __init wifi_page_pool_init(void)
