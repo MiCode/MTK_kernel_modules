@@ -122,12 +122,24 @@ uint32_t wifi_page_pool_get_max_page_num(void)
 }
 EXPORT_SYMBOL(wifi_page_pool_get_max_page_num);
 
-static void set_page_num(uint32_t cnt)
+static void inc_page_num(uint32_t cnt)
 {
 	unsigned long flags = 0;
 
 	spin_lock_irqsave(&pool_ctx.page_lock, flags);
-	pool_ctx.page_num = cnt;
+	pool_ctx.page_num += cnt;
+	spin_unlock_irqrestore(&pool_ctx.page_lock, flags);
+}
+
+static void dec_page_num(uint32_t cnt)
+{
+	unsigned long flags = 0;
+
+	spin_lock_irqsave(&pool_ctx.page_lock, flags);
+	if (pool_ctx.page_num < cnt)
+		pool_ctx.page_num = 0;
+	else
+		pool_ctx.page_num -= cnt;
 	spin_unlock_irqrestore(&pool_ctx.page_lock, flags);
 }
 
@@ -218,10 +230,7 @@ static bool alloc_page_pool_cma_mem(void)
 		}
 	}
 
-	set_page_num(pool_ctx.page_num + alloc_cnt);
-
-	pr_info("%s: page pool alloc[cur:%u req:%u alloc:%u]",
-		__func__, pool_ctx.page_num, req_cnt, alloc_cnt);
+	inc_page_num(alloc_cnt);
 
 	return true;
 }
@@ -270,10 +279,7 @@ alloc_page:
 		alloc_cnt++;
 	}
 
-	set_page_num(pool_ctx.page_num + alloc_cnt);
-
-	pr_info("%s: page pool alloc[cur:%u req:%u alloc:%u]",
-		__func__, pool_ctx.page_num, req_cnt, alloc_cnt);
+	inc_page_num(alloc_cnt);
 
 exit:
 	return true;
@@ -306,10 +312,7 @@ static void free_page_pool_cma_mem(void)
 		}
 	}
 
-	set_page_num(pool_ctx.page_num - release_cnt);
-
-	pr_info("%s: page pool release[cur:%u req:%u release:%u]",
-		__func__, pool_ctx.page_num, req_cnt, release_cnt);
+	dec_page_num(release_cnt);
 }
 
 static void free_page_pool_kernel_mem(void)
@@ -339,10 +342,7 @@ static void free_page_pool_kernel_mem(void)
 		}
 	}
 
-	set_page_num(pool_ctx.page_num - release_cnt);
-
-	pr_info("%s: page pool release[cur:%u req:%u release:%u]",
-		__func__, pool_ctx.page_num, req_cnt, release_cnt);
+	dec_page_num(release_cnt);
 }
 
 static void release_page_pool_cma_mem(struct device *dev)
