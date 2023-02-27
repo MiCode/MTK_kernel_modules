@@ -1,0 +1,15 @@
+obj-m := met.o
+
+ccflags-y += -I$(srctree)/include/
+
+met-y := default/met_main.o
+
+include $(MET_DEF_DIR)/met_api/met_backlight_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_emi_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_gpu_adv_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_gpu_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_ipi_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_mcupm_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_scmi_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_sspm_api/Kbuild
+include $(MET_DEF_DIR)/met_api/met_vcore_api/Kbuild
