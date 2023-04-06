@@ -15,6 +15,7 @@
 #include <linux/of_reserved_mem.h>
 #include <linux/of_address.h>
 #include <linux/of.h>
+#include <linux/hashtable.h>
 #include <net/page_pool.h>
 
 /*******************************************************************************
@@ -43,10 +44,12 @@ struct pp_pages {
 
 struct pp_mem_group {
 	struct list_head list;
+	uint64_t key;
 	uint32_t count;
 	void *kaddr;
 	uint32_t size;
 	bool in_used;
+	struct hlist_node node;
 };
 
 struct wifi_page_pool_context {
@@ -55,6 +58,8 @@ struct wifi_page_pool_context {
 	struct page_pool *pool;
 	struct kmem_cache *cache;
 	struct pp_mem_group groups[PAGE_POOL_GROUP_SIZE];
+	struct hlist_head groups_htbl[PAGE_POOL_GROUP_SIZE];
+	struct hlist_head free_group_list;
 	uint32_t total_groups_page_num;
 	uint32_t max_page_num;
 	bool is_cma_mem;
@@ -149,29 +154,67 @@ static void put_page_pool(struct page_pool *pool, struct page *page)
 static void init_mem_group(struct pp_mem_group *group)
 {
 	INIT_LIST_HEAD(&group->list);
+	group->key = 0;
 	group->in_used = false;
 	group->count = 0;
 	group->kaddr = NULL;
 	group->size = 0;
 }
 
-static struct pp_mem_group *get_unused_mem_group(void)
+static inline uint64_t addr2key(void *kaddr)
 {
-	int i;
+	return ((uint64_t)virt_to_phys(kaddr)) & ~(SZ_1M - 1);
+}
 
-	for (i = 0; i < PAGE_POOL_GROUP_SIZE; i++) {
-		if (!pool_ctx.groups[i].in_used)
-			break;
+static struct pp_mem_group *search_group(uint64_t key)
+{
+	struct pp_mem_group *group;
+
+	hash_for_each_possible_rcu(pool_ctx.groups_htbl,
+				   group, node, key) {
+		if (group->key == key)
+			return group;
 	}
-	if (i == PAGE_POOL_GROUP_SIZE)
+	return NULL;
+}
+
+static struct pp_mem_group *new_group(uint64_t key)
+{
+	struct pp_mem_group *group = search_group(key);
+
+	if (group) {
+		pr_info("%s: new group fail, key exist", __func__);
+		return NULL;
+	}
+
+	if (hlist_empty(&pool_ctx.free_group_list))
 		return NULL;
 
-	return &pool_ctx.groups[i];
+	group = hlist_entry(pool_ctx.free_group_list.first,
+			    struct pp_mem_group, node);
+	hlist_del(pool_ctx.free_group_list.first);
+	group->key = key;
+	hash_add_rcu(pool_ctx.groups_htbl, &group->node, key);
+
+	return group;
+}
+
+static bool del_group(uint64_t key)
+{
+	struct pp_mem_group *group = search_group(key);
+
+	if (group) {
+		hash_del_rcu(&group->node);
+		init_mem_group(group);
+		hlist_add_head(&group->node, &pool_ctx.free_group_list);
+	}
+
+	return group != NULL;
 }
 
 static struct pp_mem_group *alloc_mem_group(uint32_t page_cnt)
 {
-	struct pp_mem_group *group = get_unused_mem_group();
+	struct pp_mem_group *group;
 	struct page *page, *pages;
 	void *kaddr;
 	int i;
@@ -179,28 +222,31 @@ static struct pp_mem_group *alloc_mem_group(uint32_t page_cnt)
 	if (page_cnt == 0)
 		return NULL;
 
-	if (!group) {
-		pr_info("%s: no free mem group", __func__);
-		return NULL;
-	}
-
 	pages = cma_alloc(pool_ctx.dev->cma_area, page_cnt,
 			  get_order(SZ_1M), GFP_KERNEL);
 	if (!pages)
 		return NULL;
 
+	kaddr = page_address(pages);
+	group = new_group(addr2key(kaddr));
+	if (!group) {
+		pr_info("%s: no free mem group", __func__);
+		cma_release(pool_ctx.dev->cma_area, pages, page_cnt);
+		return NULL;
+	}
 	group->in_used = true;
-	group->kaddr = page_address(pages);
+	group->kaddr = kaddr;
 	group->size = SZ_4K * page_cnt;
 
-	kaddr = page_address(pages);
 	for (i = 0; i < page_cnt; i++) {
 		page = virt_to_page(kaddr);
-		if (!page) {
+		if (page) {
+			put_page_pool(pool_ctx.pool, page);
+		} else {
 			pr_info("%s: page is NULL", __func__);
-			continue;
+			/* Decrement the size to account for the missing page */
+			group->size -= SZ_4K;
 		}
-		put_page_pool(pool_ctx.pool, page);
 		kaddr += SZ_4K;
 	}
 
@@ -210,38 +256,32 @@ static struct pp_mem_group *alloc_mem_group(uint32_t page_cnt)
 static uint32_t alloc_page_from_mem_group(uint32_t req_cnt)
 {
 	struct pp_mem_group *group;
-	struct list_head *node;
+	struct hlist_node *cur;
+	struct list_head *list_node;
 	struct page *page;
-	int i, cnt = 0;
+	uint32_t cnt = 0;
+	int bkt = 0;
 
 	if (pool_ctx.total_groups_page_num == 0)
 		return 0;
 
-	for (i = 0; i < PAGE_POOL_GROUP_SIZE; i++) {
-		if (cnt >= req_cnt)
-			break;
+	hash_for_each_safe(pool_ctx.groups_htbl, bkt, cur, group, node) {
+		while (!list_empty(&group->list)) {
+			if (cnt >= req_cnt)
+				goto exit;
 
-		group = &pool_ctx.groups[i];
-		if (!group->in_used)
-			continue;
-
-		if (list_empty(&group->list))
-			continue;
-
-		while (cnt < req_cnt) {
-			if (list_empty(&group->list))
-				break;
-
-			node = group->list.next;
-			list_del(node);
-			group->count--;
-			page = virt_to_page((void *)node);
-			if (page)
+			list_node = group->list.next;
+			page = virt_to_page((void *)list_node);
+			if (page) {
 				put_page_pool(pool_ctx.pool, page);
-			cnt++;
+				cnt++;
+			}
+			list_del(list_node);
+			group->count--;
 		}
 	}
 
+exit:
 	if (cnt <= pool_ctx.total_groups_page_num)
 		pool_ctx.total_groups_page_num -= cnt;
 	else
@@ -259,10 +299,13 @@ static void free_mem_group_pages(struct pp_mem_group *group)
 		return;
 
 	pages = virt_to_page(group->kaddr);
-	cma_release(pool_ctx.dev->cma_area, pages, page_cnt);
-	pool_ctx.total_groups_page_num -= page_cnt;
-
-	init_mem_group(group);
+	if (del_group(group->key)) {
+		cma_release(pool_ctx.dev->cma_area, pages,
+			    PAGE_POOL_ALLOC_PAGE_CNT);
+		pool_ctx.total_groups_page_num -= page_cnt;
+	} else {
+		pr_info("%s: del group fail!", __func__);
+	}
 }
 
 static struct pp_mem_group *free_page_to_mem_group(struct page *page)
@@ -271,19 +314,9 @@ static struct pp_mem_group *free_page_to_mem_group(struct page *page)
 	struct pp_pages *pp_pages;
 	void *kaddr = page_to_virt(page);
 	uint32_t page_cnt;
-	int i;
 
-	for (i = 0; i < PAGE_POOL_GROUP_SIZE; i++) {
-		group = &pool_ctx.groups[i];
-
-		if (!group->in_used)
-			continue;
-
-		if ((kaddr >= group->kaddr) &&
-		    (kaddr < (group->kaddr + group->size)))
-			break;
-	}
-	if (i == PAGE_POOL_GROUP_SIZE) {
+	group = search_group(addr2key(kaddr));
+	if (group == NULL) {
 		pr_info("%s: can't find mem group", __func__);
 		return NULL;
 	}
@@ -323,27 +356,42 @@ static void dec_page_num(uint32_t cnt)
 
 struct page *wifi_page_pool_alloc_page(void)
 {
+	struct pp_mem_group *group;
 	struct page *page = NULL;
 	unsigned long flags = 0;
+	void *kaddr = NULL;
 
 	if (!pool_ctx.pool)
 		return NULL;
 
-	if (is_page_pool_empty(pool_ctx.pool))
-		return NULL;
-
 	spin_lock_irqsave(&pool_ctx.pool_lock, flags);
-	page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-	spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-	if (!page) {
-		pr_info("%s: page alloc fail", __func__);
-		goto exit;
+
+	while (!page) {
+		if (is_page_pool_empty(pool_ctx.pool))
+			goto exit;
+
+		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+		if (!page) {
+			pr_info("%s: page alloc fail", __func__);
+			goto exit;
+		}
+
+		kaddr = page_to_virt(page);
+		group = search_group(addr2key(kaddr));
+		if (!group) {
+			pr_info("%s: page group don't exist[0x%llx]",
+				__func__, (uint64_t)kaddr);
+			__free_page(page);
+			page = NULL;
+		}
 	}
 
 	init_page_count(page);
 	page->pp = pool_ctx.pool;
 	page->pp_magic = PP_SIGNATURE;
+
 exit:
+	spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
 
 	return page;
 }
@@ -373,21 +421,18 @@ static bool alloc_page_pool_cma_mem(void)
 
 	req_cnt = pool_ctx.size - pool_ctx.page_num;
 	while (req_cnt > alloc_cnt) {
-		if ((req_cnt - alloc_cnt) > pool_ctx.total_groups_page_num) {
-			group = alloc_mem_group(alloc_page_cnt);
-			if (!group) {
-				/* alloc all remaining pages */
-				alloc_cnt += alloc_page_from_mem_group(
-					pool_ctx.total_groups_page_num);
-				break;
-			}
+		if ((req_cnt - alloc_cnt) <= pool_ctx.total_groups_page_num)
+			break;
 
-			alloc_cnt += alloc_page_cnt;
-			continue;
-		}
+		group = alloc_mem_group(alloc_page_cnt);
+		if (!group)
+			break;
 
-		alloc_cnt += alloc_page_from_mem_group(req_cnt - alloc_cnt);
+		alloc_cnt += group->size / SZ_4K;
 	}
+
+	if (req_cnt > alloc_cnt)
+		alloc_cnt += alloc_page_from_mem_group(req_cnt - alloc_cnt);
 
 	inc_page_num(alloc_cnt);
 
@@ -634,8 +679,14 @@ static int page_pool_setup(struct platform_device *pdev)
 	spin_lock_init(&pool_ctx.pool_lock);
 	spin_lock_init(&pool_ctx.page_lock);
 
-	for (i = 0; i < PAGE_POOL_GROUP_SIZE; i++)
+	hash_init(pool_ctx.groups_htbl);
+	INIT_HLIST_HEAD(&pool_ctx.free_group_list);
+
+	for (i = 0; i < PAGE_POOL_GROUP_SIZE; i++) {
 		init_mem_group(&pool_ctx.groups[i]);
+		hlist_add_head(&pool_ctx.groups[i].node,
+			       &pool_ctx.free_group_list);
+	}
 
 	pr_info("%s: reserved memory size[0x%08x] num[%u] cma[%u] dynamic[%u]",
 		__func__, rsv_mem_size, pool_ctx.max_page_num,
