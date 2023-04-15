@@ -491,7 +491,7 @@ exit:
 
 static void free_page_pool_cma_mem(void)
 {
-	struct page *page;
+	struct page *page = NULL;
 	uint32_t i, release_cnt = 0, req_cnt = 0;
 	unsigned long flags = 0;
 
@@ -503,17 +503,17 @@ static void free_page_pool_cma_mem(void)
 
 	req_cnt = pool_ctx.page_num - pool_ctx.size;
 	for (i = 0; i < req_cnt; i++) {
-		if (!is_page_pool_empty(pool_ctx.pool)) {
-			spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		if (!is_page_pool_empty(pool_ctx.pool))
 			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-			spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-			if (!page) {
-				pr_info("%s: page alloc fail", __func__);
-				continue;
-			}
-			free_page_to_mem_group(page);
-			release_cnt++;
+		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+		if (!page) {
+			pr_info("%s: page alloc fail", __func__);
+			continue;
 		}
+		free_page_to_mem_group(page);
+		page = NULL;
+		release_cnt++;
 	}
 
 	dec_page_num(release_cnt);
@@ -521,7 +521,7 @@ static void free_page_pool_cma_mem(void)
 
 static void free_page_pool_kernel_mem(void)
 {
-	struct page *page;
+	struct page *page = NULL;
 	uint32_t i, release_cnt = 0, req_cnt = 0;
 	unsigned long flags = 0;
 
@@ -533,17 +533,17 @@ static void free_page_pool_kernel_mem(void)
 
 	req_cnt = pool_ctx.page_num - pool_ctx.size;
 	for (i = 0; i < req_cnt; i++) {
-		if (!is_page_pool_empty(pool_ctx.pool)) {
-			spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
+		if (!is_page_pool_empty(pool_ctx.pool))
 			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-			spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-			if (!page) {
-				pr_info("%s: page alloc fail", __func__);
-				continue;
-			}
-			kmem_cache_free(pool_ctx.cache, page_to_virt(page));
-			release_cnt++;
+		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
+		if (!page) {
+			pr_info("%s: page alloc fail", __func__);
+			continue;
 		}
+		kmem_cache_free(pool_ctx.cache, page_to_virt(page));
+		page = NULL;
+		release_cnt++;
 	}
 
 	dec_page_num(release_cnt);
@@ -551,35 +551,41 @@ static void free_page_pool_kernel_mem(void)
 
 static void release_page_pool_cma_mem(struct device *dev)
 {
-	struct page *page;
+	struct page *page = NULL;
 	unsigned long flags = 0;
 
 	if (!dev->cma_area)
 		return;
 
-	while (!is_page_pool_empty(pool_ctx.pool)) {
+	while (true) {
 		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
-		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+		if (!is_page_pool_empty(pool_ctx.pool))
+			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
 		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-		if (page)
-			free_page_to_mem_group(page);
+		if (!page)
+			break;
+		free_page_to_mem_group(page);
+		page = NULL;
 	}
 }
 
 static void release_page_pool_kernel_mem(struct device *dev)
 {
-	struct page *page;
+	struct page *page = NULL;
 	unsigned long flags = 0;
 
 	if (!pool_ctx.cache)
 		return;
 
-	while (!is_page_pool_empty(pool_ctx.pool)) {
+	while (true) {
 		spin_lock_irqsave(&pool_ctx.pool_lock, flags);
-		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
+		if (!is_page_pool_empty(pool_ctx.pool))
+			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
 		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-		if (page)
-			kmem_cache_free(pool_ctx.cache, page_to_virt(page));
+		if (!page)
+			break;
+		kmem_cache_free(pool_ctx.cache, page_to_virt(page));
+		page = NULL;
 	}
 
 	kmem_cache_destroy(pool_ctx.cache);
