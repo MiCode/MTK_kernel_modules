@@ -23,3 +23,4 @@
 | rubens-s-oss | Redmi K50  | Android S | MTK | [rubens-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rubens-s-oss) |
 | yunluo-s-oss | Redmi Pad  | Android S | MTK | [yunluo-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yunluo-s-oss) |
 | ruby-s-oss | Redmi Note12 Pro  | Android S | MTK | [ruby-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ruby-s-oss) |
+| daumier-s-oss | Xiaomi 12 Pro  | Android S | MTK | [daumier-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/daumier-s-oss) |
