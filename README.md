@@ -24,3 +24,4 @@
 | yunluo-s-oss | Redmi Pad  | Android S | MTK | [yunluo-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yunluo-s-oss) |
 | ruby-s-oss | Redmi Note12 Pro  | Android S | MTK | [ruby-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ruby-s-oss) |
 | daumier-s-oss | Xiaomi 12 Pro  | Android S | MTK | [daumier-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/daumier-s-oss) |
+| bsp-rembrandt-s-oss | Redmi K60E  | Android S | MTK | [bsp-rembrandt-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-rembrandt-s-oss) |
