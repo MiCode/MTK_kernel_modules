@@ -19,6 +19,7 @@
 | pissarro-r-oss | Redmi Note 11 Pro, Redmi Note 11 Pro+ | Android R | MTK | [pissarro-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/pissarro-r-oss) |
 | rosemary-r-oss | Redmi Note 10S | Android R | MTK | [rosemary-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rosemary-r-oss) |
 | selene-r-oss | Redmi 10 Prime | Android R | MTK | [selene-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/selene-r-oss) |
+| sea-s-oss | Redmi Note 12S | Android T | MTK | [sea-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/sea-s-oss) |
 | xaga-s-oss | Redmi Note 11T Pro  | Android S | MTK | [xaga-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/xaga-s-oss) |
 | rubens-s-oss | Redmi K50  | Android S | MTK | [rubens-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rubens-s-oss) |
 | yunluo-s-oss | Redmi Pad  | Android S | MTK | [yunluo-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yunluo-s-oss) |
