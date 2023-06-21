@@ -28,3 +28,4 @@
 | ice-s-oss | Redmi POCO C50  | Android S | MTK | [ice-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ice-s-oss) |
 | bsp-rembrandt-s-oss | Redmi K60E  | Android S | MTK | [bsp-rembrandt-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-rembrandt-s-oss) |
 | bsp-plato-s-oss | Xiaomi 12T   | Android S | MTK | [bsp-plato-s-oss](https://github.com/MiCode/MTK_kernel_modules/commit/65783d7af5076ef3ea135bf83cdcd587469846a0) |
+| selene-r-oss-update | Redmi 10 Prime | Android R | alps-mp-r0.mp1.tc8sp2-V2.66.1 | [selene-r-oss-update](https://github.com/MiCode/MTK_kernel_modules/tree/selene-r-oss-update) |
