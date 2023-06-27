@@ -85,7 +85,7 @@ static struct class *wmtwifi_class;
 static struct device *wmtwifi_dev;
 #endif
 
-static struct semaphore wr_mtx;
+static struct mutex wr_mtx;
 
 #define WLAN_IFACE_NAME "wlan0"
 
@@ -224,14 +224,14 @@ EXPORT_SYMBOL(get_pre_cal_status);
 int32_t update_wr_mtx_down_up_status(uint8_t ucDownUp, uint8_t ucIsBlocking)
 {
 	if (ucDownUp == 0) {
-		WIFI_INFO_FUNC("Try to down wr_mtx\n");
+		WIFI_INFO_FUNC("Try to lock wr_mtx\n");
 		if (ucIsBlocking == 1)
-			down(&wr_mtx);
+			mutex_lock(&wr_mtx);
 		else if (ucIsBlocking == 0)
-			return down_trylock(&wr_mtx);
+			return mutex_trylock(&wr_mtx);
 	} else if (ucDownUp == 1) {
-		up(&wr_mtx);
-		WIFI_INFO_FUNC("Up wr_mtx\n");
+		mutex_unlock(&wr_mtx);
+		WIFI_INFO_FUNC("Unlock wr_mtx\n");
 	}
 
 	return 0;
@@ -276,7 +276,7 @@ int32_t wifi_reset_start(void)
 	struct net_device *netdev = NULL;
 	struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode;
 
-	down(&wr_mtx);
+	mutex_lock(&wr_mtx);
 
 	if (powered == 1) {
 		netdev = dev_get_by_name(&init_net, ifname);
@@ -318,7 +318,7 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 	if (status == RESET_FAIL) {
 		/* whole chip reset fail, donot recover WIFI */
 		ret = 0;
-		up(&wr_mtx);
+		mutex_unlock(&wr_mtx);
 	} else if (status == RESET_SUCCESS) {
 		WIFI_WARN_FUNC("WIFI state recovering...\n");
 
@@ -387,7 +387,7 @@ done:
 			/* WIFI is off before whole chip reset, do nothing */
 			ret = 0;
 		}
-		up(&wr_mtx);
+		mutex_unlock(&wr_mtx);
 	}
 
 	return ret;
@@ -417,7 +417,7 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 	int32_t wait_cnt = 0;
 	uint32_t copy_size = 0;
 
-	down(&wr_mtx);
+	mutex_lock(&wr_mtx);
 	if (count <= 0) {
 		WIFI_ERR_FUNC("WIFI_write invalid param\n");
 		goto done;
@@ -774,7 +774,7 @@ done:
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
 	write_processing = 0;
 #endif
-	up(&wr_mtx);
+	mutex_unlock(&wr_mtx);
 	return retval;
 }
 
@@ -792,7 +792,7 @@ static int WIFI_init(void)
 	low_latency_mode = 0;
 	wifi_standalone_log_mode = 0;
 
-	sema_init(&wr_mtx, 1);
+	mutex_init(&wr_mtx);
 
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
 	wifi_pwr_on_init();
