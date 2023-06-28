@@ -23,6 +23,7 @@
 | xaga-s-oss | Redmi Note 11T Pro  | Android S | MTK | [xaga-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/xaga-s-oss) |
 | rubens-s-oss | Redmi K50  | Android S | MTK | [rubens-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rubens-s-oss) |
 | yunluo-s-oss | Redmi Pad  | Android S | MTK | [yunluo-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yunluo-s-oss) |
+| yuechu-t-oss | Xiaomi Civi3  | Android T | MTK | [yuechu-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yuechu-t-oss) |
 | ruby-s-oss | Redmi Note12 Pro  | Android S | MTK | [ruby-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ruby-s-oss) |
 | daumier-s-oss | Xiaomi 12 Pro  | Android S | MTK | [daumier-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/daumier-s-oss) |
 | ice-s-oss | Redmi POCO C50  | Android S | MTK | [ice-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/ice-s-oss) |
