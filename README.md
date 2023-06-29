@@ -31,3 +31,4 @@
 | bsp-rembrandt-s-oss | Redmi K60E  | Android S | MTK | [bsp-rembrandt-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-rembrandt-s-oss) |
 | bsp-plato-s-oss | Xiaomi 12T   | Android S | MTK | [bsp-plato-s-oss](https://github.com/MiCode/MTK_kernel_modules/commit/65783d7af5076ef3ea135bf83cdcd587469846a0) |
 | selene-r-oss-update | Redmi 10 Prime | Android R | alps-mp-r0.mp1.tc8sp2-V2.66.1 | [selene-r-oss-update](https://github.com/MiCode/MTK_kernel_modules/tree/selene-r-oss-update) |
+| viva-r-oss | Redmi Note 11 Pro | Android R | alps-mp-r0.mp8.tc8sp1-mt6781-V1.5.1_wingtech.xm.r0mp8.k6781v1.64_P60 | [viva-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/viva-r-oss) |
