@@ -15,6 +15,7 @@
 | dandelion-q-oss | Redmi 9C, Redmi POCO C3, Redmi 9A | Android Q | MTK | [dandelion-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/dandelion-q-oss) |
 | earth-s-oss | Redmi 12C, POCO C55 | Android S | MTK | [earth-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/earth-s-oss) |
 | fire-t-oss | Redmi 12 | Android T | alps-mp-s0.mp1.tc8sp2-cs1-xm.V1.0.13_P53 | [fire-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/fire-t-oss) |
+| fleur-s-oss | Redmi Note 11S, POCO M4 Pro | Android S | alps-mp-r0.mp8.tc8sp3-mt6781-V1.5.1 | [fleur-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/fleur-s-oss) |
 | lancelot-q-oss | Redmi 10X 4G,Redmi 9,Redmi POCO M2 | Android Q | MTK | [lancelot-q-oss](https://github.com/MiCode/MTK_kernel_modules/tree/lancelot-q-oss) |
 | merlin-r-oss | Redmi 10X 4G, Redmi 9 and POCO M2 | Android R | MTK | [merlin-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/merlin-r-oss) |
 | pissarro-r-oss | Redmi Note 11 Pro, Redmi Note 11 Pro+ | Android R | MTK | [pissarro-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/pissarro-r-oss) |
