@@ -473,10 +473,10 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 				WIFI_ERR_FUNC("WMT turn off WIFI fail!\n");
 			} else {
 				WIFI_INFO_FUNC("WMT turn off WIFI success!\n");
-				powered = 0;
 				retval = count;
 				wlan_mode = WLAN_MODE_HALT;
 			}
+			powered = 0;
 		} else if (local[0] == '1') {
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
 			write_processing = 1;
