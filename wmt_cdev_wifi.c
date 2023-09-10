@@ -318,7 +318,8 @@ int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 	if (status == RESET_FAIL) {
 		/* whole chip reset fail, donot recover WIFI */
 		ret = 0;
-		mutex_unlock(&wr_mtx);
+		if (mutex_is_locked(&wr_mtx))
+			mutex_unlock(&wr_mtx);
 	} else if (status == RESET_SUCCESS) {
 		WIFI_WARN_FUNC("WIFI state recovering...\n");
 
@@ -387,7 +388,8 @@ done:
 			/* WIFI is off before whole chip reset, do nothing */
 			ret = 0;
 		}
-		mutex_unlock(&wr_mtx);
+		if (mutex_is_locked(&wr_mtx))
+			mutex_unlock(&wr_mtx);
 	}
 
 	return ret;
