@@ -371,10 +371,8 @@ struct page *wifi_page_pool_alloc_page(void)
 			goto exit;
 
 		page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
-		if (!page) {
-			pr_info("%s: page alloc fail", __func__);
+		if (!page)
 			goto exit;
-		}
 
 		kaddr = page_to_virt(page);
 		group = search_group(addr2key(kaddr));
@@ -507,10 +505,9 @@ static void free_page_pool_cma_mem(void)
 		if (!is_page_pool_empty(pool_ctx.pool))
 			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
 		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-		if (!page) {
-			pr_info("%s: page alloc fail", __func__);
+		if (!page)
 			continue;
-		}
+
 		free_page_to_mem_group(page);
 		page = NULL;
 		release_cnt++;
@@ -537,10 +534,9 @@ static void free_page_pool_kernel_mem(void)
 		if (!is_page_pool_empty(pool_ctx.pool))
 			page = page_pool_alloc_pages(pool_ctx.pool, GFP_KERNEL);
 		spin_unlock_irqrestore(&pool_ctx.pool_lock, flags);
-		if (!page) {
-			pr_info("%s: page alloc fail", __func__);
+		if (!page)
 			continue;
-		}
+
 		kmem_cache_free(pool_ctx.cache, page_to_virt(page));
 		page = NULL;
 		release_cnt++;
