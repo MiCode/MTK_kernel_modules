@@ -412,9 +412,7 @@ static int WIFI_close(struct inode *inode, struct file *file)
 
 static bool write_value_sanity_check(int8_t *local, size_t count)
 {
-	if ((local[0] == '0' || local[0] == '1' || local[0] == 'S' ||
-	    local[0] == 'P' || local[0] == 'A' || local[0] == 'C' ||
-	    local[0] == 'N' || local[0] == 'D' || local[0] == 'E') &&
+	if ((local[0] == '0' || local[0] == '1') &&
 	    count != 2)
 		return false;
 	return true;
