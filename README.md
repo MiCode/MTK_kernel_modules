@@ -35,3 +35,4 @@
 | viva-r-oss | Redmi Note 11 Pro | Android R | alps-mp-r0.mp8.tc8sp1-mt6781-V1.5.1_wingtech.xm.r0mp8.k6781v1.64_P60 | [viva-r-oss](https://github.com/MiCode/MTK_kernel_modules/tree/viva-r-oss) |
 | pearl-s-oss | Redmi Note 12T Pro | Android S | alps-mp-s0.mp1.tc8sp2-mt6983-V1.0.13_P189 | [pearl-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/pearl-s-oss) |
 | corot-t-oss | Redmi K60 Ultra | Android T | t-alps-release-t0.mp1.tc8sp2-V1.14 | [corot-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/corot-t-oss) |
+| bsp-aristotle-s-oss | Xiaomi 13T | Android T | alps-mp-s0.mp1.tc8sp2-mt6983-V1.0.1 | [bsp-aristotle-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-aristotle-s-oss) |
