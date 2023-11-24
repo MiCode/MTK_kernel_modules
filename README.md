@@ -37,3 +37,4 @@
 | corot-t-oss | Redmi K60 Ultra | Android T | t-alps-release-t0.mp1.tc8sp2-V1.14 | [corot-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/corot-t-oss) |
 | bsp-aristotle-s-oss | Xiaomi 13T | Android T | alps-mp-s0.mp1.tc8sp2-mt6983-V1.0.1 | [bsp-aristotle-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-aristotle-s-oss) |
 | zircon-t-oss | Redmi Note 13 Pro+ | Android T | t-alps-release-t0.mp1.tc8sp2-V1.14 | [zircon-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/zircon-t-oss) |
+| gold-s-oss | Redmi Note 13 5G | Android T | t-alps-release-s0.mp1.tc8sp-cs2-V1 | [gold-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/gold-s-oss) |
