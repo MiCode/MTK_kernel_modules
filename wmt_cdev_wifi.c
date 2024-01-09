@@ -106,9 +106,10 @@ static uint32_t driver_loaded;
 static int32_t low_latency_mode;
 static int32_t wifi_standalone_log_mode;
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
-static uint8_t  driver_resetting;
-static uint8_t  write_processing;
-static uint8_t  pre_cal_ongoing;
+static uint8_t driver_resetting;
+static uint8_t driver_l0_resetting;
+static uint8_t write_processing;
+static uint8_t pre_cal_ongoing;
 #endif
 /*******************************************************************
  */
@@ -219,6 +220,13 @@ uint8_t get_pre_cal_status(void)
 	return pre_cal_ongoing;
 }
 EXPORT_SYMBOL(get_pre_cal_status);
+
+void update_driver_l0_reset_status(uint8_t fgIsL0Resetting)
+{
+	WIFI_INFO_FUNC("update driver L0 reset status: %d\n", fgIsL0Resetting);
+	driver_l0_resetting = fgIsL0Resetting;
+}
+EXPORT_SYMBOL(update_driver_l0_reset_status);
 #endif
 
 int32_t update_wr_mtx_down_up_status(uint8_t ucDownUp, uint8_t ucIsBlocking)
@@ -433,8 +441,10 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
 		goto done;
 	}
 #if !IS_ENABLED(CFG_SUPPORT_CONNAC1X)
-	if (driver_resetting == 1) {
-		WIFI_ERR_FUNC("Wi-Fi is resetting\n");
+	if (driver_resetting == 1 || driver_l0_resetting == 1) {
+		WIFI_ERR_FUNC(
+			"Wi-Fi is resetting, reset flag:[%d,%d]\n",
+			driver_resetting, driver_l0_resetting);
 		goto done;
 	}
 #endif
