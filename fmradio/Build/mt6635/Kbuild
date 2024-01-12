@@ -1,0 +1,6 @@
+CFG_FM_PLAT := mt6635
+CFG_BUILD_CONNAC2 := false
+CFG_FM_CHIP_ID :=
+CFG_FM_CHIP := mt6635
+
+include $(srctree)/$(src)/../../Kbuild.include

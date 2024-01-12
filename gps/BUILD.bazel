@@ -1,0 +1,15 @@
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob([
+        "fw_log/**",
+        "gps_mcudl/**",
+    ]) + [
+        "fw_log_gps.c",
+    ],
+)

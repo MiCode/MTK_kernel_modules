@@ -1,0 +1,24 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "gps_drv_dl_v030",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/connectivity/gps:sources",
+        "//vendor/mediatek/kernel_modules/connectivity/gps/data_link:sources",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:headers",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+    ],
+)
