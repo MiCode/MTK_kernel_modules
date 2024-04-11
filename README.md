@@ -40,3 +40,5 @@
 | zircon-t-oss | Redmi Note 13 Pro+ | Android T | t-alps-release-t0.mp1.tc8sp2-V1.14 | [zircon-t-oss](https://github.com/MiCode/MTK_kernel_modules/tree/zircon-t-oss) |
 | gold-s-oss | Redmi Note 13 5G | Android T | t-alps-release-s0.mp1.tc8sp-cs2-V1 | [gold-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/gold-s-oss) |
 | bsp-duchamp-u-oss | Redmi K70E | Android U | t-alps-release-u0.mp1.tc8sp1-V1 | [bsp-duchamp-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-duchamp-u-oss) |
+| blue-u-oss | POCO C61 / Redmi A3 | Android U | alps-mp-s0.mp1.tc8sp-cs3-V1_xiaomi.s0mp1.k65v1.64.bsp.k510_P18 | [blue-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/blue-u-oss) |
+
