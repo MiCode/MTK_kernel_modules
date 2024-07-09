@@ -1,0 +1,8 @@
+on boot
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7902_sdio_mt8195.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7961_pcie_mt8195.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7902_sdio_mt8188.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7961_pcie_mt8188.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7902_sdio_mt6789.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7961_pcie.ko
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7902_sdio.ko
