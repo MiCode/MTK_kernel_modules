@@ -42,4 +42,4 @@
 | bsp-duchamp-u-oss | Redmi K70E | Android U | t-alps-release-u0.mp1.tc8sp1-V1 | [bsp-duchamp-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-duchamp-u-oss) |
 | blue-u-oss | POCO C61 / Redmi A3 | Android U | alps-mp-s0.mp1.tc8sp-cs3-V1_xiaomi.s0mp1.k65v1.64.bsp.k510_P18 | [blue-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/blue-u-oss) |
 | moon-u-oss | POCO M6/Redmi 13 | Android U | t-alps-release-s0.mp1.tc8sp-cs3-V1.31 | [moon-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/moon-u-oss) |
-
+| bsp-rothko-u-oss | Redmi K70 Ultra | Android U |TAG:alps-mp-u0.mp1.tc8sp3-V1 | [bsp-rothko-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-rothko-u-oss) |
