@@ -1,0 +1,22 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "fpsgo_cus",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/*.o_shipped",
+        "**/.*.o.cmd_shipped",
+        "**/Kbuild",
+        "**/Makefile",
+    ]),
+    outs = [
+        "fpsgo.ko",
+    ],
+)

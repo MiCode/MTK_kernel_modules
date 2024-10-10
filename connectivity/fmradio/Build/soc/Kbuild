@@ -1,0 +1,6 @@
+CFG_FM_PLAT := soc
+CFG_BUILD_CONNAC2 := false
+CFG_FM_CHIP_ID :=
+CFG_FM_CHIP := mt6580
+
+include $(srctree)/$(src)/../../Kbuild.include

@@ -1,0 +1,24 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "include/**/*.h",
+    ]),
+)
+
+define_mgk_ko(
+    name = "connfem",
+    srcs = glob([
+        "*.c",
+        "**/*.h",
+        "Kbuild",
+        "Makefile",
+    ])
+)

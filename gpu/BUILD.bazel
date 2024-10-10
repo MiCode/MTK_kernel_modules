@@ -1,0 +1,54 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mt6878_outs = [
+    "mt6878/mali_avalon/mali-r44p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6878_r44.ko",
+    "mt6878/mali_avalon/mali-r44p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6878_r44.ko",
+    "mt6878/mali_avalon/mali-r44p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6878_r44.ko",
+    "mt6878/mali_avalon/mali-r44p1/drivers/gpu/arm/midgard/mali_kbase_mt6878_r44.ko",
+]
+
+mt6897_outs = [
+    "mt6897/mali_valhall/mali-r38p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6897.ko",
+    "mt6897/mali_valhall/mali-r38p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6897.ko",
+    "mt6897/mali_valhall/mali-r38p1/drivers/gpu/arm/midgard/mali_kbase_mt6897.ko",
+    "mt6897/mali_avalon/mali-r44p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6897_r44.ko",
+    "mt6897/mali_avalon/mali-r44p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6897_r44.ko",
+    "mt6897/mali_avalon/mali-r44p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6897_r44.ko",
+    "mt6897/mali_avalon/mali-r44p1/drivers/gpu/arm/midgard/mali_kbase_mt6897_r44.ko",
+]
+
+mt6985_outs = [
+    "mt6985/mali_valhall/mali-r38p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6985.ko",
+    "mt6985/mali_valhall/mali-r38p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6985.ko",
+    "mt6985/mali_valhall/mali-r38p1/drivers/gpu/arm/midgard/mali_kbase_mt6985.ko",
+    "mt6985/mali_avalon/mali-r44p0/drivers/base/arm/memory_group_manager/mali_mgm_mt6985_r44.ko",
+    "mt6985/mali_avalon/mali-r44p0/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6985_r44.ko",
+    "mt6985/mali_avalon/mali-r44p0/drivers/gpu/arm/midgard/mali_kbase_mt6985_r44.ko",
+]
+
+mt6989_outs = [
+    "mt6989/mali_avalon/mali-r44p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6989_r44.ko",
+    "mt6989/mali_avalon/mali-r44p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6989_r44.ko",
+    "mt6989/mali_avalon/mali-r44p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6989_r44.ko",
+    "mt6989/mali_avalon/mali-r44p1/drivers/gpu/arm/midgard/mali_kbase_mt6989_r44.ko",
+]
+
+define_mgk_ko(
+    name = "gpu",
+    srcs = glob(["**"]),
+    outs = (
+        mt6878_outs if glob(["mt6878/*"]) else []
+    ) + (
+        mt6897_outs if glob(["mt6897/*"]) else []
+    ) + (
+        mt6985_outs if glob(["mt6985/*"]) else []
+    ) + (
+        mt6989_outs if glob(["mt6989/*"]) else []
+    ),
+)
