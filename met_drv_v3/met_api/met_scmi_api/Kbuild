@@ -1,0 +1,14 @@
+ifneq (,$(filter $(CONFIG_MTK_MET),y m))
+ORIGIN_SRC := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+override src := $(ORIGIN_SRC)/../..
+
+include $(src)/Kbuild
+
+override src := $(ORIGIN_SRC)
+
+ifneq ("$(wildcard $(MET_ROOT_DIR)/../met_drv_secure_v3)","")
+	ccflags-y += -DMET_PLF_EXIST
+endif
+
+obj-$(CONFIG_MTK_MET) := met_scmi_api.o
+endif
