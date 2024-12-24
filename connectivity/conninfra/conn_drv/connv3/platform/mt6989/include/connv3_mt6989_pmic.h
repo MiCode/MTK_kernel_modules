@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (c) 2023 MediaTek Inc.
+ */
+
+#ifndef _PLATFORM_CONNV3_MT6989_PMIC_H_
+#define _PLATFORM_CONNV3_MT6989_PMIC_H_
+
+#define MT6373_RG_LDO_VANT18_RC10_OP_EN_ADDR        0x1c8d
+#define MT6373_RG_LDO_VANT18_RC10_OP_CFG_ADDR       0x1c90
+#define MT6373_RG_LDO_VANT18_RC10_OP_MODE_ADDR      0x1c93
+
+#endif /* _PLATFORM_CONNV3_MT6989_PMIC_H_ */
