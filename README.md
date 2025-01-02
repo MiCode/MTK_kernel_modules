@@ -47,3 +47,6 @@
 | gale-s-oss | Redmi 13C，POCO C65 | Android T | t-alps-release-s0.mp1.tc8sp-cs2-V1.31 |[gale-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/gale-s-oss) |
 | spark-s-oss | Redmi Pad SE 4G, Redmi Pad SE 8.7 4G | Android U | t-alps-release-s0.mp1.tc8sp-cs3-V1.43 |[spark-s-oss](https://github.com/MiCode/MTK_kernel_modules/tree/spark-s-oss) |
 | malachite-u-oss | Redmi Note 14 Pro | Android U | t-alps-release-u0.mp1.tc8sp3-V1 |[malachite-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/malachite-u-oss) |
+| beryl-u-oss | POCO M7 Pro 5G , Redmi Note 14 5G | Android U | t-alps-release-s0.mp1.tc8sp-cs3-V1.67 |[beryl-u-oss](https://github.com/MiCode/MTK_kernel_modules
+/tree/beryl-u-oss) |
+
