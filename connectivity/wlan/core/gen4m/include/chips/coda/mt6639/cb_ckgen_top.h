@@ -1,0 +1,210 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ */
+
+#ifndef __CB_CKGEN_TOP_REGS_H__
+#define __CB_CKGEN_TOP_REGS_H__
+
+#include "hal_common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define CB_CKGEN_TOP_BASE \
+	0x70000000
+
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR \
+	(CB_CKGEN_TOP_BASE + 0x240)
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_ADDR \
+	(CB_CKGEN_TOP_BASE + 0x244)
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR \
+	(CB_CKGEN_TOP_BASE + 0x248)
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR \
+	(CB_CKGEN_TOP_BASE + 0x24C)
+
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_cr_ulposc_osc_sel_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_cr_ulposc_osc_sel_MASK \
+	0x80000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_cr_ulposc_osc_sel_SHFT \
+	31
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_rst_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_rst_MASK \
+	0x10000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_rst_SHFT \
+	28
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_en_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_en_MASK \
+	0x01000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_da_osc_en_SHFT \
+	24
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_cali_value_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_cali_value_MASK \
+	0x007F0000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_cali_value_SHFT \
+	16
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv2_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv2_MASK \
+	0x0000FF00
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv2_SHFT \
+	8
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv1_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_0_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv1_MASK \
+	0x000000FF
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_0_rg_osc_rsv1_SHFT \
+	0
+
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_mux_sel_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_1_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_mux_sel_MASK \
+	0xF0000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_mux_sel_SHFT \
+	28
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_ckgen_tri_cal_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_1_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_ckgen_tri_cal_MASK \
+	0x01000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_ckgen_tri_cal_SHFT \
+	24
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_abist_meter_sw_en_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_1_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_abist_meter_sw_en_MASK \
+	0x00100000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_abist_meter_sw_en_SHFT \
+	20
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_freq_offset_value_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_1_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_freq_offset_value_MASK \
+	0x000F0000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_1_rg_freq_offset_value_SHFT \
+	16
+
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ulposc_ready_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ulposc_ready_MASK \
+	0x80000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ulposc_ready_SHFT \
+	31
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_kdone_OSC_CALI_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_kdone_OSC_CALI_MASK \
+	0x7F000000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_kdone_OSC_CALI_SHFT \
+	24
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_valid_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_valid_MASK \
+	0x00100000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_valid_SHFT \
+	20
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_ok_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_ok_MASK \
+	0x00010000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_ok_SHFT \
+	16
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_cnt_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_2_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_cnt_MASK \
+	0x0000FFFF
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_2_ckgen_cal_cnt_SHFT \
+	0
+
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_req_MASK \
+	0x00400000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_req_SHFT \
+	22
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_req_MASK \
+	0x00200000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_req_SHFT \
+	21
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_req_MASK \
+	0x00100000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_req_SHFT \
+	20
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_req_MASK \
+	0x00080000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_req_SHFT \
+	19
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_req_MASK \
+	0x00040000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_req_SHFT \
+	18
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_req_MASK \
+	0x00020000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_req_SHFT \
+	17
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_req_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_req_MASK \
+	0x00010000
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_req_SHFT \
+	16
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_rdy_MASK \
+	0x00000040
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_156M_rdy_SHFT \
+	6
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_rdy_MASK \
+	0x00000020
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_52M_rdy_SHFT \
+	5
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_rdy_MASK \
+	0x00000010
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_cbinfra_ulposc_26M_rdy_SHFT \
+	4
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_rdy_MASK \
+	0x00000008
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_156M_rdy_SHFT \
+	3
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_rdy_MASK \
+	0x00000004
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_connsys_ulposc_52M_rdy_SHFT \
+	2
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_rdy_MASK \
+	0x00000002
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_lvts_ulposc_26M_rdy_SHFT \
+	1
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_rdy_ADDR \
+	CB_CKGEN_TOP_CBTOP_ULPOSC_3_ADDR
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_rdy_MASK \
+	0x00000001
+#define CB_CKGEN_TOP_CBTOP_ULPOSC_3_topaon_ulposc_52M_rdy_SHFT \
+	0
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

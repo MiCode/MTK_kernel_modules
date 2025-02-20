@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+ccflags-y += \
+		 -I$(DEVICE_MODULES_PATH)/drivers/rpmsg/ \
+		 -I$(DEVICE_MODULES_PATH)/drivers/remoteproc/ \
+		 -I$(DEVICE_MODULES_PATH)/include/ \
+		 -I$(srctree)/drivers/rpmsg/ \
+		 -I$(srctree)/drivers/remoteproc/
+cam-isp8-ut-objs := mtk_cam_ut-cam.o \
+	       mtk_cam_ut-seninf.o \
+	       mtk_cam_ut.o \
+	       mtk_cam_ut-camsv.o \
+		   mtk_cam_ut-mraw.o
+
+obj-$(CONFIG_VIDEO_MTK_ISP_CAMSYS) += cam-isp8-ut.o

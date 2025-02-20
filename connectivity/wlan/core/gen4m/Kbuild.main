@@ -1,0 +1,3495 @@
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+TOP := $(srctree)/..
+endif
+KO_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+ccflags-y :=
+CFG_DIR ?= $(KO_CODE_PATH)/configs
+
+ifeq ($(CONFIG_MTK_PLATFORM),)
+    CONFIG_MTK_PLATFORM := mt$(WLAN_CHIP_ID)
+endif
+MTK_PLATFORM := $(subst $(quote),,$(CONFIG_MTK_PLATFORM))
+
+ifeq ($(CONFIG_WLAN_PLATFORM),)
+    CONFIG_WLAN_PLATFORM := mt$(WLAN_CHIP_ID)
+endif
+
+# WM RAM TYPE
+# WM_RAM - mobile | ce
+WM_RAM ?= mobile
+
+# ---------------------------------------------------
+# Kbuild option
+# ---------------------------------------------------
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF),)
+ifneq ($(src),)
+ifneq ($(srctree),)
+hif=pcie
+include $(srctree)/$(src)/Makefile.x86
+src:=$(srctree)/$(shell echo ${src})
+MTK_COMBO_CHIP=MT7961
+$(info Kbuild chip: $(MTK_COMBO_CHIP))
+$(info Kbuild hif : $(CONFIG_MTK_COMBO_WIFI_HIF))
+endif
+endif
+endif
+
+# ---------------------------------------------------
+# OS option
+# ---------------------------------------------------
+os=$(CONFIG_MTK_SUPPORT_OS)
+
+ifeq ($(os),)
+os=linux
+endif
+
+ccflags-y += -Wno-unused-value
+ccflags-y += -Wno-unused-result
+ccflags-y += -Wno-format
+ccflags-y += -Wno-parentheses
+
+ccflags-y += -Wno-unused-function
+
+ifeq ($(os), none)
+ccflags-y += -I/usr/include/
+ccflags-y += -DCFG_VIRTUAL_OS
+ccflags-y += -DCFG_REMIND_IMPLEMENT
+endif
+
+ifeq ($(CONFIG_SUPPORT_OPENWRT),y)
+ccflags-y += -DCONFIG_SUPPORT_OPENWRT
+endif
+
+ifndef TOP
+    TOP := $(srctree)/..
+endif
+$(info os option: $(os))
+
+# script for check the kernel version condition
+# example check kernel >= 5.4 : $(call kver_ge,5,4)
+ifeq ($(os), none)
+kver_ge = $(shell echo 1)
+else
+kver_ge = $(shell \
+echo check_ver | awk '{if($(VERSION) < $(1)) {print 0} else { \
+if($(VERSION) > $(1)) {print 1} else { \
+if($(PATCHLEVEL) < $(2)) {print 0} else {print 1} \
+}}}' \
+)
+endif
+
+# ---------------------------------------------------
+# ALPS Setting
+# ---------------------------------------------------
+ifneq ($(KERNEL_OUT),)
+    ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
+endif
+
+ifeq ($(KBUILD_MODPOST_FAIL_ON_WARNINGS),)
+    # Force build fail on modpost warning
+    KBUILD_MODPOST_FAIL_ON_WARNINGS=y
+endif
+
+DRIVER_BUILD_DATE=$(shell date +%Y%m%d%H%M%S)
+ccflags-y += -DDRIVER_BUILD_DATE='"$(DRIVER_BUILD_DATE)"'
+# ---------------------------------------------------
+# Compile Options
+# ---------------------------------------------------
+WLAN_CHIP_LIST:=-UMT6620 -UMT6628 -UMT5931 -UMT6630 -UMT6632 -UMT7663 -UCONNAC -USOC2_1X1 -USOC2_2X2 -UUT_TEST_MODE -UMT7915 -USOC3_0 -UMT7961 -USOC5_0 -USOC7_0 -UBELLWETHER -UMT6639 -UMT6653 -UMT6655 -UMT7990 -UMT7925 -UMT7935
+# '-D' and '-U' options are processed in the order they are given on the command line.
+# All '-imacros file' and '-include file' options are processed after all '-D' and '-U' options.
+ccflags-y += $(WLAN_CHIP_LIST)
+
+ifeq ($(MTK_COMBO_CHIP),)
+MTK_COMBO_CHIP = MT6632
+endif
+
+$(info $$WM_RAM is [${WM_RAM}])
+$(info $$MTK_PLATFORM is [${MTK_PLATFORM}])
+$(info $$CONFIG_WLAN_PLATFORM is [${CONFIG_WLAN_PLATFORM}])
+$(info $$WLAN_CHIP_ID is [${WLAN_CHIP_ID}])
+$(info $$MTK_COMBO_CHIP is [${MTK_COMBO_CHIP}])
+$(info $$WLAN_CONNAC3_DEV is [${WLAN_CONNAC3_DEV}])
+
+ifneq ($(CONFIG_MTK_EMI),)
+ccflags-y += -DCONFIG_WLAN_MTK_EMI=1
+endif
+
+ifneq ($(CONFIG_MEDIATEK_EMI),)
+ccflags-y += -DCONFIG_WLAN_MTK_EMI=1
+endif
+
+ifeq ($(WLAN_CHIP_ID),)
+WLAN_CHIP_ID=$(word 1, $(MTK_COMBO_CHIP))
+endif
+
+ccflags-y += -DCFG_SUPPORT_DEBUG_FS=0
+ccflags-y += -DCFG_SUPPORT_AGPS_ASSIST=0
+ifneq ($(CONFIG_BUILD_NONE_STA), y)
+ccflags-y += -DWLAN_INCLUDE_PROC
+ccflags-y += -DCFG_SUPPORT_TSF_USING_BOOTTIME=1
+ccflags-y += -DARP_MONITER_ENABLE=1
+ccflags-y += -DCFG_SUPPORT_PASSPOINT=1
+ccflags-y += -DCFG_HS20_DEBUG=1
+endif
+
+# Google ANU and ANT kernel-5.15 have many differences in cfg80211 API
+# So, we need configurations to distinguish between them
+# IMB use $(BRANCH)
+#	T: android13-5.15
+#	U: android14-5.15
+# DTV use CONFIG_MTK_KERNEL_ANDROID_14 to identify android14 Kernel-5.15
+# DTV use CONFIG_MTK_KERNEL_ANDROID_13 to identify android13 Kernel-5.15
+ifeq ($(BRANCH), android13-5.15)
+    CFG_KERNEL_AN13_515=1
+    CFG_KERNEL_AN14_515=0
+else ifeq ($(BRANCH), android14-5.15)
+    CFG_KERNEL_AN13_515=0
+    CFG_KERNEL_AN14_515=1
+else ifeq ($(CONFIG_MTK_KERNEL_ANDROID_13), y)
+    CFG_KERNEL_AN13_515=1
+    CFG_KERNEL_AN14_515=0
+else ifeq ($(CONFIG_MTK_KERNEL_ANDROID_14), y)
+    CFG_KERNEL_AN13_515=0
+    CFG_KERNEL_AN14_515=1
+else
+    CFG_KERNEL_AN13_515=0
+    CFG_KERNEL_AN14_515=0
+endif
+ccflags-y += -DCFG_KERNEL_AN13_515=$(CFG_KERNEL_AN13_515)
+ccflags-y += -DCFG_KERNEL_AN14_515=$(CFG_KERNEL_AN14_515)
+
+ccflags-y += -Werror $(call cc-disable-warning, unused-but-set-variable)
+ccflags-y += $(call cc-disable-warning, attribute-warning)
+ccflags-y += $(call cc-disable-warning, cast-function-type-strict)
+#ccflags-y:=$(filter-out -U$(WLAN_CHIP_ID),$(ccflags-y))
+#ccflags-y += -DLINUX -D$(WLAN_CHIP_ID)
+#workaround: also needed for none LINUX system
+# because some of common part code is surrounded with this flag
+ccflags-y += -DLINUX
+
+ifneq ($(filter MT6632,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT6632,$(ccflags-y))
+ccflags-y += -DMT6632
+endif
+
+ifneq ($(filter MT7668,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7668,$(ccflags-y))
+ccflags-y += -DMT7668
+endif
+
+ifneq ($(filter MT7663,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7663,$(ccflags-y))
+ccflags-y += -DMT7663
+endif
+
+ifneq ($(filter CONNAC,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UCONNAC,$(ccflags-y))
+ccflags-y += -DCONNAC
+CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+CONFIG_MTK_WIFI_APF_SUPPORT=y
+ifneq ($(filter 6765, $(WLAN_CHIP_ID)),)
+    CONFIG_RX_NAPI_THREADED=y
+endif
+endif
+
+ifneq ($(filter SOC2_1X1,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -USOC2_1X1,$(ccflags-y))
+ccflags-y += -DSOC2_1X1
+ccflags-y += -DCONFIG_MTK_WIFI_VHT80
+ifneq ($(filter 6835, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_WLAN_LK_FWDL_SUPPORT=1
+    ccflags-y += -DCFG_WLAN_ATF_SUPPORT=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=1
+else ifneq ($(filter 6855, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else ifneq ($(filter 6781, $(WLAN_CHIP_ID)),)
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+else ifneq ($(filter 6833, $(WLAN_CHIP_ID)),)
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+else
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+endif
+endif
+
+ifneq ($(filter SOC2_2X2,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -USOC2_2X2,$(ccflags-y))
+ccflags-y += -DSOC2_2X2
+ccflags-y += -DCONFIG_MTK_WIFI_VHT80
+ifneq ($(filter 6835, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=1
+else ifneq ($(filter 6855, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else ifneq ($(filter 6853, $(WLAN_CHIP_ID)),)
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+else
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+endif
+endif
+
+ifneq ($(findstring MT7915,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7915,$(ccflags-y))
+ccflags-y += -DMT7915
+CONFIG_MTK_WIFI_CONNAC2X=y
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_NUM_OF_WFDMA_RX_RING=5
+CONFIG_NUM_OF_WFDMA_TX_RING=1
+endif
+
+ifneq ($(findstring 3_0,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -USOC3_0,$(ccflags-y))
+ccflags-y += -DSOC3_0
+CONFIG_MTK_WIFI_CONNAC2X=y
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_NUM_OF_WFDMA_RX_RING=3
+CONFIG_NUM_OF_WFDMA_TX_RING=0
+CONFIG_MTK_WIFI_CONNINFRA_SUPPORT=y
+CONFIG_SUPPORT_PRE_ON_PHY_ACTION=y
+CONFIG_MTK_WIFI_CONNAC2X_2x2=y
+CONFIG_MTK_WIFI_DOWNLOAD_DYN_MEMORY_MAP=y
+CFG_WIFI_WORKAROUND_HWITS00012836_WTBL_SEARCH_FAIL=1
+CFG_WIFI_WORKAROUND_HWITS00010371_PMF_CIPHER_MISMATCH=1
+CONFIG_SUPPORT_FORCE_ALTX=y
+ccflags-y += -DCFG_POWER_ON_DOWNLOAD_EMI_ROM_PATCH=1
+ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+ccflags-y += -DCFG_MTK_WIFI_SW_WFDMA=1
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+ccflags-y += -DCONFIG_MTK_WIFI_HE80
+CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+CONFIG_MTK_WIFI_APF_SUPPORT=y
+ifeq ($(WLAN_CONNAC3_DEV), yes)
+CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_MLO_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_ML_RECONFIG=y
+CONFIG_MTK_WIFI_APS_SUPPORT=y
+CONFIG_MLD_LINK_MAX=2
+CONFIG_MTK_WIFI_6G_SUPPORT=y
+CONFIG_DBDC_MODE=1
+CONFIG_RX_SW_PROCESS_DBG=y
+endif
+endif
+
+ifneq ($(findstring MT7961,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7961,$(ccflags-y))
+ccflags-y += -DMT7961
+ccflags-y += -DCFG_SDIO_INTR_ENHANCE_FORMAT=2
+ccflags-y += -DCFG_SUPPORT_CMD_OVER_WFDMA=1
+# MT7961's max cmd tx resource = 3
+# so QM_CMD_RESERVED_THRESHOL must be less than 3
+ccflags-y += -DQM_CMD_RESERVED_THRESHOLD=1
+CONFIG_MTK_WIFI_CONNAC2X=y
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+# unless patch wifi 6G setting in kernel before kernel version 5.4,
+# it will build fail when enable wifi 6G flag
+ifeq ($(call kver_ge,5,4),1)
+CONFIG_MTK_WIFI_6G_SUPPORT=y
+else
+CONFIG_MTK_WIFI_6G_SUPPORT=n
+endif
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_NUM_OF_WFDMA_RX_RING=5
+CONFIG_NUM_OF_WFDMA_TX_RING=1
+CONFIG_SUPPORT_FORCE_ALTX=y
+CONFIG_MTK_WIFI_DBDC_6G=y
+CONFIG_SUPPORT_WIFI_DL_BT_PATCH=y
+CONFIG_SUPPORT_PCIE_ASPM=y
+CFG_SUPPORT_HOST_RX_WM_EVENT_FROM_PSE=y
+CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=y
+
+# AP KVR
+ifeq ($(CFG_MTK_AP_80211KVR_INTERFACE), y)
+    CONFIG_WIFI_SUPPORT_GET_NOISE=y
+    CFG_WIFI_SUPPORT_NOISE_HISTOGRAM=y
+    ccflags-y += -DCFG_AP_80211KVR_INTERFACE=1
+    ccflags-y += -DCFG_AP_80211K_SUPPORT=1
+    ccflags-y += -DCFG_AP_80211V_SUPPORT=1
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+CONFIG_TX_RSRC_WMM_ENHANCE=y
+endif
+ccflags-y += -DCFG_WIFI_FWDL_UMAC_RESERVE_SIZE_PARA=128
+CONFIG_MTK_DBDC_SW_FOR_P2P_LISTEN=n
+# Default disable feature notify country code to bt
+CONFIG_SUPPORT_BT_SKU=n
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+CFG_COALESCING_INTERRUPT=y
+endif
+# For MT7961, only PCIE & USB support
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+CONFIG_SUPPORT_DEBUG_SOP=y
+endif
+ifeq ($(CFG_WIFI_GET_MCS_INFO), y)
+	ccflags-y += -DCFG_WIFI_GET_MCS_INFO=1
+else
+	ccflags-y += -DCFG_WIFI_GET_MCS_INFO=0
+endif
+ifeq ($(CFG_GET_CNM_INFO_BC), y)
+    ccflags-y += -DCFG_GET_CNM_INFO_BC=1
+else
+    ccflags-y += -DCFG_GET_CNM_INFO_BC=0
+endif
+endif
+
+ifneq ($(filter 6873, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_ENABLE_HOST_BUS_TIMEOUT=1
+else
+    ccflags-y += -DCFG_ENABLE_HOST_BUS_TIMEOUT=0
+endif
+
+ifneq ($(findstring 5_0,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -USOC5_0,$(ccflags-y))
+ccflags-y += -DSOC5_0
+CONFIG_MTK_WIFI_CONNAC2X=y
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_NUM_OF_WFDMA_RX_RING=3
+CONFIG_NUM_OF_WFDMA_TX_RING=0
+CONFIG_MTK_WIFI_CONNINFRA_SUPPORT=y
+CONFIG_SUPPORT_PRE_ON_PHY_ACTION=y
+CONFIG_MTK_WIFI_CONNAC2X_2x2=y
+CONFIG_MTK_WIFI_DOWNLOAD_DYN_MEMORY_MAP=y
+ccflags-y += -DCFG_POWER_ON_DOWNLOAD_EMI_ROM_PATCH=1
+ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+ccflags-y += -DCFG_MTK_WIFI_SW_WFDMA=1
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+ccflags-y += -DCONFIG_MTK_WIFI_HE80
+CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+CONFIG_MTK_WIFI_APF_SUPPORT=y
+CONFIG_MTK_WIFI_FORCE_RECV_RX=y
+endif
+
+ifneq ($(findstring 7_0,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -USOC7_0,$(ccflags-y))
+ccflags-y += -DSOC7_0
+CONFIG_MTK_WIFI_CONNAC2X=y
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+ifneq ($(findstring rodin,$(CONFIG_BUILD_PRODUCT_NAME)),)
+    CONFIG_MTK_WIFI_6G_SUPPORT=n
+else
+    CONFIG_MTK_WIFI_6G_SUPPORT=y
+endif
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_STA_DIRECT_TEARDOWN=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_NUM_OF_WFDMA_RX_RING=2
+CONFIG_NUM_OF_WFDMA_TX_RING=0
+CONFIG_MTK_WIFI_CONNINFRA_SUPPORT=y
+CONFIG_SUPPORT_PRE_ON_PHY_ACTION=y
+CONFIG_MTK_WIFI_CONNAC2X_2x2=y
+CONFIG_MTK_WIFI_SUPPORT_STA_DFS_CHANNEL=y
+CONFIG_MTK_WIFI_DOWNLOAD_DYN_MEMORY_MAP=y
+CONFIG_MTK_WIFI_POWER_THROTTLING=y
+CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+CONFIG_MTK_WIFI_APF_SUPPORT=y
+CONFIG_MTK_WIFI_NAN=y
+CONFIG_P2P_UAPSD_SUPPORT=n
+CONFIG_MTK_WIFI_CONNFEM_SUPPORT=y
+CONFIG_MTK_WIFI_SUPPORT_TXPWR_ENV=y
+CONFIG_MTK_WIFI_SUPPORT_6G_PWR_MODE=y
+CONFIG_WIFI_RAM_HW_DETECT_REPORT_SUPPORT=y
+ifneq ($(filter 6983 6895 6879 6886, $(WLAN_CHIP_ID)),)
+    CONFIG_RX_NAPI_THREADED=n
+else
+    CONFIG_RX_NAPI_THREADED=y
+endif
+
+ifneq ($(filter 6983, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else ifneq ($(filter 6879, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else ifneq ($(filter 6895, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else ifneq ($(filter 6886, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=1
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=0
+else
+    ccflags-y += -DCFG_SUPPORT_MDDP_AOR=0
+    ccflags-y += -DCFG_SUPPORT_MDDP_SHM=1
+endif
+ifeq ($(WLAN_CONNAC3_DEV), yes)
+CONFIG_MTK_WIFI_TRX_DIRECT=y
+CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=y
+else
+    ifneq ($(filter 6983 6886, $(WLAN_CHIP_ID)),)
+        ccflags-y += -DCFG_WLAN_LK_FWDL_SUPPORT=1
+        ccflags-y += -DCFG_WLAN_ATF_SUPPORT=1
+    endif
+    ifneq ($(filter 6897 6878 6899, $(WLAN_CHIP_ID)),)
+        ccflags-y += -DCFG_WLAN_LK_FWDL_SUPPORT=1
+        ccflags-y += -DCFG_WLAN_ATF_SUPPORT=0
+    endif
+endif
+
+ifneq ($(filter 6899, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_STA_2G_BW=1
+    ccflags-y += -DCFG_SAP_2G_BW=1
+    ccflags-y += -DCFG_P2P_2G_BW=1
+endif
+
+ccflags-y += -DCFG_POWER_ON_DOWNLOAD_EMI_ROM_PATCH=1
+ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+ccflags-y += -DCFG_SUPPORT_BW160
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+ccflags-y += -DCONFIG_MTK_WIFI_HE160
+ccflags-y += -DCFG_SUPPORT_SET_IPV6_NETWORK=1
+endif
+
+ifneq ($(filter BELLWETHER,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UBELLWETHER,$(ccflags-y))
+ccflags-y += -DBELLWETHER
+CONFIG_MTK_MDDP_SUPPORT=
+CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH := n
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_MLO_SUPPORT=y
+CONFIG_MTK_WIFI_APS_SUPPORT=y
+CONFIG_MTK_WIFI_CONNAC3X=y
+CONFIG_NUM_OF_WFDMA_RX_RING=5
+CONFIG_NUM_OF_WFDMA_TX_RING=0
+CONFIG_RX_ZERO_COPY=y
+CONFIG_BCN_PROT=y
+ifeq ($(MTK_ANDROID_WMT), y)
+ifneq ($(CONFIG_PAGE_POOL),)
+CONFIG_RX_PAGE_POOL=y
+endif
+endif
+CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_STA_DIRECT_TEARDOWN=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_MTK_WIFI_BTWT_SUPPORT=y
+CONFIG_MTK_WIFI_RTWT_SUPPORT=n
+CONFIG_MTK_WIFI_11BE_ML_TWT_SUPPORT=y
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_ROM_CODE_DOWNLOAD=y
+CONFIG_MLD_LINK_MAX=2
+CONFIG_DBDC_MODE=1
+CONFIG_MTK_WIFI_6G_SUPPORT=y
+CONFIG_BAND_NUM=3
+CONFIG_SUPPORT_FORCE_ALTX=y
+CONFIG_MTK_WIFI_TRX_DIRECT=y
+CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=y
+ifeq ($(MTK_ANDROID_WMT), y)
+    ifeq ($(WLAN_CONNAC3_DEV), yes)
+        CONFIG_MTK_WIFI_PCIE_SUPPORT=y
+    endif
+endif
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+ccflags-y += -DCONFIG_MTK_WIFI_BW320
+ccflags-y += -DCFG_MLO_LINK_PLAN_MODE=1
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+endif
+
+ifneq ($(filter MT6639,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT6639,$(ccflags-y))
+ccflags-y += -DMT6639
+ifeq ($(MTK_ANDROID_WMT), y)
+    ifeq ($(CONFIG_ARCH_MEDIATEK),y)
+        CONFIG_MTK_WIFI_POWER_THROTTLING=y
+        CONFIG_MTK_WIFI_PCIE_SUPPORT=y
+        ifeq ($(call kver_ge,5,15),1)
+            ifneq ($(filter y m,$(CONFIG_PMIC_LBAT_SERVICE)),)
+                CONFIG_MTK_WIFI_SUPPORT_VOLT_INFO=y
+            endif
+        endif
+    endif
+    CONFIG_MTK_WIFI_SUPPORT_TXPWR_ENV=y
+    CONFIG_MTK_WIFI_SUPPORT_6G_PWR_MODE=y
+    CONFIG_MTK_WIFI_CONNFEM_SUPPORT=y
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+    CONFIG_SUPPORT_PCIE_GEN_SWITCH=n
+    ifneq ($(CONFIG_PAGE_POOL),)
+        CONFIG_RX_PAGE_POOL=y
+    endif
+    CONFIG_SNIFFER_RADIOTAP=y
+    CONFIG_DYNAMIC_RFB_ADJUSTMENT=y
+    CONFIG_MTK_WIFI_CONNV3_SUPPORT=y
+    CONFIG_MTK_WIFI_PCIE_MSI_SUPPORT=y
+    CONFIG_MTK_WIFI_PCIE_MSI_MASK_BY_MMIO_WRITE=y
+    CONFIG_MTK_WIFI_FW_LOG_EMI=y
+    CONFIG_MTK_WIFI_MET_LOG_EMI=y
+    ifeq ($(call kver_ge,5,15),1)
+        ifneq ($(filter y m,$(CONFIG_PMIC_LBAT_SERVICE)),)
+            CONFIG_MTK_WIFI_SUPPORT_VOLT_INFO=y
+        endif
+    endif
+    CONFIG_PERF_MON_FAST=y
+    CONFIG_WIFI_COREDUMP_SUPPORT=y
+    CONFIG_MTK_WIFI_AER_RESET=y
+    CONFIG_DRV_OWN_INT_MODE=y
+    CONFIG_PER_CPU_TX=y
+    CONFIG_SUPPORT_TX_FREE_SKB_WORK=y
+    CONFIG_TX_WORK_SUPPORT=y
+    CONFIG_RX_WORK_SUPPORT=y
+    CONFIG_SKB_ALLOC_WORK_SUPPORT=y
+    CONFIG_RX_NAPI_DELAY_SUPPORT=y
+    CONFIG_RETURN_WORK_SUPPORT=y
+    CONFIG_RX_NAPI_THREADED=y
+    CONFIG_SUPPORT_TX_FREE_MSDU_WORK=y
+    CONFIG_SUPPORT_HIF_REG_WORK=y
+    CONFIG_SUPPORT_STATS_ONE_CMD=y
+    CONFIG_SUPPORT_REG_STAT_FROM_EMI=y
+    CONFIG_WFDMA_AP_MSI_NUM=8
+    CONFIG_SUPPORT_WIFI_SW_EMI_RING=y
+    CONFIG_SUPPORT_WIFI_MISC_RSV_MEM=y
+    CONFIG_SUPPORT_WIFI_TX_MEM_SLIM=n
+    CONFIG_SUPPORT_WIFI_TX_CMA_MEM=n
+    CONFIG_SUPPORT_WIFI_WFDMA_TX_RING_BK_RS=y
+    CONFIG_SUPPORT_WIFI_MDDP_NO_MMIO_READ=y
+    CONFIG_SUPPORT_WIFI_MCIF_NO_MMIO_READ=y
+    CONFIG_SUPPORT_WIFI_DYNAMIC_PAGE_POOL=y
+    CONFIG_SUPPORT_WIFI_RX_PAGE_POOL_USE_CMA=y
+    CONFIG_SUPPORT_WIFI_SLEEP_COUNT=y
+    CONFIG_SUPPORT_WIFI_POWER_METRICS=y
+    CONFIG_MTK_WIFI_AER_L05_RESET=n
+    CONFIG_WIFI_RAM_HW_DETECT_REPORT_SUPPORT=y
+    CONFIG_SUPPORT_DISABLE_CMD_DDONE_INTR=y
+    ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+    ccflags-y += -DCFG_SUPPORT_SET_IPV6_NETWORK=1
+    ccflags-y += -DCFG_SUPPORT_TRX_LIMITED_CONFIG=1
+    ifeq ($(CONFIG_WLAN_PLATFORM),mt6985)
+        CONFIG_PRELOADER_PMIC_EN_PU=y
+    endif
+endif
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+    CONFIG_MTK_WIFI_NAN=y
+else
+    CONFIG_MTK_WIFI_NAN=n
+endif
+CONFIG_MTK_WIFI_TRX_DIRECT=y
+CONFIG_MTK_PRE_WIFI7=y
+CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=y
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+ccflags-y += -DCFG_SUPPORT_GLOBAL_AAD_NONCE
+ifeq ($(CONFIG_MTK_WIFI_MT6653_DEV), y)
+    ccflags-y += -DCFG_MAX_BSSID_NUM=6
+    ccflags-y += -DCFG_P2P_NUM=3
+    ccflags-y += -DCFG_REUSE_RSN_IE=1
+    CONFIG_SUPPORT_CONTROL_PORT_OVER_NL80211=y
+    CONFIG_MTK_PRE_WIFI7=n
+    CONFIG_IFACE_CONCURRENT_MODE=2
+    CONFIG_AP_EHT_DEFAULT_VALUE=1
+    CONFIG_MLD_AP_LINK_MAX=2
+    CONFIG_MTK_WIFI_SUPPORT_CCM=y
+    CONFIG_PCIE_MT6989=y
+    CONFIG_PCIE_GEN_SWITCH=n
+endif
+ccflags-y += -DCONFIG_MTK_WIFI_BW320
+ccflags-y += -DCFG_USB_RX_PADDING_CSO_LEN=12
+ccflags-y += -DCFG_WIFI_TX_FIXED_RATE_NO_VTA=1
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_HIF_NUM_OF_QM_RX_PKT_NUM=2048
+    ccflags-y += -DCFG_SFD_DYNAMIC_ADJUST_NETIF_TH
+endif
+# ===== project override =====
+ifeq ($(CONFIG_MTK_EAP), y)
+CONFIG_MTK_MDDP_SUPPORT=
+CONFIG_SUPPORT_WIFI_SW_EMI_RING=n
+CONFIG_SUPPORT_WIFI_WFDMA_TX_RING_BK_RS=n
+endif
+
+endif
+
+ifneq ($(filter MT6653,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT6653,$(ccflags-y))
+ccflags-y += -DMT6653
+CONFIG_NEW_HIF_DEV_REG_IF=y
+ifeq ($(MTK_ANDROID_WMT), y)
+    CONFIG_MTK_WIFI_POWER_THROTTLING=y
+    CONFIG_MTK_WIFI_ON_READ_BY_CFG_SPACE=y
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+    ifneq ($(CONFIG_PAGE_POOL),)
+        CONFIG_RX_PAGE_POOL=y
+    endif
+    CONFIG_SNIFFER_RADIOTAP=y
+    CONFIG_DYNAMIC_RFB_ADJUSTMENT=y
+    CONFIG_MTK_WIFI_PCIE_SUPPORT=y
+    ifeq ($(CONFIG_MTK_WIFI_PCIE_SUPPORT), y)
+        CONFIG_MTK_WIFI_PCIE_SR=y
+    endif
+    CONFIG_DRV_OWN_INT_MODE=y
+    CONFIG_SUPPORT_PCIE_GEN_SWITCH=n
+    CONFIG_MTK_WIFI_CONNV3_SUPPORT=y
+    CONFIG_MTK_WIFI_PCIE_MSI_SUPPORT=y
+    CONFIG_MTK_WIFI_PCIE_MSI_MASK_BY_MMIO_WRITE=y
+    CONFIG_MTK_WIFI_FW_LOG_EMI=y
+    CONFIG_MTK_WIFI_MET_LOG_EMI=y
+    ifeq ($(call kver_ge,5,15),1)
+        ifneq ($(filter y m,$(CONFIG_PMIC_LBAT_SERVICE)),)
+            CONFIG_MTK_WIFI_SUPPORT_VOLT_INFO=y
+        endif
+    endif
+    ifeq ($(CONFIG_MTK_MBRAINK_BRIDGE), m)
+        CONFIG_SUPPORT_MBRAIN=y
+    endif
+    ifeq ($(call kver_ge,6,6),1)
+        CONFIG_MTK_WIFI_PCIE_CONFIG_SPACE_ACCESS_DBG=y
+    endif
+    CONFIG_PERF_MON_FAST=y
+    CONFIG_WIFI_PLAT_SHUTDOWN_SUPPORT=y
+    CONFIG_WIFI_COREDUMP_SUPPORT=y
+    CONFIG_WIFI_SECURITY_COREDUMP=y
+    CONFIG_WIFI_COREDUMP_SKIP_BY_REQUEST=n
+    CONFIG_MTK_WIFI_AER_RESET=y
+    CONFIG_MTK_WIFI_DFD_DUMP_SUPPORT=y
+    CONFIG_PER_CPU_TX=y
+    CONFIG_SUPPORT_TX_FREE_SKB_WORK=y
+    CONFIG_TX_WORK_SUPPORT=y
+    CONFIG_RX_WORK_SUPPORT=y
+    CONFIG_SKB_ALLOC_WORK_SUPPORT=y
+    CONFIG_RX_NAPI_DELAY_SUPPORT=y
+    CONFIG_RETURN_WORK_SUPPORT=y
+    CONFIG_RX_NAPI_THREADED=y
+    CONFIG_HIF_RX_NAPI=y
+    CONFIG_SUPPORT_TX_FREE_MSDU_WORK=y
+    CONFIG_SUPPORT_TX_SKB_ORPHAN=y
+    CONFIG_SUPPORT_HIF_FIFO_TOKEN=y
+    CONFIG_DISABLE_HIF_TX_RESOURCE_CTRL=y
+    CONFIG_MTK_WIFI_AER_L05_RESET=n
+    CONFIG_WIFI_RAM_HW_DETECT_REPORT_SUPPORT=y
+    CONFIG_SUPPORT_DISABLE_CMD_DDONE_INTR=y
+    CONFIG_SUPPORT_HIF_REG_WORK=y
+    CONFIG_SUPPORT_WFDMA_RX_DELAY_INT=y
+    CONFIG_SUPPORT_WIFI_TX_MEM_SLIM=y
+    CONFIG_SUPPORT_WIFI_TX_CMA_MEM=n
+    CONFIG_SUPPORT_WIFI_TX_CMA_MEM_NON_CACHE=y
+    CONFIG_SUPPORT_WIFI_POWER_METRICS=y
+    CONFIG_SUPPORT_WIFI_ICCM=y
+    CONFIG_PCIE_GEN_SWITCH=y
+    CONFIG_SUPPORT_WIFI_SLEEP_COUNT=y
+    CONFIG_SUPPORT_WIFI_MISC_RSV_MEM=y
+    CONFIG_SUPPORT_WIFI_SW_EMI_RING=y
+    CONFIG_SUPPORT_MTK_WIFI_MBU=y
+    CONFIG_SUPPORT_STATS_ONE_CMD=y
+    CONFIG_SUPPORT_REG_STAT_FROM_EMI=y
+    CONFIG_SUPPORT_WIFI_MET_CONNAC3_V2=y
+    ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+    ccflags-y += -DCFG_SUPPORT_SET_IPV6_NETWORK=1
+    CONFIG_SUPPORT_PHY_ICS_V3=n
+    CONFIG_SUPPORT_PHY_ICS_V4=y
+    CONFIG_AP_EHT_DEFAULT_VALUE=1
+    CONFIG_MLD_AP_LINK_MAX=2
+    CONFIG_ADD_MDNS_WHITELIST=y
+    CONFIG_MTK_WIFI_SUPPORT_TXPWR_ENV=y
+    CONFIG_MTK_WIFI_SUPPORT_6G_PWR_MODE=y
+endif
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+    CONFIG_MTK_WIFI_NAN=y
+else
+    CONFIG_MTK_WIFI_NAN=n
+endif
+ifeq ($(CONFIG_MTK_WIFI_MT6653_DEV), y)
+    CONFIG_SUPPORT_MDDP_DYNAMIC_DISABLE=y
+    CONFIG_PCIE_GEN_SWITCH=n
+endif
+ccflags-y += -DCFG_AP_GO_DELAY_CARRIER_ON
+ccflags-y += -DCFG_MAX_BSSID_NUM=6
+ccflags-y += -DCFG_REUSE_RSN_IE=1
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+ccflags-y += -DCONFIG_MTK_WIFI_BW320
+ccflags-y += -DCFG_USB_RX_PADDING_CSO_LEN=12
+ccflags-y += -DCFG_WIFI_TX_FIXED_RATE_NO_VTA=1
+ccflags-y += -DCFG_DISABLE_TXTIMEOUT_SER=1
+ccflags-y += -DCFG_SINGLE_BAND_MLSR_56=1
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_HIF_NUM_OF_QM_RX_PKT_NUM=2048
+    ccflags-y += -DCFG_SFD_DYNAMIC_ADJUST_NETIF_TH
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI=0
+    ccflags-y += -DCFG_SUPPORT_RX_GRO=0
+endif
+
+ifeq ($(CONFIG_WIFI_LIBER_TRIBAND), y)
+    CONFIG_BAND_NUM=3
+    CONFIG_IFACE_CONCURRENT_MODE=2
+    CONFIG_MTK_WIFI_11BE_EMLSR=y
+    ccflags-y += -DCFG_P2P_NUM=3
+    ccflags-y += -DCFG_STA_NUM=3
+endif
+
+ifeq ($(filter 1 2 y,$(CONFIG_MTK_FPGA_PLATFORM)),)
+    CONFIG_SUPPORT_PRE_ON_PHY_ACTION=y
+    CONFIG_MTK_WIFI_CONNFEM_SUPPORT=y
+    ifneq ($(MTK_ANDROID_WMT), y)
+        ifeq ($(wildcard $(KO_CODE_PATH)/../connfem/include),)
+            $(warning Missing $(KO_CODE_PATH)/../connfem/include)
+            $(warning Use SKU1-1 default setting.)
+            $(warning To use another SKU or eFEM parts, please sync & build ConnFem according to Wiki)
+            CONFIG_MTK_WIFI_CONNFEM_DEFAULT=y
+        endif
+    endif
+endif
+
+# ===== project override =====
+ifeq ($(CONFIG_MTK_EAP), y)
+CONFIG_MTK_MDDP_SUPPORT=
+CONFIG_MTK_HOST_OFFLOAD_SUPPORT=n
+CONFIG_MTK_WIFI_PCIE_SR=n
+endif
+
+endif
+
+ifneq ($(filter MT6655,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT6655,$(ccflags-y))
+ccflags-y += -DMT6655
+ifeq ($(MTK_ANDROID_WMT), y)
+    CONFIG_MTK_WIFI_CONNFEM_SUPPORT=y
+    ifneq ($(CONFIG_PAGE_POOL),)
+        CONFIG_RX_PAGE_POOL=y
+    endif
+endif
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+    CONFIG_MTK_WIFI_NAN=y
+else
+    CONFIG_MTK_WIFI_NAN=n
+endif
+ifeq ($(MTK_ANDROID_WMT), y)
+    #CONFIG_MTK_WIFI_PCIE_SUPPORT=y
+    #CONFIG_MTK_WIFI_CONNV3_SUPPORT=y
+endif
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+CONFIG_MTK_WIFI_SUPPORT_DSP_FWDL=n
+ccflags-y += -DCONFIG_MTK_WIFI_HE160
+ccflags-y += -DCFG_USB_RX_PADDING_CSO_LEN=12
+endif
+
+ifneq ($(filter MT7990,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7990,$(ccflags-y))
+ccflags-y += -DMT7990
+CONFIG_MTK_MDDP_SUPPORT=
+CONFIG_MTK_WIFI_11AX_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_MLO_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_ML_RECONFIG=y
+CONFIG_MTK_WIFI_APS_SUPPORT=y
+CONFIG_MTK_WIFI_CONNAC3X=y
+CONFIG_NUM_OF_WFDMA_RX_RING=5
+CONFIG_NUM_OF_WFDMA_TX_RING=0
+CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_SUPPORT=y
+CONFIG_MTK_WIFI_TWT_STA_DIRECT_TEARDOWN=y
+CONFIG_MTK_WIFI_TWT_SMART_STA=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT=n
+CONFIG_MTK_WIFI_BTWT_SUPPORT=y
+CONFIG_MTK_WIFI_RTWT_SUPPORT=y
+CONFIG_MTK_WIFI_11BE_ML_TWT_SUPPORT=y
+CONFIG_MTK_TWT_STA_CNM=n
+CONFIG_MLD_LINK_MAX=3
+CONFIG_DBDC_MODE=1
+CONFIG_MTK_WIFI_6G_SUPPORT=y
+CONFIG_BAND_NUM=3
+CONFIG_SUPPORT_FORCE_ALTX=y
+ccflags-y += -DCONFIG_MTK_WIFI_BW320
+ccflags-y += -DCFG_MLO_LINK_PLAN_MODE=1
+CONFIG_MTK_WIFI_WFDMA_BK_RS=y
+CONFIG_BCN_PROT=y
+CONFIG_MTK_WIFI_SUPPORT_DSP_FWDL=n
+endif
+
+ifneq ($(filter MT7925,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7925,$(ccflags-y))
+ccflags-y += -DMT7925
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+    CONFIG_MTK_WIFI_NAN=y
+else
+    CONFIG_MTK_WIFI_NAN=n
+endif
+CONFIG_MTK_WIFI_TRX_DIRECT=y
+CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=y
+CONFIG_MTK_TWT_STA_CNM=y
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+CONFIG_MTK_WIFI_WFDMA_BK_RS=n
+ccflags-y += -DCFG_SUPPORT_BW160
+ccflags-y += -DCONFIG_MTK_WIFI_BW160
+ccflags-y += -DCONFIG_MTK_WIFI_EHT160
+ccflags-y += -DCFG_USB_RX_PADDING_CSO_LEN=12
+ccflags-y += -DCFG_WIFI_TX_FIXED_RATE_NO_VTA=1
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_HIF_NUM_OF_QM_RX_PKT_NUM=8192
+    ccflags-y += -DCFG_SFD_DYNAMIC_ADJUST_NETIF_TH
+endif
+ccflags-y += -DCFG_MLO_LINK_PLAN_MODE=1
+CONFIG_BCN_PROT=y
+endif
+
+ifneq ($(filter MT7935,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UMT7935,$(ccflags-y))
+ccflags-y += -DMT7935
+CONFIG_NEW_HIF_DEV_REG_IF=y
+ifeq ($(MTK_ANDROID_WMT), y)
+    CONFIG_MTK_WIFI_CONNFEM_SUPPORT=y
+    CONFIG_MTK_WIFI_POWER_THROTTLING=y
+    CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+    CONFIG_MTK_WIFI_APF_SUPPORT=y
+    ifneq ($(CONFIG_PAGE_POOL),)
+        CONFIG_RX_PAGE_POOL=y
+    endif
+    CONFIG_SNIFFER_RADIOTAP=y
+    CONFIG_DYNAMIC_RFB_ADJUSTMENT=y
+    CONFIG_MTK_WIFI_PCIE_SUPPORT=y
+    CONFIG_SUPPORT_PCIE_GEN_SWITCH=y
+    CONFIG_MTK_WIFI_CONNV3_SUPPORT=y
+    CONFIG_MTK_WIFI_PCIE_MSI_SUPPORT=y
+    CONFIG_MTK_WIFI_FW_LOG_EMI=y
+    CONFIG_MTK_WIFI_MET_LOG_EMI=y
+    ifeq ($(call kver_ge,5,15),1)
+        CONFIG_MTK_WIFI_SUPPORT_VOLT_INFO=y
+    endif
+    CONFIG_PERF_MON_FAST=y
+    CONFIG_WIFI_COREDUMP_SUPPORT=y
+    CONFIG_MTK_WIFI_AER_RESET=y
+    CONFIG_TX_WORK_SUPPORT=y
+    CONFIG_RX_WORK_SUPPORT=y
+    CONFIG_RX_NAPI_WORK_SUPPORT=y
+    CONFIG_SUPPORT_TX_FREE_MSDU_WORK=y
+    CONFIG_SUPPORT_HIF_REG_WORK=y
+    CONFIG_MTK_WIFI_AER_L05_RESET=n
+    ccflags-y += -DCFG_ROM_PATCH_NO_SEM_CTRL=1
+    ccflags-y += -DCFG_SUPPORT_SET_IPV6_NETWORK=1
+endif
+CONFIG_SUPPORT_DISABLE_CMD_DDONE_INTR=y
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+    CONFIG_MTK_WIFI_NAN=y
+else
+    CONFIG_MTK_WIFI_NAN=n
+endif
+ccflags-y += -DCFG_WIFI_SW_WTBL_SEARCH_FAIL=0
+ccflags-y += -DCFG_MLO_LINK_PLAN_MODE=1
+ccflags-y += -DCONFIG_MTK_WIFI_BW320
+ccflags-y += -DCFG_USB_RX_PADDING_CSO_LEN=12
+ccflags-y += -DCFG_WIFI_TX_FIXED_RATE_NO_VTA=1
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_HIF_NUM_OF_QM_RX_PKT_NUM=2048
+    ccflags-y += -DCFG_SFD_DYNAMIC_ADJUST_NETIF_TH
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI=0
+    ccflags-y += -DCFG_SUPPORT_RX_GRO=0
+endif
+ccflags-y += -DCFG_P2P_NUM=3
+ifeq ($(WLAN_CONNAC3_DEV), yes)
+ccflags-y += -DCFG_STA_NUM=3
+endif
+CONFIG_MTK_WIFI_SUPPORT_DSP_FWDL=n
+ifeq ($(filter 1 2 y,$(CONFIG_MTK_FPGA_PLATFORM)),)
+    CONFIG_SUPPORT_PRE_ON_PHY_ACTION=y
+endif
+endif
+
+# ===== Before is project setting =====
+include $(CFG_DIR)/defconfig
+ifneq ($(wildcard $(CFG_DIR)/${MTK_COMBO_CHIP}/defconfig),)
+    include $(CFG_DIR)/${MTK_COMBO_CHIP}/defconfig
+endif
+
+ifeq ($(WM_RAM),ce_sqc)
+    ccflags-y += -DCONFIG_WM_RAM_TYPE=1
+    ifneq ($(wildcard $(CFG_DIR)/${MTK_COMBO_CHIP}/ce_sqc/defconfig),)
+        include $(CFG_DIR)/${MTK_COMBO_CHIP}/ce_sqc/defconfig
+    endif
+else ifeq ($(WM_RAM),ce)
+    ccflags-y += -DCONFIG_WM_RAM_TYPE=1
+    ifneq ($(wildcard $(CFG_DIR)/${MTK_COMBO_CHIP}/ce/defconfig),)
+        include $(CFG_DIR)/${MTK_COMBO_CHIP}/ce/defconfig
+    endif
+else
+    ccflags-y += -DCONFIG_WM_RAM_TYPE=0
+    CONFIG_SUPPORT_SCAN_NO_AP_RECOVERY=y
+    CONFIG_SUPPORT_GET_LTE_SAFE_CHANNEL=y
+    ifneq ($(wildcard $(CFG_DIR)/${MTK_COMBO_CHIP}/mobile/defconfig),)
+        include $(CFG_DIR)/${MTK_COMBO_CHIP}/mobile/defconfig
+    endif
+endif
+
+# ===== Hif specified setting =====
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI=0
+    ccflags-y += -DCFG_SUPPORT_RX_GRO=0
+endif
+
+# ---------------------------------------------------
+# none_sta disable unused Configs
+# ---------------------------------------------------
+ifeq ($(CONFIG_BUILD_NONE_STA), y)
+CONFIG_MTK_WIFI_11BE_MLO_SUPPORT=n
+CONFIG_MTK_WIFI_TWT_SUPPORT=n
+ccflags-y += -DCFGDBG_DISABLE_ALL_LOG=1
+ccflags-y += -DCFG_SUPPORT_HE_ER=0
+endif
+# ===== Below will add compile flag based on project setting =====
+
+ifeq ($(CONFIG_NEW_HIF_DEV_REG_IF), y)
+    ccflags-y += -DCFG_NEW_HIF_DEV_REG_IF=1
+else
+    ccflags-y += -DCFG_NEW_HIF_DEV_REG_IF=0
+endif
+
+ifeq ($(CONFIG_ARCH_MEDIATEK), y)
+    ccflags-y += -DCFG_MTK_WIFI_PLAT_ALPS=1
+else ifeq ($(MTK_WIFI_PLAT_ALPS), y)
+    ccflags-y += -DCFG_MTK_WIFI_PLAT_ALPS=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_PLAT_ALPS=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_WFDMA_WB), y)
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_WB=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_WB=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_FORCE_RECV_RX), y)
+    ccflags-y += -DCFG_MTK_WIFI_FORCE_RECV_RX=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_FORCE_RECV_RX=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_WFDMA_TX_RING_BK_RS), y)
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_TX_RING_BK_RS=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_TX_RING_BK_RS=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_SW_EMI_RING), y)
+    ccflags-y += -DCFG_MTK_WIFI_SW_EMI_RING=1
+    ifeq ($(CONFIG_SUPPORT_MTK_WIFI_MBU), y)
+        ccflags-y += -DCFG_MTK_WIFI_MBU=1
+    else
+        ccflags-y += -DCFG_MTK_WIFI_MBU=0
+    endif
+else
+    ccflags-y += -DCFG_MTK_WIFI_SW_EMI_RING=0
+    ccflags-y += -DCFG_MTK_WIFI_MBU=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_MISC_RSV_MEM), y)
+    ccflags-y += -DCFG_MTK_WIFI_MISC_RSV_MEM=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_MISC_RSV_MEM=0
+endif
+
+
+ifeq ($(CONFIG_SUPPORT_WIFI_TX_MEM_SLIM), y)
+    ccflags-y += -DCFG_MTK_WIFI_TX_MEM_SLIM=1
+	ifeq ($(CONFIG_SUPPORT_WIFI_TX_CMA_MEM), y)
+	    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM=1
+	else
+	    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM=0
+	endif
+	ifeq ($(CONFIG_SUPPORT_WIFI_TX_CMA_MEM_NON_CACHE), y)
+	    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM_NON_CACHE=1
+	else
+	    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM_NON_CACHE=0
+	endif
+else
+    ccflags-y += -DCFG_MTK_WIFI_TX_MEM_SLIM=0
+    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM=0
+    ccflags-y += -DCFG_MTK_WIFI_TX_CMA_MEM_NON_CACHE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_HIF_REG_WORK), y)
+    ifeq ($(CONFIG_MTK_WIFI_CONNV3_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_HIF_REG_WORK=1
+    else
+        ccflags-y += -DCFG_SUPPORT_HIF_REG_WORK=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_HIF_REG_WORK=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_MCIF_NO_MMIO_READ), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_MCIF_NO_MMIO_READ=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_MCIF_NO_MMIO_READ=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_MDDP_NO_MMIO_READ), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_MDDP_NO_MMIO_READ=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_MDDP_NO_MMIO_READ=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_MDDP_DYNAMIC_DISABLE), y)
+    ccflags-y += -DCFG_SUPPORT_MDDP_DYNAMIC_DISABLE=1
+else
+    ccflags-y += -DCFG_SUPPORT_MDDP_DYNAMIC_DISABLE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WFDMA_RX_DELAY_INT), y)
+    ccflags-y += -DCFG_SUPPORT_WFDMA_RX_DELAY_INT=1
+else
+    ccflags-y += -DCFG_SUPPORT_WFDMA_RX_DELAY_INT=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TX_DATA_DELAY), y)
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+        ccflags-y += -DCFG_SUPPORT_TX_DATA_DELAY=1
+    else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
+        ccflags-y += -DCFG_SUPPORT_TX_DATA_DELAY=1
+    else
+        ccflags-y += -DCFG_SUPPORT_TX_DATA_DELAY=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_TX_DATA_DELAY=0
+endif
+
+ifeq ($(CONFIG_PCIE_GEN_SWITCH), y)
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+        ccflags-y += -DCFG_PCIE_GEN_SWITCH=1
+    else
+        ccflags-y += -DCFG_PCIE_GEN_SWITCH=0
+    endif
+else
+    ccflags-y += -DCFG_PCIE_GEN_SWITCH=0
+endif
+
+ifeq ($(CONFIG_PCIE_MT6989), y)
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+        ccflags-y += -DCFG_PCIE_MT6989=1
+    else
+        ccflags-y += -DCFG_PCIE_MT6989=0
+    endif
+else
+    ccflags-y += -DCFG_PCIE_MT6989=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_STATS_ONE_CMD), y)
+    ccflags-y += -DCFG_SUPPORT_STATS_ONE_CMD=1
+else
+    ccflags-y += -DCFG_SUPPORT_STATS_ONE_CMD=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_REG_STAT_FROM_EMI), y)
+    ccflags-y += -DCFG_SUPPORT_REG_STAT_FROM_EMI=1
+else
+    ccflags-y += -DCFG_SUPPORT_REG_STAT_FROM_EMI=0
+endif
+
+ifeq ($(CONFIG_DYNAMIC_DMASHDL_MAX_QUOTA), y)
+        ccflags-y += -DCFG_DYNAMIC_DMASHDL_MAX_QUOTA=1
+else
+        ccflags-y += -DCFG_DYNAMIC_DMASHDL_MAX_QUOTA=0
+endif
+
+ifeq ($(CONFIG_UPDATE_STATIC_DBDC_QUOTA), y)
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+        ccflags-y += -DCFG_UPDATE_STATIC_DBDC_QUOTA=1
+    else
+        ccflags-y += -DCFG_UPDATE_STATIC_DBDC_QUOTA=0
+    endif
+endif
+
+ifeq ($(CONFIG_TX_MGMT_BY_DATA_Q), n)
+        ccflags-y += -DCFG_TX_MGMT_BY_DATA_Q=0
+endif
+
+ifeq ($(CONFIG_TX_CUSTOMIZE_LTO), y)
+        ccflags-y += -DCFG_TX_CUSTOMIZE_LTO=1
+else
+        ccflags-y += -DCFG_TX_CUSTOMIZE_LTO=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_BMC_DISABLE_RETRY_RTS), y)
+        ccflags-y += -DCFG_BMC_DISABLE_RETRY_RTS=1
+else
+        ccflags-y += -DCFG_BMC_DISABLE_RETRY_RTS=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_TRX_DIRECT), y)
+    ifeq (,$(filter CFG_RX_DIRECT,$(PLATFORM_FLAGS)))
+        ccflags-y += -DCFG_RX_DIRECT=1
+    endif
+    ifeq (,$(filter CFG_TX_DIRECT,$(PLATFORM_FLAGS)))
+        ccflags-y += -DCFG_TX_DIRECT=1
+    endif
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+        ccflags-y += -DCFG_TX_DIRECT_VIA_HIF_THREAD=1
+    endif
+    ifneq ($(CONFIG_BUILD_NONE_STA), y)
+        ccflags-y += -DCFG_QM_ARP_MONITOR_MSG=1
+    endif
+endif
+
+ifeq ($(CONFIG_TX_WORK_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_TX_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_TX_WORK=0
+endif
+
+ifeq ($(CONFIG_PER_CPU_TX), y)
+    ccflags-y += -DCFG_SUPPORT_PER_CPU_TX=1
+else
+    ccflags-y += -DCFG_SUPPORT_PER_CPU_TX=0
+endif
+
+ifeq ($(CONFIG_RX_WORK_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_RX_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_RX_WORK=0
+endif
+
+ifeq ($(CONFIG_RETURN_WORK_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_RETURN_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_RETURN_WORK=0
+endif
+
+ifeq ($(CONFIG_SKB_ALLOC_WORK_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_SKB_ALLOC_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_SKB_ALLOC_WORK=0
+endif
+
+ifeq ($(CONFIG_RX_NAPI_WORK_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_WORK=0
+endif
+
+ifeq ($(CONFIG_RX_NAPI_DELAY_SUPPORT), y)
+    ccflags-y += -DCFG_NAPI_DELAY=1
+else
+    ccflags-y += -DCFG_NAPI_DELAY=0
+endif
+
+ifeq ($(CONFIG_RX_NAPI_THREADED), y)
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_THREADED=1
+else
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_THREADED=0
+endif
+
+ifeq ($(CONFIG_RX_NAPI_IN_RX_THREAD), y)
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_IN_RX_THREAD=1
+else
+    ccflags-y += -DCFG_SUPPORT_RX_NAPI_IN_RX_THREAD=0
+endif
+
+ifeq ($(CONFIG_HIF_RX_NAPI), y)
+    ccflags-y += -DCFG_SUPPORT_HIF_RX_NAPI=1
+else
+    ccflags-y += -DCFG_SUPPORT_HIF_RX_NAPI=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TX_FREE_MSDU_WORK), y)
+    ccflags-y += -DCFG_SUPPORT_TX_FREE_MSDU_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_TX_FREE_MSDU_WORK=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TX_SKB_ORPHAN), y)
+    ccflags-y += -DCFG_SUPPORT_TX_SKB_ORPHAN=1
+else
+    ccflags-y += -DCFG_SUPPORT_TX_SKB_ORPHAN=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TX_FREE_SKB_WORK), y)
+    ccflags-y += -DCFG_SUPPORT_TX_FREE_SKB_WORK=1
+else
+    ccflags-y += -DCFG_SUPPORT_TX_FREE_SKB_WORK=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_HIF_FIFO_TOKEN), y)
+    ccflags-y += -DCFG_SUPPORT_HIF_FIFO_TOKEN=1
+else
+    ccflags-y += -DCFG_SUPPORT_HIF_FIFO_TOKEN=0
+endif
+
+ifeq ($(CONFIG_DISABLE_HIF_TX_RESOURCE_CTRL), y)
+    ccflags-y += -DCFG_SUPPORT_HIF_TX_RESOURCE_CTRL=0
+else
+    ccflags-y += -DCFG_SUPPORT_HIF_TX_RESOURCE_CTRL=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_DISABLE_CMD_DDONE_INTR), y)
+    ccflags-y += -DCFG_SUPPORT_DISABLE_CMD_DDONE_INTR=1
+else
+    ccflags-y += -DCFG_SUPPORT_DISABLE_CMD_DDONE_INTR=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNAC2X), y)
+    ccflags-y += -DCFG_SUPPORT_CONNAC2X=1
+else
+    ccflags-y += -DCFG_SUPPORT_CONNAC2X=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNAC2X_2x2), y)
+    ccflags-y += -DCFG_SUPPORT_CONNAC2X_2x2=1
+else
+    ccflags-y += -DCFG_SUPPORT_CONNAC2X_2x2=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNAC3X), y)
+    ccflags-y += -DCFG_SUPPORT_CONNAC3X=1
+    ccflags-y += -DCFG_SUPPORT_DBDC_DOWNGRADE_BW=0
+    ifeq ($(CONFIG_MTK_WIFI_PMIC_QUERY), y)
+        ccflags-y += -DCFG_MTK_WIFI_PMIC_QUERY=1
+    endif
+    ccflags-y += -DCFG_DRIVER_INITIAL_RUNNING_MODE=5
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+        ifeq ($(CONFIG_MTK_WIFI_SUPPORT_UDS_FWDL), y)
+            ccflags-y += -DCFG_MTK_WIFI_SUPPORT_UDS_FWDL=1
+        endif
+    endif
+else
+    CONFIG_SUPPORT_DBDC_DOWNGRADE_NSS=y
+    ccflags-y += -DCFG_SUPPORT_CONNAC3X=0
+    ccflags-y += -DCFG_SUPPORT_DBDC_DOWNGRADE_BW=1
+    ccflags-y += -DCFG_DRIVER_INITIAL_RUNNING_MODE=5
+endif
+
+ifneq ($(CONFIG_MTK_WIFI_CONNAC3X), y)
+ifneq ($(CONFIG_MTK_WIFI_CONNAC2X), y)
+    CONFIG_MTK_WIFI_CONNAC1X=y
+endif
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNAC1X), y)
+    ccflags-y += -DCFG_SUPPORT_CONNAC1X=1
+else
+    ccflags-y += -DCFG_SUPPORT_CONNAC1X=0
+endif
+
+ifneq ($(CONFIG_MTK_WIFI_CONNAC3X_DS_VER),)
+    ccflags-y += -DCFG_CONNAC3X_DS_VER=$(CONFIG_MTK_WIFI_CONNAC3X_DS_VER)
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_UPSTREAM_TOOL), y)
+    ccflags-y += -DCFG_SUPPORT_UPSTREAM_TOOL=1
+else
+    ccflags-y += -DCFG_SUPPORT_UPSTREAM_TOOL=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_APGO_CROSS_BAND_CSA), y)
+    ccflags-y += -DCFG_SUPPORT_APGO_CROSS_BAND_CSA=1
+else
+    ccflags-y += -DCFG_SUPPORT_APGO_CROSS_BAND_CSA=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11AX_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_802_11AX=1
+else
+    ccflags-y += -DCFG_SUPPORT_802_11AX=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11AX_SUPPORT)_$(CONFIG_SUPPORT_UPDTAE_HE_BSS_COLOR_FROM_BEACON), y_y)
+    ccflags-y += -DCFG_SUPPORT_UPDATE_HE_BSS_COLOR_FROM_BEACON=1    # For BSS Color Update Issue
+else
+    ccflags-y += -DCFG_SUPPORT_UPDATE_HE_BSS_COLOR_FROM_BEACON=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_802_11BE=1
+else
+    ccflags-y += -DCFG_SUPPORT_802_11BE=0
+endif
+
+ifeq ($(CONFIG_MTK_PRE_WIFI7), y)
+    ccflags-y += -DCFG_SUPPORT_PRE_WIFI7
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_MLO_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_802_11BE_MLO=1
+	ifeq ($(CONFIG_SUPPORT_MLO_HYBRID), y)
+		CONFIG_MLD_LINK_MAX=3
+	endif
+
+    ifneq ($(CONFIG_MLD_LINK_MAX),)
+        ccflags-y += -DCFG_MLD_LINK_MAX=$(CONFIG_MLD_LINK_MAX)
+    endif
+    ifneq ($(CONFIG_MLD_AP_LINK_MAX),)
+        ccflags-y += -DCFG_MLD_AP_LINK_MAX=$(CONFIG_MLD_AP_LINK_MAX)
+    endif
+    ifneq ($(CONFIG_MLD_STA_LINK_MAX),)
+        ccflags-y += -DCFG_MLD_STA_LINK_MAX=$(CONFIG_MLD_STA_LINK_MAX)
+    endif
+    ifneq ($(CONFIG_MLD_P2P_LINK_MAX),)
+        ccflags-y += -DCFG_MLD_P2P_LINK_MAX=$(CONFIG_MLD_P2P_LINK_MAX)
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_11BE_ML_RECONFIG), y)
+        ccflags-y += -DCFG_SUPPORT_ML_RECONFIG=1
+    else
+        ccflags-y += -DCFG_SUPPORT_ML_RECONFIG=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_11BE_EMLSR), y)
+        ccflags-y += -DCFG_DEFAULT_ENABLE_EMLSR=1
+    else
+        ccflags-y += -DCFG_DEFAULT_ENABLE_EMLSR=0
+    endif
+    # Setup MLD info before auth/assoc only for STA
+    ifeq ($(CONFIG_MLD_INFO_PRESETUP), y)
+        ccflags-y += -DCFG_MLD_INFO_PRESETUP=1
+    else
+        ccflags-y += -DCFG_MLD_INFO_PRESETUP=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_11BE_EPCS), y)
+        ccflags-y += -DCFG_SUPPORT_802_11BE_EPCS=1
+    else
+        ccflags-y += -DCFG_SUPPORT_802_11BE_EPCS=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_11BE_T2LM), y)
+        ccflags-y += -DCFG_SUPPORT_802_11BE_T2LM=1
+    else
+        ccflags-y += -DCFG_SUPPORT_802_11BE_T2LM=0
+    endif
+    ifeq ($(CONFIG_SUPPORT_CONTROL_PORT_OVER_NL80211), y)
+        ccflags-y += -DCFG_SUPPORT_CONTROL_PORT_OVER_NL80211=1
+    else
+        ccflags-y += -DCFG_SUPPORT_CONTROL_PORT_OVER_NL80211=0
+    endif
+    ifneq ($(CONFIG_AP_EHT_DEFAULT_VALUE),)
+        ccflags-y += -DCFG_AP_EHT_DEFAULT_VALUE=$(CONFIG_AP_EHT_DEFAULT_VALUE)
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_802_11BE_MLO=0
+    ccflags-y += -DCFG_SUPPORT_ML_RECONFIG=0
+    ccflags-y += -DCFG_SUPPORT_802_11BE_EPCS=0
+    ccflags-y += -DCFG_SUPPORT_802_11BE_T2LM=0
+    ccflags-y += -DCFG_SUPPORT_CONTROL_PORT_OVER_NL80211=0
+endif
+
+ifeq ($(CONFIG_MLO_EMLSR_CONCURRENT_ENHANCEMENT), y)
+	ccflags-y += -DCFG_MLO_EMLSR_CONCURRENT_ENHANCEMENT=1
+endif
+
+ifeq ($(CONFIG_MLO_CONCURRENT_SINGLE_PHY), y)
+	ccflags-y += -DCFG_MLO_CONCURRENT_SINGLE_PHY=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_MLO_HYBRID), y)
+	ccflags-y += -DCFG_SUPPORT_MLO_HYBRID=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_BW320), y)
+    ccflags-y += -DCFG_SUPPORT_BW320=1
+endif
+
+ifeq ($(CONFIG_SINGLE_WTBL_GTK_REKEY), y)
+    ccflags-y += -DCFG_SINGLE_WTBL_GTK_REKEY=1
+else
+    ccflags-y += -DCFG_SINGLE_WTBL_GTK_REKEY=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_DUAL_WTBL_GTK_REKEY_OFFLOAD), y)
+    ccflags-y += -DCFG_SUPPORT_DUAL_WTBL_GTK_REKEY_OFFLOAD=1
+else
+    ccflags-y += -DCFG_SUPPORT_DUAL_WTBL_GTK_REKEY_OFFLOAD=0
+endif
+
+ifeq ($(CONFIG_REKEY_OFFLOAD), n)
+    ccflags-y += -DCFG_REKEY_OFFLOAD=0
+else
+    ccflags-y += -DCFG_REKEY_OFFLOAD=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_KERNEL_MAPPING_TXQ), y)
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -DCFG_KERNEL_MAPPING_TXQ=1
+else
+    ccflags-y += -DCFG_KERNEL_MAPPING_TXQ=0
+endif
+else
+    ccflags-y += -DCFG_KERNEL_MAPPING_TXQ=0
+endif
+
+ifeq ($(CONFIG_NON_QOS_ARP_USE_QOS_TXQ_MAPPING), y)
+    ccflags-y += -DCFG_NON_QOS_ARP_USE_QOS_TXQ_MAPPING=1
+else
+    ccflags-y += -DCFG_NON_QOS_ARP_USE_QOS_TXQ_MAPPING=0
+endif
+
+ifneq ($(CONFIG_DBDC_MODE),)
+    ccflags-y += -DCFG_DBDC_MODE=$(CONFIG_DBDC_MODE)
+endif
+
+ifneq ($(CONFIG_NSS),)
+    ccflags-y += -DCFG_NSS=$(CONFIG_NSS)
+endif
+
+ifneq ($(CONFIG_BAND_NUM),)
+    ccflags-y += -DCONFIG_BAND_NUM=$(CONFIG_BAND_NUM)
+else
+    ccflags-y += -DCONFIG_BAND_NUM=2
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11AX_SUPPORT), y)
+    ifeq ($(CONFIG_MTK_WIFI_6G_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_WIFI_6G=1
+        ifeq ($(CONFIG_MTK_WIFI_DBDC_6G), y)
+            ccflags-y += -DCFG_SUPPORT_WIFI_DBDC6G=1
+        else
+            ccflags-y += -DCFG_SUPPORT_WIFI_DBDC6G=0
+        endif
+    else
+        ccflags-y += -DCFG_SUPPORT_WIFI_6G=0
+        ccflags-y += -DCFG_SUPPORT_WIFI_DBDC6G=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_6G=0
+    ccflags-y += -DCFG_SUPPORT_WIFI_DBDC6G=0
+endif
+
+ifeq ($(CONFIG_BCN_PROT), y)
+    ccflags-y += -DCFG_SUPPORT_BCN_PROT=1
+else
+    ccflags-y += -DCFG_SUPPORT_BCN_PROT=0
+endif
+
+ifneq ($(CONFIG_SW_BIP_GMAC), n)
+    ccflags-y += -DCFG_SUPPORT_SW_BIP_GMAC=1
+else
+    ccflags-y += -DCFG_SUPPORT_SW_BIP_GMAC=0
+endif
+
+ifeq ($(CONFIG_MTK_DBDC_SW_FOR_P2P_LISTEN), y)
+    ccflags-y += -DCFG_DBDC_SW_FOR_P2P_LISTEN=1
+endif
+
+ifeq ($(CONFIG_P2P_UAPSD_SUPPORT), n)
+    ccflags-y += -DCFG_P2P_UAPSD_SUPPORT=0
+else
+    ccflags-y += -DCFG_P2P_UAPSD_SUPPORT=1
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_TWT_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_TWT=1
+    ifeq ($(CONFIG_MTK_WIFI_TWT_HOTSPOT_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT=1
+    else
+        ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_TWT_HOTSPOT_AC_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT_AC=1
+    else
+        ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT_AC=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_TWT_SMART_STA), y)
+        ccflags-y += -DCFG_TWT_SMART_STA=1
+    else
+        ccflags-y += -DCFG_TWT_SMART_STA=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_BTWT_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_BTWT=1
+    else
+        ccflags-y += -DCFG_SUPPORT_BTWT=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_RTWT_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_RTWT=1
+    else
+        ccflags-y += -DCFG_SUPPORT_RTWT=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_TWT_STA_DIRECT_TEARDOWN), y)
+        ccflags-y += -DCFG_TWT_STA_DIRECT_TEARDOWN=1
+    else
+        ccflags-y += -DCFG_TWT_STA_DIRECT_TEARDOWN=0
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_11BE_MLO_SUPPORT), y)
+        ifeq ($(CONFIG_MTK_WIFI_11BE_ML_TWT_SUPPORT), y)
+            ccflags-y += -DCFG_SUPPORT_802_11BE_ML_TWT=1
+        else
+            ccflags-y += -DCFG_SUPPORT_802_11BE_ML_TWT=0
+        endif
+    else
+        ccflags-y += -DCFG_SUPPORT_802_11BE_ML_TWT=0
+    endif
+    ifeq ($(CONFIG_MTK_TWT_STA_CNM), y)
+        ccflags-y += -DCFG_SUPPORT_TWT_STA_CNM=1
+    else
+        ccflags-y += -DCFG_SUPPORT_TWT_STA_CNM=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_TWT=0
+    ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT=0
+    ccflags-y += -DCFG_SUPPORT_TWT_HOTSPOT_AC=0
+    ccflags-y += -DCFG_TWT_SMART_STA=0
+    ccflags-y += -DCFG_SUPPORT_BTWT=0
+    ccflags-y += -DCFG_SUPPORT_802_11BE_ML_TWT=0
+    ccflags-y += -DCFG_SUPPORT_TWT_STA_CNM=0
+    ccflags-y += -DCFG_SUPPORT_RTWT=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_SCAN_NO_AP_RECOVERY), y)
+    ccflags-y += -DCFG_SCAN_NO_AP_RECOVERY=1
+else
+    ccflags-y += -DCFG_SCAN_NO_AP_RECOVERY=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_RADIO_LOST_DISCONNECT), y)
+    ccflags-y += -DCFG_RADIO_LOST_DISCONNECT=1
+else
+    ccflags-y += -DCFG_RADIO_LOST_DISCONNECT=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_SINGLE_SKU_DFS_PROTECT), n)
+    ccflags-y += -DCFG_SUPPORT_SINGLE_SKU_DFS_PROTECT=0
+else
+    ccflags-y += -DCFG_SUPPORT_SINGLE_SKU_DFS_PROTECT=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_SINGLE_SKU_FORCE_CUSTOM_REG), n)
+    ccflags-y += -DCFG_SUPPORT_SINGLE_SKU_FORCE_CUSTOM_REG=0
+else
+    ccflags-y += -DCFG_SUPPORT_SINGLE_SKU_FORCE_CUSTOM_REG=1
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+CONFIG_MTK_HOST_OFFLOAD_SUPPORT=n
+endif
+ifeq ($(CONFIG_MTK_HOST_OFFLOAD_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_HOST_OFFLOAD=1
+else
+        ccflags-y += -DCFG_SUPPORT_HOST_OFFLOAD=0
+endif
+
+ifneq ($(CONFIG_NUM_OF_WFDMA_TX_RING),)
+    ccflags-y += -DCONFIG_NUM_OF_WFDMA_TX_RING=$(CONFIG_NUM_OF_WFDMA_TX_RING)
+endif
+
+ifneq ($(CONFIG_NUM_OF_WFDMA_RX_RING),)
+    ccflags-y += -DCONFIG_NUM_OF_WFDMA_RX_RING=$(CONFIG_NUM_OF_WFDMA_RX_RING)
+endif
+
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+CONFIG_SUPPORT_PCIE_ASPM=n
+CONFIG_SUPPORT_PCIE_PLAT_INT_FLOW=n
+endif
+ifeq ($(CONFIG_SUPPORT_PCIE_ASPM), y)
+    ccflags-y += -DCFG_SUPPORT_PCIE_ASPM=1
+else
+    ccflags-y += -DCFG_SUPPORT_PCIE_ASPM=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PCIE_ASPM_EP), y)
+    ccflags-y += -DCFG_SUPPORT_PCIE_ASPM_EP=1
+else
+    ccflags-y += -DCFG_SUPPORT_PCIE_ASPM_EP=0
+endif
+
+
+ifeq ($(CONFIG_SUPPORT_ASPM_IN_CE_PCI_SUSPEND), y)
+    ccflags-y += -DCFG_SUPPORT_ASPM_IN_CE_PCI_SUSPEND=1
+else
+    ccflags-y += -DCFG_SUPPORT_ASPM_IN_CE_PCI_SUSPEND=0
+endif
+ifeq ($(CONFIG_SUPPORT_PCIE_PLAT_INT_FLOW), y)
+    ccflags-y += -DCFG_SUPPORT_PCIE_PLAT_INT_FLOW=1
+else
+    ccflags-y += -DCFG_SUPPORT_PCIE_PLAT_INT_FLOW=0
+endif
+ifeq ($(CONFIG_DEVICE_SUSPEND_BY_MOBILE), y)
+    ccflags-y += -DCFG_DEVICE_SUSPEND_BY_MOBILE=1
+else
+    ccflags-y += -DCFG_DEVICE_SUSPEND_BY_MOBILE=0
+endif
+
+ifeq ($(CONFIG_CONTROL_ASPM_BY_FW), y)
+    ccflags-y += -DCFG_CONTROL_ASPM_BY_FW=1
+else
+    ccflags-y += -DCFG_CONTROL_ASPM_BY_FW=0
+endif
+
+ifeq ($(CONFIG_DYNAMIC_RFB_ADJUSTMENT), y)
+    ccflags-y += -DCFG_DYNAMIC_RFB_ADJUSTMENT=1
+else
+    ccflags-y += -DCFG_DYNAMIC_RFB_ADJUSTMENT=0
+endif
+
+ifeq ($(CONFIG_RX_ZERO_COPY), y)
+    ccflags-y += -DCFG_SUPPORT_RX_ZERO_COPY=1
+    ifeq ($(CONFIG_RX_PAGE_POOL), y)
+        ccflags-y += -DCFG_SUPPORT_RX_PAGE_POOL=1
+        ifeq ($(CONFIG_SUPPORT_WIFI_DYNAMIC_PAGE_POOL), y)
+            ccflags-y += -DCFG_SUPPORT_DYNAMIC_PAGE_POOL=1
+        else
+            ccflags-y += -DCFG_SUPPORT_DYNAMIC_PAGE_POOL=0
+        endif
+        ifeq ($(CONFIG_SUPPORT_WIFI_RX_PAGE_POOL_USE_CMA), y)
+            ccflags-y += -DCFG_SUPPORT_PAGE_POOL_USE_CMA=1
+        else
+            ccflags-y += -DCFG_SUPPORT_PAGE_POOL_USE_CMA=0
+        endif
+    else
+        ccflags-y += -DCFG_SUPPORT_RX_PAGE_POOL=0
+        ccflags-y += -DCFG_SUPPORT_DYNAMIC_PAGE_POOL=0
+        ccflags-y += -DCFG_SUPPORT_PAGE_POOL_USE_CMA=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_RX_ZERO_COPY=0
+    ccflags-y += -DCFG_SUPPORT_RX_PAGE_POOL=0
+    ccflags-y += -DCFG_SUPPORT_DYNAMIC_PAGE_POOL=0
+    ccflags-y += -DCFG_SUPPORT_PAGE_POOL_USE_CMA=0
+endif
+
+ifeq ($(CONFIG_ADJUST_NETIF_TH_BY_BAND), y)
+    ccflags-y += -DCFG_ADJUST_NETIF_TH_BY_BAND=1
+else
+    ccflags-y += -DCFG_ADJUST_NETIF_TH_BY_BAND=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_RX_REORDERING_WAIT_LAST_FRAG), y)
+    ccflags-y += -DCFG_SUPPORT_RX_REORDERING_WAIT_LAST_FRAG=1
+endif
+
+ifeq ($(WIFI_ENABLE_GCOV), y)
+    GCOV_PROFILE := y
+endif
+
+ifeq ($(CONFIG_SNIFFER_RADIOTAP), y)
+    ccflags-y += -DCFG_SUPPORT_SNIFFER_RADIOTAP
+    ccflags-y += -DCFG_SUPPORT_PDMA_SCATTER
+endif
+
+ifneq ($(filter 6765, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_STA_NUM=1
+#else ifeq ($(CONFIG_MTK_TC10_FEATURE), y)
+#    ccflags-y += -DCFG_STA_NUM=1
+endif
+
+ifneq ($(filter 6779, $(WLAN_CHIP_ID)),)
+    ccflags-y += -DCFG_FORCE_AP1NSS
+endif
+
+ifeq ($(MTK_ANDROID_WMT), y)
+    ccflags-y += -DCFG_MTK_ANDROID_WMT=1
+    WMT_SUPPORT := y
+    CONFIG_QUEUE_DEBUG=y
+    CONFIG_SUPPORT_FW_DROP_SSN=y
+    CONFIG_TX_CMD_SMART_SEQUENCE=y
+    CONFIG_AOSP_LINK_LAYER_STATS_SUPPORT=y
+    CONFIG_AOSP_MDDP_LINK_LAYER_STATS_SUPPORT=y
+    CONFIG_CPU_STAT_SUPPORT=y
+    CONFIG_TX_DELAY_STATS_SUPPORT=y
+    CONFIG_SUPPORT_SEPARATE_TXS_PID_POOL=y
+    CONFIG_SUPPORT_ONLY_CRITICAL_ARP_TXS_LOWRATE=y
+    CONFIG_MSCS_FAST_PATH_SUPPORT=y
+    CONFIG_MCC_BOOST_CPU=y
+    CONFIG_QUEUE_RX_IF_CONN_NOT_READY=y
+    CONFIG_RFB_TRACK=y
+    CONFIG_RFB_RECOVERY=y
+    CONFIG_SUPPORT_DHCP_RESET_BA_WINDOW=y
+    CONFIG_FIX_INCONSISTENT_RFB_POINTER=y
+    CONFIG_DEBUG_RX_SEGMENT=y
+    ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+    ifeq ($(CONFIG_DRV_OWN_INT_MODE),y)
+        ccflags-y += -DCFG_MTK_WIFI_DRV_OWN_INT_MODE=1
+    endif
+    endif
+    ifeq ($(CONFIG_ARCH_MEDIATEK),y)
+        CONFIG_MTK_AEE_FEATURE=y
+    endif
+    CONFIG_SUPPORT_HRTIMER=y
+else ifneq ($(filter MT6632,$(MTK_COMBO_CHIP)),)
+    ccflags-y += -DCFG_MTK_ANDROID_WMT=1
+    WMT_SUPPORT := y
+else
+    ccflags-y += -DCFG_MTK_ANDROID_WMT=0
+    WMT_SUPPORT := n
+endif
+
+ifeq ($(WMT_SUPPORT), y)
+    ifeq ($(CONFIG_ARCH_MEDIATEK),y)
+        ifneq ($(filter y m,$(CONFIG_PMIC_LBAT_SERVICE)),)
+            CONFIG_MODIFY_TX_POWER_BY_BAT_VOLT=y
+        endif
+    endif
+    ccflags-y += -DCFG_ENABLE_WAKE_LOCK=1
+    ccflags-y += -DCFG_SUPPORT_MET_LOG=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_HRTIMER), y)
+    ccflags-y += -DCFG_SUPPORT_HRTIMER=1
+else
+    ccflags-y += -DCFG_SUPPORT_HRTIMER=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_VOLT_INFO), y)
+    ccflags-y += -DCFG_VOLT_INFO=1
+else
+    ccflags-y += -DCFG_VOLT_INFO=0
+endif
+
+ifeq ($(CONFIG_WIFI_RAM_HW_DETECT_REPORT_SUPPORT), y)
+    ccflags-y += -DCFG_HW_DETECT_REPORT=1
+else
+    ccflags-y += -DCFG_HW_DETECT_REPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_TXPWR_ENV), y)
+    ccflags-y += -DCFG_SUPPORT_TX_PWR_ENV=1
+else
+    ccflags-y += -DCFG_SUPPORT_TX_PWR_ENV=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11AX_SUPPORT), y)
+    ifeq ($(CONFIG_MTK_WIFI_6G_SUPPORT), y)
+        ifeq ($(CONFIG_MTK_WIFI_SUPPORT_6G_PWR_MODE), y)
+            ccflags-y += -DCFG_SUPPORT_WIFI_6G_PWR_MODE=1
+        else
+            ccflags-y += -DCFG_SUPPORT_WIFI_6G_PWR_MODE=0
+        endif
+    else
+        ccflags-y += -DCFG_SUPPORT_WIFI_6G_PWR_MODE=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_6G_PWR_MODE=0
+endif
+
+ifeq ($(CONFIG_MODIFY_TX_POWER_BY_BAT_VOLT), y)
+    ccflags-y += -DCFG_MODIFY_TX_POWER_BY_BAT_VOLT=1
+else
+    ccflags-y += -DCFG_MODIFY_TX_POWER_BY_BAT_VOLT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_UNIFIED_COMMAND
+endif
+
+ifneq ($(CONFIG_MTK_FPGA_PLATFORM),)
+    ifeq ($(CONFIG_MTK_FPGA_PLATFORM), y)
+        ccflags-y += -DCFG_MTK_FPGA_PLATFORM=1
+    else ifeq ($(CONFIG_MTK_FPGA_PLATFORM), n)
+        ccflags-y += -DCFG_MTK_FPGA_PLATFORM=0
+    else
+        ccflags-y += -DCFG_MTK_FPGA_PLATFORM=$(CONFIG_MTK_FPGA_PLATFORM)
+    endif
+else
+    ccflags-y += -DCFG_MTK_FPGA_PLATFORM=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNFEM_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_CONNFEM=1
+    ifeq ($(CONFIG_MTK_WIFI_CONNFEM_DEFAULT), y)
+        ccflags-y += -DCFG_CONNFEM_DEFAULT=1
+        ccflags-y += -I$(KO_CODE_PATH)/include/chips/connfem
+    else
+        ccflags-y += -DCFG_CONNFEM_DEFAULT=0
+        ccflags-y += -I$(KO_CODE_PATH)/../connfem/include
+    endif
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/connfem/include/
+else
+    ccflags-y += -DCFG_SUPPORT_CONNFEM=0
+    ccflags-y += -DCFG_CONNFEM_DEFAULT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_XONVRAM_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_XONVRAM=1
+else
+ccflags-y += -DCFG_SUPPORT_XONVRAM=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_PLCAL), y)
+ccflags-y += -DCFG_SUPPORT_PLCAL=1
+else
+ccflags-y += -DCFG_SUPPORT_PLCAL=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_GET_LTE_SAFE_CHANNEL), y)
+ccflags-y += -DCFG_SUPPORT_GET_LTE_SAFE_CHANNEL=1
+else
+ccflags-y += -DCFG_SUPPORT_GET_LTE_SAFE_CHANNEL=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_CONNV3_SUPPORT), y)
+    ccflags-y += -DCFG_MTK_WIFI_CONNV3_SUPPORT=1
+    ifneq ($(wildcard $(KO_CODE_PATH)/../conninfra),)
+        CONFIG_MTK_WIFI_CONNV3_PATH ?= $(KO_CODE_PATH)/../conninfra
+        KBUILD_EXTRA_SYMBOLS += $(CONFIG_MTK_WIFI_CONNV3_PATH)/Module.symvers
+    else
+        CONFIG_MTK_WIFI_CONNV3_PATH ?= $(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra
+    endif
+    $(info $$CONFIG_MTK_WIFI_CONNV3_PATH is [${CONFIG_MTK_WIFI_CONNV3_PATH}])
+    ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/include
+    ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/base/include
+    ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/conn_drv/connv3/debug_utility
+    ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/conn_drv/connv3/debug_utility/include
+    ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/conn_drv/connv3/debug_utility/connsyslog
+
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+else ifeq ($(CONFIG_MTK_WIFI_CONNINFRA_SUPPORT), y)
+    CONFIG_WIFI_COREDUMP_SUPPORT=y
+    ccflags-y += -DCFG_SUPPORT_CONNINFRA=1
+    ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+    ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
+    ccflags-y += -DCFG_MTK_CONNSYS_DEDICATED_LOG_PATH
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/platform/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/base/include
+
+    # conninfra path
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump/platform/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/metlog
+
+    # connv2 path
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/connsyslog
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump/platform/include
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/metlog
+    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/wlan/adaptor
+else
+    CONFIG_WIFI_COREDUMP_SUPPORT=n
+    ccflags-y += -DCFG_SUPPORT_CONNINFRA=0
+    ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=0
+    ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=0
+    ifeq ($(WMT_SUPPORT), y)
+        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/include
+        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
+        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/debug_utility
+        ifeq ($(CONFIG_MTK_CONN_LTE_IDC_SUPPORT),y)
+            ccflags-y += -DWMT_IDC_SUPPORT=1
+        else
+            ccflags-y += -DWMT_IDC_SUPPORT=0
+        endif
+        ccflags-y += -DMTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
+    endif
+endif
+
+ifeq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH), y)
+    ccflags-y += -DCFG_MTK_CONNSYS_DEDICATED_LOG_PATH
+endif
+
+ifeq ($(CONFIG_WIFI_PLAT_SHUTDOWN_SUPPORT), y)
+    ccflags-y += -DCFG_WIFI_PLAT_SHUTDOWN_SUPPORT=1
+else
+    ccflags-y += -DCFG_WIFI_PLAT_SHUTDOWN_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_WIFI_COREDUMP_SUPPORT), y)
+    ccflags-y += -DCFG_WIFI_COREDUMP_SUPPORT=1
+else
+    ccflags-y += -DCFG_WIFI_COREDUMP_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_WIFI_SECURITY_COREDUMP), y)
+    ccflags-y += -DCFG_WIFI_SECURITY_COREDUMP=1
+else
+    ccflags-y += -DCFG_WIFI_SECURITY_COREDUMP=0
+endif
+
+ifeq ($(CONFIG_WIFI_COREDUMP_SKIP_BY_REQUEST), y)
+    ccflags-y += -DCFG_WIFI_COREDUMP_SKIP_BY_REQUEST=1
+else
+    ccflags-y += -DCFG_WIFI_COREDUMP_SKIP_BY_REQUEST=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_THERMAL_QUERY), y)
+    ccflags-y += -DCFG_SUPPORT_THERMAL_QUERY=1
+    ccflags-y += -I$(srctree)/drivers/thermal
+else
+    ccflags-y += -DCFG_SUPPORT_THERMAL_QUERY=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_BTM_OFFLOAD), y)
+    ccflags-y += -DCFG_SUPPORT_BTM_OFFLOAD=1
+else ifeq ($(CONFIG_MTK_TC10_FEATURE), y)
+    ccflags-y += -DCFG_SUPPORT_BTM_OFFLOAD=1
+else ifeq ($(MTK_ANDROID_WMT), y)
+    ccflags-y += -DCFG_SUPPORT_BTM_OFFLOAD=1
+else
+    ccflags-y += -DCFG_SUPPORT_BTM_OFFLOAD=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_POWER_THROTTLING), y)
+ccflags-y += -DCFG_SUPPORT_POWER_THROTTLING=1
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/connectivity/power_throttling
+else
+ccflags-y += -DCFG_SUPPORT_POWER_THROTTLING=0
+endif
+
+ifeq ($(MTK_ANDROID_EMI), y)
+    ccflags-y += -DCFG_MTK_ANDROID_EMI=1
+else
+    ccflags-y += -DCFG_MTK_ANDROID_EMI=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_SINGLE_FW_BINARY), y)
+    ccflags-y += -DCFG_SUPPORT_SINGLE_FW_BINARY=1
+else
+    ccflags-y += -DCFG_SUPPORT_SINGLE_FW_BINARY=0
+endif
+
+ifneq ($(WIFI_IP_SET),)
+    ccflags-y += -DCFG_WIFI_IP_SET=$(WIFI_IP_SET)
+else
+    ccflags-y += -DCFG_WIFI_IP_SET=1
+endif
+
+ifneq ($(filter MTK_WCN_REMOVE_KERNEL_MODULE,$(KBUILD_SUBDIR_CCFLAGS)),)
+    ccflags-y += -DCFG_BUILT_IN_DRIVER=1
+else
+    ccflags-y += -DCFG_BUILT_IN_DRIVER=0
+endif
+
+ifneq ($(findstring UT_TEST_MODE,$(MTK_COMBO_CHIP)),)
+ccflags-y:=$(filter-out -UUT_TEST_MODE,$(ccflags-y))
+ccflags-y += -DUT_TEST_MODE
+endif
+
+CONFIG_MTK_WIFI_MCC_SUPPORT=y
+ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
+else
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=1
+endif
+
+ifeq ($(CONFIG_MTK_AEE_FEATURE), y)
+    ccflags-y += -DCFG_ENABLE_AEE_MSG=1
+else
+    ccflags-y += -DCFG_ENABLE_AEE_MSG=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TPUT_FACTOR), y)
+    ccflags-y += -DCFG_SUPPORT_TPUT_FACTOR=1
+else
+    ccflags-y += -DCFG_SUPPORT_TPUT_FACTOR=0
+endif
+
+# Disable ASSERT() for user load, enable for others
+$(info CONFIG_MTK_WIFI_PRODUCT: $(CONFIG_MTK_WIFI_PRODUCT))
+ifneq ($(CONFIG_BUILD_NONE_STA), y)
+    ifeq ($(TARGET_BUILD_VARIANT),user)
+        ccflags-y += -DBUILD_QA_DBG=0
+        ccflags-y += -DENABLE_DBG_LEVEL=1
+    else ifeq ($(CONFIG_MTK_WIFI_PRODUCT),y)
+        ccflags-y += -DBUILD_QA_DBG=0
+        ccflags-y += -DENABLE_DBG_LEVEL=1
+    else
+        ccflags-y += -DBUILD_QA_DBG=1
+        ccflags-y += -DENABLE_DBG_LEVEL=0
+    endif
+else
+    ccflags-y += -DBUILD_QA_DBG=0
+    ccflags-y += -DENABLE_DBG_LEVEL=1
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI),y)
+    ccflags-y += -DCFG_WPS_DISCONNECT=1
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+    ccflags-y += -D_HIF_SDIO=1
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+    ccflags-y += -D_HIF_PCIE=1
+    ifeq ($(call kver_ge,4,8),1)
+        ifeq ($(CONFIG_MTK_WIFI_PCIE_MSI_SUPPORT), y)
+            ccflags-y += -DCFG_MTK_WIFI_PCIE_MSI_SUPPORT=1
+            ifneq ($(CONFIG_WFDMA_AP_MSI_NUM),)
+                ccflags-y += -DCFG_WFDMA_AP_MSI_NUM=$(CONFIG_WFDMA_AP_MSI_NUM)
+            endif
+        endif
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_PCIE_SUPPORT), y)
+        ccflags-y += -DCFG_MTK_WIFI_PCIE_SUPPORT=1
+    endif
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+    ccflags-y += -D_HIF_USB=1
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
+    ccflags-y += -D_HIF_AXI=1
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), ut)
+    # Increase frame size to 2048 because of 'cfg80211_connect_result' exceed stack size
+    ccflags-y += -D_HIF_UT=1 -Wno-unused-function -Wno-unused-variable -Wframe-larger-than=2048
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+	ccflags-y += -D_HIF_NONE=1
+else
+    $(error Unsuppoted HIF=$(CONFIG_MTK_COMBO_WIFI_HIF)!!)
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_PCIE_SR), y)
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_SR=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_SR=0
+endif
+
+ifeq ($(CONFIG_PRELOADER_PMIC_EN_PU), y)
+    ccflags-y += -DCFG_PRELOADER_PMIC_EN_PU=1
+else
+    ccflags-y += -DCFG_PRELOADER_PMIC_EN_PU=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_DOWNLOAD_DYN_MEMORY_MAP), y)
+    ccflags-y += -DCFG_DOWNLOAD_DYN_MEMORY_MAP=1
+else
+    ccflags-y += -DCFG_DOWNLOAD_DYN_MEMORY_MAP=0
+endif
+
+ifeq ($(CONFIG_ROM_CODE_DOWNLOAD), y)
+    ccflags-y += -DCONFIG_ROM_CODE_DOWNLOAD=1
+else
+    ccflags-y += -DCONFIG_ROM_CODE_DOWNLOAD=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_OSHARE), y)
+    ccflags-y += -DCFG_SUPPORT_OSHARE=1
+else ifeq ($(CONFIG_SUPPORT_OSHARE), n)
+    ccflags-y += -DCFG_SUPPORT_OSHARE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_LOWLATENCY_MODE), y)
+    ccflags-y += -DCFG_SUPPORT_LOWLATENCY_MODE=1
+else ifeq ($(CONFIG_SUPPORT_LOWLATENCY_MODE), n)
+    ccflags-y += -DCFG_SUPPORT_LOWLATENCY_MODE=0
+endif
+
+ifneq ($(CFG_CFG80211_VERSION),)
+VERSION_STR = $(subst \",,$(subst ., , $(subst -, ,$(subst v,,$(CFG_CFG80211_VERSION)))))
+$(info VERSION_STR=$(VERSION_STR))
+X = $(firstword $(VERSION_STR))
+Y = $(word 2 ,$(VERSION_STR))
+Z = $(word 3 ,$(VERSION_STR))
+ifeq ($Z, )
+    Z = 0
+endif
+VERSION := $(shell echo "$$(( $X * 65536 + $Y * 256 + $Z))" )
+ccflags-y += -DCFG_CFG80211_VERSION=$(VERSION)
+$(info DCFG_CFG80211_VERSION=$(VERSION))
+endif
+
+MTK_MET_PROFILING_SUPPORT = yes
+ifeq ($(MTK_MET_PROFILING_SUPPORT), yes)
+    ccflags-y += -DCFG_MET_PACKET_TRACE_SUPPORT=1
+else
+    ccflags-y += -DCFG_MET_PACKET_TRACE_SUPPORT=0
+endif
+
+MTK_MET_TAG_SUPPORT = no
+ifeq ($(MTK_MET_TAG_SUPPORT), yes)
+    ccflags-y += -DMET_USER_EVENT_SUPPORT
+    ccflags-y += -DCFG_MET_TAG_SUPPORT=1
+else
+    ccflags-y += -DCFG_MET_TAG_SUPPORT=0
+endif
+
+MTK_TC3_SUPPORT = no
+ifeq ($(MTK_TC3_SUPPORT), yes)
+    ccflags-y += -DCFG_TC3_FEATURE=1
+    ccflags-y += -DCFG_P2P_CONNECT_ALL_BSS=1
+    ccflags-y += -DCFG_P2P_DEFAULT_CLIENT_COUNT=1
+    ccflags-y += -DCFG_P2P_SCAN_REPORT_ALL_BSS=1
+else
+    ccflags-y += -DCFG_TC3_FEATURE=0
+endif
+
+ifeq ($(CONFIG_MTK_TC10_FEATURE), y)
+    CONFIG_MTK_WIFI_EXT=y
+    ccflags-y += -DCFG_TC10_FEATURE=1
+else
+    CONFIG_MTK_WIFI_EXT=n
+    ccflags-y += -DCFG_TC10_FEATURE=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_EXT), y)
+    EXT_DIR     := ext/
+    #EXT_DIR     := ../gen4m_ext/
+    CONFIG_MTK_WIFI_NAN=y
+    CONFIG_MTK_WIFI_NAN_EXT=y
+    CONFIG_MTK_WIFI_APS_SUPPORT=y
+    ccflags-y += -DCFG_REUSE_RSN_IE=1
+    ccflags-y += -DCFG_EXT_VERSION=3
+    ccflags-y += -DCFG_EXT_FEATURE=1
+    ccflags-y += -DCFG_EXT_SCAN=1
+    ccflags-y += -DCFG_EXT_ROAMING=1
+    ccflags-y += -DCFG_EXT_ROAMING_WTC=1
+    ccflags-y += -DCFG_SUPPORT_ROAMING_LOG=1
+    ccflags-y += -DCFG_SUPPORT_CONN_LOG=1
+    ccflags-y += -DCFG_SUPPORT_WPA3_LOG=1
+    ccflags-y += -DCFG_SUPPORT_REPORT_LOG=1
+    ccflags-y += -DCFG_SUPPORT_SCAN_LOG=1
+    ifeq ($(CONFIG_MTK_WIFI_TWT_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_TWT_EXT=1
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_CONNAC3X), y)
+        CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT=y
+        CONFIG_MTK_WIFI_IGMP_OFLD_SUPPORT=y
+        CONFIG_MTK_WIFI_RA_OFLD_SUPPORT=y
+    endif
+else
+    EXT_DIR     := ext/
+    CONFIG_MTK_WIFI_NAN_EXT=n
+    ccflags-y += -DCFG_EXT_VERSION=3
+    ccflags-y += -DCFG_EXT_FEATURE=0
+    ccflags-y += -DCFG_EXT_SCAN=0
+    ccflags-y += -DCFG_EXT_ROAMING=0
+    ccflags-y += -DCFG_EXT_ROAMING_WTC=0
+    ccflags-y += -DCFG_SUPPORT_ROAMING_LOG=0
+    ccflags-y += -DCFG_SUPPORT_CONN_LOG=0
+    ccflags-y += -DCFG_SUPPORT_WPA3_LOG=0
+    ccflags-y += -DCFG_SUPPORT_REPORT_LOG=0
+    ccflags-y += -DCFG_SUPPORT_SCAN_LOG=0
+endif
+
+ifneq ($(CONFIG_MTK_MD1_SUPPORT), )
+    ccflags-y += -DCONFIG_MTK_MD_SUPPORT=1
+else
+    ccflags-y += -DCONFIG_MTK_MD_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_TC1_FEATURE), y)
+    ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/tc1_interface
+    ccflags-y += -DCFG_TC1_FEATURE=1
+else
+    ccflags-y += -DCFG_TC1_FEATURE=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_NAN), y)
+ccflags-y += -DCFG_SUPPORT_NAN=1
+NEED_CRYPTO=y
+else
+ccflags-y += -DCFG_SUPPORT_NAN=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_NAN_EXT), y)
+ccflags-y += -DCFG_SUPPORT_NAN_EXT=1
+else
+ccflags-y += -DCFG_SUPPORT_NAN_EXT=0
+endif
+
+ifneq ($(CFG_SYS_DVT_SUPPORT),)
+ifeq ($(CFG_SYS_DVT_SUPPORT), 0)
+# Check dependency
+CFG_SYS_DVT_DMASCHDL_SUPPORT=0
+endif
+ccflags-y += -DCFG_SUPPORT_WIFI_SYSDVT=$(CFG_SYS_DVT_SUPPORT)
+export CFG_SUPPORT_WIFI_SYSDVT=$(CFG_SYS_DVT_SUPPORT)
+ifneq ($(CFG_SYS_DVT_DMASCHDL_SUPPORT),)
+ccflags-y += -DCFG_SUPPORT_DMASHDL_SYSDVT=$(CFG_SYS_DVT_DMASCHDL_SUPPORT)
+export CFG_SUPPORT_DMASHDL_SYSDVT=$(CFG_SYS_DVT_DMASCHDL_SUPPORT)
+endif
+endif
+
+ifeq ($(CFG_NL80211_TESTMODE), y)
+ccflags-y += -DCONFIG_NL80211_TESTMODE
+endif
+
+ifneq ($(CONFIG_IFACE_CONCURRENT_MODE),)
+    ccflags-y += -DCFG_IFACE_CONCURRENT_MODE=$(CONFIG_IFACE_CONCURRENT_MODE)
+else
+    ccflags-y += -DCFG_IFACE_CONCURRENT_MODE=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_DL_BT_PATCH), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_DL_BT_PATCH=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_DL_BT_PATCH=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_DL_ZB_PATCH), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_DL_ZB_PATCH=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_DL_ZB_PATCH=0
+endif
+
+ifeq ($(CFG_SUPPORT_HOST_RX_WM_EVENT_FROM_PSE), y)
+    ccflags-y += -DCFG_SUPPORT_HOST_RX_WM_EVENT_FROM_PSE=1
+else
+    ccflags-y += -DCFG_SUPPORT_HOST_RX_WM_EVENT_FROM_PSE=0
+endif
+
+# Background:
+# In legacy Sigma tool, it sets VO with ToS = 0xD0, though
+# the available ToS for VO ranges from 0xC0 to 0xFF.
+#
+# QoS R2 w/ CONFIG_WIFI_AT_THE_EDGE_QOS_SUPPORT only allows
+# VO w/ ToS = 0xB0 and 0xB8.
+#
+# By disabling QoS R2 w/ CONFIG_WIFI_AT_THE_EDGE_QOS_SUPPORT,
+# two additional ToS 0xC0 and 0xE0 are allowed to map to UP 6, 7.
+# Along with the change in sigma tool by setting VO to ToS=0xCo,
+# this makes the intersection values available for QoS R2 and
+# sigma tool for legacy programs.
+ifeq ($(CONFIG_WIFI_AT_THE_EDGE_QOS_SUPPORT), y)
+    ccflags-y += -DCFG_WIFI_AT_THE_EDGE_QOS=1
+else
+    ccflags-y += -DCFG_WIFI_AT_THE_EDGE_QOS=0
+endif
+
+ifeq ($(CONFIG_TX_RSRC_WMM_ENHANCE), y)
+    ccflags-y += -DCFG_TX_RSRC_WMM_ENHANCE=1
+else
+    ccflags-y += -DCFG_TX_RSRC_WMM_ENHANCE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_FORCE_ALTX), y)
+ccflags-y += -DCFG_SUPPORT_FORCE_ALTX=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_BT_SKU), y)
+    ccflags-y += -DCFG_SUPPORT_BT_SKU
+endif
+
+ifeq ($(CFG_COALESCING_INTERRUPT), y)
+    ccflags-y += -DCFG_COALESCING_INTERRUPT=1
+else
+    ccflags-y += -DCFG_COALESCING_INTERRUPT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_FW_LOG_MMIO), y)
+    ccflags-y += -DCFG_MTK_WIFI_FW_LOG_MMIO=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_FW_LOG_MMIO=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_FW_LOG_EMI), y)
+    ccflags-y += -DCFG_MTK_WIFI_FW_LOG_EMI=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_FW_LOG_EMI=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_MET_LOG_EMI), y)
+    ccflags-y += -DCFG_MTK_WIFI_MET_LOG_EMI=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_MET_LOG_EMI=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_DEBUG_SOP), y)
+    ccflags-y += -DCFG_SUPPORT_DEBUG_SOP=1
+else
+    ccflags-y += -DCFG_SUPPORT_DEBUG_SOP=0
+endif
+
+ifeq ($(CFG_SUPPORT_HIDDEN_SW_AP), y)
+    ccflags-y += -DCFG_SUPPORT_HIDDEN_SW_AP=1
+else
+    ccflags-y += -DCFG_SUPPORT_HIDDEN_SW_AP=0
+endif
+
+ifeq ($(CONFIG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK), y)
+    ccflags-y += -DCFG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=1
+else
+    ccflags-y += -DCFG_NOT_CLR_FREE_MSDU_IN_DEACTIVE_NETWORK=0
+endif
+
+ifeq ($(WLAN_CONNAC3_DEV), yes)
+    ccflags-y += -DCFG_WLAN_CONNAC3_DEV=1
+else
+    ccflags-y += -DCFG_WLAN_CONNAC3_DEV=0
+endif
+
+ifeq ($(call kver_ge,4,4),1)
+    ccflags-y += -DCFG_SUPPORT_DATA_STALL=1
+    ccflags-y += -DCFG_SUPPORT_BIGDATA_PIP=1
+else
+    ccflags-y += -DCFG_SUPPORT_DATA_STALL=0
+    ccflags-y += -DCFG_SUPPORT_BIGDATA_PIP=0
+endif
+
+ifeq ($(call kver_ge,4,17),1)
+    ccflags-y += -DCFG_SUPPORT_WPA3=1
+else
+    ccflags-y += -DCFG_SUPPORT_WPA3=0
+endif
+
+ifeq ($(call kver_ge,4,18),1)
+    ifeq ($(CONFIG_FILS_SK_OFFLOAD_SUPPORT), y)
+        ccflags-y += -DCFG_SUPPORT_FILS_SK_OFFLOAD=1
+        NEED_CRYPTO=y
+    else
+        ccflags-y += -DCFG_SUPPORT_FILS_SK_OFFLOAD=0
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_FILS_SK_OFFLOAD=0
+endif
+
+ifeq ($(CONFIG_GKI_SUPPORT), y)
+    ccflags-y += -DCFG_ENABLE_GKI_SUPPORT=1
+else
+    ccflags-y += -DCFG_ENABLE_GKI_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_AER_RESET), y)
+    ccflags-y += -DCFG_MTK_WIFI_AER_RESET=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_AER_RESET=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_AER_L05_RESET), y)
+    ccflags-y += -DCFG_MTK_WIFI_AER_L05_RESET=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_AER_L05_RESET=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_DFD_DUMP_SUPPORT), y)
+    ccflags-y += -DCFG_MTK_WIFI_DFD_DUMP_SUPPORT=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_DFD_DUMP_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_CE_COREDUMP), y)
+    ccflags-y += -DCFG_CE_ASSERT_DUMP=1
+else
+    ccflags-y += -DCFG_CE_ASSERT_DUMP=0
+endif
+
+ifeq ($(CONFIG_IP_FRAG_DISABLE_HW_CHECKSUM), y)
+    ccflags-y += -DCFG_IP_FRAG_DISABLE_HW_CHECKSUM=1
+else
+    ccflags-y += -DCFG_IP_FRAG_DISABLE_HW_CHECKSUM=0
+endif
+
+ifeq ($(CONFIG_FORCE_HW_CHECKSUM), y)
+    ccflags-y += -DCFG_FORCE_HW_CHECKSUM=1
+else
+    ccflags-y += -DCFG_FORCE_HW_CHECKSUM=0
+endif
+
+ifeq ($(MODULE_NAME),)
+MODULE_NAME := wlan_$(shell echo $(strip $(WLAN_CHIP_ID)) | tr A-Z a-z)_$(CONFIG_MTK_COMBO_WIFI_HIF)
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_SLT), golden)
+slt_postfix = _mc
+MODULE_NAME := $(MODULE_NAME)$(slt_postfix)
+endif
+
+ifeq ($(CONFIG_CHIP_RESET_SUPPORT), n)
+    ccflags-y += -DCFG_CHIP_RESET_SUPPORT=0
+else
+    ccflags-y += -DCFG_CHIP_RESET_SUPPORT=1
+endif
+
+ifeq ($(CONFIG_CHIP_RESET_USE_DTS_GPIO_NUM), y)
+    ccflags-y += -DCFG_CHIP_RESET_USE_DTS_GPIO_NUM=1
+else
+    ccflags-y += -DCFG_CHIP_RESET_USE_DTS_GPIO_NUM=0
+endif
+
+# Unified Command Support
+ifeq ($(CONFIG_SUPPORT_FW_IDX_LOG_TRANS), y)
+    ccflags-y += -DCFG_SUPPORT_FW_IDX_LOG_TRANS=1
+else
+    ccflags-y += -DCFG_SUPPORT_FW_IDX_LOG_TRANS=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_FW_IDX_LOG_SAVE), y)
+    ccflags-y += -DCFG_SUPPORT_FW_IDX_LOG_SAVE=1
+else
+    ccflags-y += -DCFG_SUPPORT_FW_IDX_LOG_SAVE=0
+endif
+
+ccflags-y += -DDBG=0
+ccflags-y += -I$(KO_CODE_PATH)/os -I$(KO_CODE_PATH)/os/$(os)/include
+ccflags-y += -I$(KO_CODE_PATH)/include -I$(KO_CODE_PATH)/include/nic -I$(KO_CODE_PATH)/include/mgmt -I$(KO_CODE_PATH)/include/chips -I$(KO_CODE_PATH)/include/wpa_supp
+ifeq ($(CONFIG_MTK_WIFI_NAN), y)
+ccflags-y += -I$(KO_CODE_PATH)/include/nan
+endif
+ifeq ($(CONFIG_MTK_WIFI_EXT), y)
+ccflags-y += -I$(KO_CODE_PATH)/$(EXT_DIR)include/
+ccflags-y += -I$(KO_CODE_PATH)/$(EXT_DIR)include/mgmt
+endif
+ifeq ($(CONFIG_MTK_WIFI_NAN_EXT), y)
+ccflags-y += -I$(KO_CODE_PATH)/$(EXT_DIR)include/nan
+endif
+ifeq ($(CFG_SUPPORT_WIFI_SYSDVT), 1)
+ccflags-y += -I$(KO_CODE_PATH)/include/dvt
+endif
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/base/power/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/performance/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/emi/$(MTK_PLATFORM)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/emi/submodule
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/pmic/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/power_throttling/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/connectivity/common
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/eccci/inc/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/devfreq/
+ifeq ($(MTK_ANDROID_WMT), y)
+ifeq ($(CONFIG_MTK_WIFI_PCIE_SUPPORT), y)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/pci/controller/
+endif
+endif
+ccflags-y += -I$(srctree)/net
+
+ifeq ($(CONFIG_MTK_WIFI_CCCI_SUPPORT), y)
+CONFIG_MTK_ECCCI_DRIVER := y
+else ifeq ($(CONFIG_MTK_WIFI_CCCI_SUPPORT), n)
+CONFIG_MTK_ECCCI_DRIVER :=
+endif
+
+ifneq ($(CONFIG_MTK_DEVAPC),)
+ccflags-y += -DCFG_MTK_WIFI_DEVAPC=1
+else ifneq ($(CONFIG_DEVICE_MODULES_MTK_DEVAPC),)
+ccflags-y += -DCFG_MTK_WIFI_DEVAPC=1
+else
+ccflags-y += -DCFG_MTK_WIFI_DEVAPC=0
+endif
+
+ifneq ($(CONFIG_MTK_ECCCI_DRIVER),)
+ccflags-y += -DCFG_MTK_CCCI_SUPPORT=1
+else
+ccflags-y += -DCFG_MTK_CCCI_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_MDDP_SUPPORT), y)
+CONFIG_MTK_MDDP_SUPPORT := y
+else ifeq ($(CONFIG_MTK_WIFI_MDDP_SUPPORT), n)
+CONFIG_MTK_MDDP_SUPPORT :=
+endif
+
+ifneq ($(CONFIG_MTK_MDDP_SUPPORT),)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mddp/include/
+ccflags-y += -DCFG_MTK_MDDP_SUPPORT=1
+else
+ccflags-y += -DCFG_MTK_MDDP_SUPPORT=0
+endif
+
+ifneq ($(CONFIG_MTK_ADVANCED_80211_MLO),)
+ccflags-y += -DCFG_ADVANCED_80211_MLO=1
+else
+ccflags-y += -DCFG_ADVANCED_80211_MLO=0
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/sdio/include
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/common/include
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/pcie/include
+ifneq ($(findstring 3_0,$(MTK_COMBO_CHIP)),)
+ccflags-y += -I$(KO_CODE_PATH)/include/chips/coda/soc3_0
+endif
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/common/include
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/axi/include
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/usb/include
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), ut)
+ccflags-y += -I$(KO_CODE_PATH)/test -I$(KO_CODE_PATH)/test/lib/include -I$(KO_CODE_PATH)/test/testcases -I$(KO_CODE_PATH)/test/lib/hif
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+ccflags-y += -I$(KO_CODE_PATH)/os/$(os)/hif/none/include
+endif
+
+ifneq ($(PLATFORM_FLAGS), )
+    ccflags-y += $(PLATFORM_FLAGS)
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_ONLY),$(filter $(CONFIG_MTK_WIFI_ONLY),m y))
+obj-$(CONFIG_MTK_WIFI_ONLY) += $(MODULE_NAME).o
+else
+obj-$(CONFIG_MTK_COMBO_WIFI) += $(MODULE_NAME).o
+#obj-y += $(MODULE_NAME).o
+endif
+
+ifeq ($(CONFIG_WLAN_DRV_BUILD_IN),y)
+$(warning $(MODULE_NAME) build-in boot.img)
+obj-y += $(MODULE_NAME).o
+ccflags-y += -DCONFIG_WLAN_DRV_BUILD_IN=1
+else
+$(warning $(MODULE_NAME) is kernel module)
+obj-m += $(MODULE_NAME).o
+ccflags-y += -DCONFIG_WLAN_DRV_BUILD_IN=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_PKT_OFLD_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_PKT_OFLD=1
+ifeq ($(CONFIG_MTK_WIFI_APF_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_APF=1
+else
+ccflags-y += -DCFG_SUPPORT_APF=0
+endif
+ifeq ($(CONFIG_ADD_MDNS_WHITELIST), y)
+ccflags-y += -DCFG_SUPPORT_MDNS_WHITELIST=1
+else
+ccflags-y += -DCFG_SUPPORT_MDNS_WHITELIST=0
+endif
+ifeq ($(CONFIG_MTK_WIFI_IGMP_OFLD_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_IGMP_OFLD=1
+else
+ccflags-y += -DCFG_SUPPORT_IGMP_OFLD=0
+endif
+ifeq ($(CONFIG_MTK_WIFI_RA_OFLD_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_RA_OFLD=1
+ccflags-y += -DCFG_SUPPORT_SET_IPV6_NETWORK=1
+else
+ccflags-y += -DCFG_SUPPORT_RA_OFLD=0
+endif
+else
+ccflags-y += -DCFG_SUPPORT_PKT_OFLD=0
+endif
+
+ifeq ($(CONFIG_TX_HIF_PORT_QUEUE_SUPPORT), y)
+ccflags-y += -DCFG_TX_HIF_PORT_QUEUE=1
+else
+ccflags-y += -DCFG_TX_HIF_PORT_QUEUE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_FW_DROP_SSN), y)
+ccflags-y += -DCFG_SUPPORT_FW_DROP_SSN=1
+else
+ccflags-y += -DCFG_SUPPORT_FW_DROP_SSN=0
+endif
+
+ifeq ($(CONFIG_TX_CMD_SMART_SEQUENCE), y)
+ccflags-y += -DCFG_TX_CMD_SMART_SEQUENCE=1
+else
+ccflags-y += -DCFG_TX_CMD_SMART_SEQUENCE=0
+endif
+
+ifeq ($(CONFIG_CPU_STAT_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_CPU_STAT=1
+else
+    ccflags-y += -DCFG_SUPPORT_CPU_STAT=0
+endif
+
+ifeq ($(CONFIG_AOSP_LINK_LAYER_STATS_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_LLS=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_SEPARATE_TXS_PID_POOL), y)
+ccflags-y += -DCFG_SUPPORT_SEPARATE_TXS_PID_POOL=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_ONLY_CRITICAL_ARP_TXS_LOWRATE), y)
+ccflags-y += -DCFG_ONLY_CRITICAL_ARP_SET_TXS_LOWRATE=1
+endif
+
+ifeq ($(CONFIG_AOSP_MDDP_LINK_LAYER_STATS_SUPPORT), y)
+    ifneq ($(filter mt6983, $(CONFIG_WLAN_PLATFORM)),)
+        ccflags-y += -DCFG_SUPPORT_LLS_MDDP=0
+    else ifeq ($(WLAN_CONNAC3_DEV), yes)
+        ccflags-y += -DCFG_SUPPORT_LLS_MDDP=0
+    else
+        ccflags-y += -DCFG_SUPPORT_LLS_MDDP=1
+    endif
+else
+    ccflags-y += -DCFG_SUPPORT_LLS_MDDP=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_MBRAIN), y)
+ccflags-y += -DCFG_SUPPORT_MBRAIN=1
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mbraink
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_ON_READ_BY_CFG_SPACE), y)
+    ccflags-y += -DCFG_MTK_WIFI_ON_READ_BY_CFG_SPACE=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_ON_READ_BY_CFG_SPACE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TESTMODE_FWDL), y)
+ccflags-y += -DCFG_TESTMODE_FWDL_SUPPORT=1
+else
+ccflags-y += -DCFG_TESTMODE_FWDL_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_DSP_FWDL), y)
+ccflags-y += -DCFG_MTK_WIFI_SUPPORT_DSP_FWDL=1
+else
+ccflags-y += -DCFG_MTK_WIFI_SUPPORT_DSP_FWDL=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TESTMODE_L0P5_FWDL), y)
+ccflags-y += -DCFG_TESTMODE_L0P5_FWDL_SUPPORT=1
+else
+ccflags-y += -DCFG_TESTMODE_L0P5_FWDL_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_SW_SYNC_BY_EMI), y)
+    ifeq ($(MTK_ANDROID_WMT), y)
+        ccflags-y += -DCFG_MTK_WIFI_SUPPORT_SW_SYNC_BY_EMI=1
+    else
+        ccflags-y += -DCFG_MTK_WIFI_SUPPORT_SW_SYNC_BY_EMI=0
+    endif
+else
+    ccflags-y += -DCFG_MTK_WIFI_SUPPORT_SW_SYNC_BY_EMI=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_IPC), y)
+    ifeq ($(filter 1 y,$(CONFIG_MTK_FPGA_PLATFORM)),)
+        ccflags-y += -DCFG_MTK_WIFI_SUPPORT_IPC=1
+        ccflags-y += -DCFG_ENABLE_IPC_FW_DOWNLOAD=1
+    else
+        ccflags-y += -DCFG_MTK_WIFI_SUPPORT_IPC=0
+        ccflags-y += -DCFG_ENABLE_IPC_FW_DOWNLOAD=0
+    endif
+else
+    ccflags-y += -DCFG_MTK_WIFI_SUPPORT_IPC=0
+    ccflags-y += -DCFG_ENABLE_IPC_FW_DOWNLOAD=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_TX_HIF_CREDIT_FEATURE), y)
+ccflags-y += -DCFG_TX_HIF_CREDIT_FEATURE=1
+else
+ccflags-y += -DCFG_TX_HIF_CREDIT_FEATURE=0
+endif
+
+ifeq ($(CONFIG_TX_DELAY_STATS_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_TX_LATENCY_STATS=1
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_STA_DFS_CHANNEL), y)
+    ccflags-y += -DCFG_MTK_WIFI_SUPPORT_STA_DFS_CHANNEL=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_SUPPORT_STA_DFS_CHANNEL=0
+endif
+
+ifeq ($(CONFIG_WFD_SCC_BALANCE_DEF_ENABLE), y)
+	ifneq ($(CONFIG_MTK_WIFI_MT6653_DEV), y)
+		ccflags-y += -DCFG_WFD_SCC_BALANCE_DEF_ENABLE=0
+	else
+		ccflags-y += -DCFG_WFD_SCC_BALANCE_DEF_ENABLE=1
+	endif
+else
+ccflags-y += -DCFG_WFD_SCC_BALANCE_DEF_ENABLE=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_CCM), y)
+	ccflags-y += -DCFG_SUPPORT_CCM=1
+else
+	ccflags-y += -DCFG_SUPPORT_CCM=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_WFD_SCC_BALANCE), y)
+ccflags-y += -DCFG_WFD_SCC_BALANCE_SUPPORT=1
+else
+ccflags-y += -DCFG_WFD_SCC_BALANCE_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_MSCS_FAST_PATH_SUPPORT), y)
+ccflags-y += -DCFG_FAST_PATH_SUPPORT=1
+endif
+
+ifeq ($(CONFIG_MCC_BOOST_CPU), y)
+ccflags-y += -DCFG_SUPPORT_MCC_BOOST_CPU=1
+else
+ccflags-y += -DCFG_SUPPORT_MCC_BOOST_CPU=0
+endif
+
+ifeq ($(CONFIG_QUEUE_RX_IF_CONN_NOT_READY), y)
+ccflags-y += -DCFG_QUEUE_RX_IF_CONN_NOT_READY=1
+else
+ccflags-y += -DCFG_QUEUE_RX_IF_CONN_NOT_READY=0
+endif
+
+ifeq ($(CONFIG_RFB_TRACK), y)
+ccflags-y += -DCFG_RFB_TRACK=1
+else
+ccflags-y += -DCFG_RFB_TRACK=0
+endif
+
+ifeq ($(CONFIG_RFB_RECOVERY), y)
+ccflags-y += -DCFG_RFB_RECOVERY=1
+else
+ccflags-y += -DCFG_RFB_RECOVERY=0
+endif
+
+ifeq ($(CONFIG_FIX_INCONSISTENT_RFB_POINTER), y)
+ccflags-y += -DCFG_FIX_INCONSISTENT_RFB_POINTER=1
+endif
+
+ifeq ($(CONFIG_DEBUG_RX_SEGMENT), y)
+    ccflags-y += -DCFG_DEBUG_RX_SEGMENT=1
+else
+    ccflags-y += -DCFG_DEBUG_RX_SEGMENT=0
+endif
+
+ifeq ($(CONFIG_RX_SW_PROCESS_DBG), y)
+    ccflags-y += -DCFG_RX_SW_PROCESS_DBG=1
+else
+    ccflags-y += -DCFG_RX_SW_PROCESS_DBG=0
+endif
+
+ifeq ($(CONFIG_PERF_MON_FAST), y)
+    ccflags-y += -DCFG_PERF_MON_FAST=1
+else
+    ccflags-y += -DCFG_PERF_MON_FAST=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_DHCP_RESET_BA_WINDOW), y)
+    ccflags-y += -DCFG_SUPPORT_DHCP_RESET_BA_WINDOW=1
+else
+    ccflags-y += -DCFG_SUPPORT_DHCP_RESET_BA_WINDOW=0
+endif
+
+ifeq ($(CONFIG_QUEUE_DEBUG), y)
+    ccflags-y += -DCFG_QUEUE_DEBUG=1
+else
+    ccflags-y += -DCFG_QUEUE_DEBUG=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_WFDMA_BK_RS), y)
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_BK_RS=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_WFDMA_BK_RS=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PCIE_GEN_SWITCH), y)
+    ccflags-y += -DCFG_SUPPORT_PCIE_GEN_SWITCH=1
+else
+    ccflags-y += -DCFG_SUPPORT_PCIE_GEN_SWITCH=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_PCIE_MSI_MASK_BY_MMIO_WRITE), y)
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_MSI_MASK_BY_MMIO_WRITE=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_MSI_MASK_BY_MMIO_WRITE=0
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_PCIE_CONFIG_SPACE_ACCESS_DBG), y)
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_CONFIG_SPACE_ACCESS_DBG=1
+else
+    ccflags-y += -DCFG_MTK_WIFI_PCIE_CONFIG_SPACE_ACCESS_DBG=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_SLEEP_COUNT), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_SLEEP_COUNT=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_SLEEP_COUNT=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_POWER_METRICS), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_POWER_METRICS=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_POWER_METRICS=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_ICCM), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_ICCM=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_ICCM=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_ADJUST_DTIM), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_ADJUST_DTIM=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_ADJUST_DTIM=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_WIFI_MET_CONNAC3_V2), y)
+    ccflags-y += -DCFG_SUPPORT_WIFI_MET_CONNAC3_V2=1
+else
+    ccflags-y += -DCFG_SUPPORT_WIFI_MET_CONNAC3_V2=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_DBDC_DOWNGRADE_NSS), y)
+    ccflags-y += -DCFG_SUPPORT_DBDC_DOWNGRADE_NSS=1
+else
+    ccflags-y += -DCFG_SUPPORT_DBDC_DOWNGRADE_NSS=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_COEX_DOWNGRADE_BW), n)
+    ccflags-y += -DCFG_SUPPORT_COEX_DOWNGRADE_BW=0
+else
+    ccflags-y += -DCFG_SUPPORT_COEX_DOWNGRADE_BW=1
+endif
+
+ifeq ($(CONFIG_DIRECT_READ_CHIP_INFO), y)
+    ccflags-y += -DCFG_DIRECT_READ_CHIP_INFO=1
+else
+    ccflags-y += -DCFG_DIRECT_READ_CHIP_INFO=0
+endif
+
+ifeq ($(CONFIG_PCIE_LTR_UPDATE), y)
+    ccflags-y += -DCFG_PCIE_LTR_UPDATE=1
+else
+    ccflags-y += -DCFG_PCIE_LTR_UPDATE=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PWR_LMT_EMI), y)
+    ccflags-y += -DCFG_SUPPORT_PWR_LMT_EMI=1
+else
+    ccflags-y += -DCFG_SUPPORT_PWR_LMT_EMI=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PHY_ICS_V3), y)
+    ccflags-y += -DCFG_SUPPORT_PHY_ICS_V3=1
+else
+    ccflags-y += -DCFG_SUPPORT_PHY_ICS_V3=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PHY_ICS_V4), y)
+    ccflags-y += -DCFG_SUPPORT_PHY_ICS_V4=1
+else
+    ccflags-y += -DCFG_SUPPORT_PHY_ICS_V4=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_P2P_SET_ML_BSS_NUM), y)
+    ccflags-y += -DCFG_SUPPORT_P2P_SET_ML_BSS_NUM=1
+else
+    ccflags-y += -DCFG_SUPPORT_P2P_SET_ML_BSS_NUM=0
+endif
+
+ifeq ($(CONFIG_WOW_SUPPORT), n)
+    ccflags-y += -DCFG_WOW_SUPPORT=0
+else
+    ccflags-y += -DCFG_WOW_SUPPORT=1
+endif
+
+ifeq ($(CONFIG_SUPPORT_SUSPEND_NOTIFY_APGO_STOP), y)
+    ccflags-y += -DCFG_SUPPORT_SUSPEND_NOTIFY_APGO_STOP=1
+else
+    ccflags-y += -DCFG_SUPPORT_SUSPEND_NOTIFY_APGO_STOP=0
+endif
+
+ifneq ($(CONFIG_STA_REC_MAXIMUM),)
+    ccflags-y += -DCFG_STA_REC_MAXIMUM=$(CONFIG_STA_REC_MAXIMUM)
+endif
+ifneq ($(CONFIG_P2P_MAXIMUM_CLIENT_COUNT),)
+    ccflags-y += -DCFG_P2P_MAXIMUM_CLIENT_COUNT=$(CONFIG_P2P_MAXIMUM_CLIENT_COUNT)
+endif
+ifneq ($(CONFIG_WTBL_MAXSIZE),)
+    ccflags-y += -DCFG_WTBL_MAXSIZE=$(CONFIG_WTBL_MAXSIZE)
+endif
+
+# ---------------------------------------------------
+# Directory List
+# ---------------------------------------------------
+COMMON_DIR  := common/
+OS_DIR      := os/$(os)/
+HIF_COMMON_DIR := $(OS_DIR)hif/common/
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+HIF_DIR	    := os/$(os)/hif/sdio/
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+HIF_DIR     := os/$(os)/hif/pcie/
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
+HIF_DIR	    := os/$(os)/hif/axi/
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+HIF_DIR	    := os/$(os)/hif/usb/
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), ut)
+HIF_DIR	    := test/lib/hif/
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+HIF_DIR	    := os/$(os)/hif/none/
+endif
+NIC_DIR     := nic/
+MGMT_DIR    := mgmt/
+NAN_DIR     := nan/
+CHIPS       := chips/
+CHIPS_CMM   := $(CHIPS)common/
+WPA_DIR     := wpa_supp/
+
+ifneq ($(CONFIG_WLAN_PLATFORM),)
+PLAT_DIR    := os/$(os)/plat/$(CONFIG_WLAN_PLATFORM)/
+$(info $$PLAT_DIR is [$(PLAT_DIR)])
+endif
+SYSDVT_DIR  := dvt/
+
+# ---------------------------------------------------
+# Objects List
+# ---------------------------------------------------
+
+COMMON_OBJS := 	$(COMMON_DIR)dump.o \
+		$(COMMON_DIR)wlan_lib.o \
+		$(COMMON_DIR)wlan_oid.o \
+		$(COMMON_DIR)wlan_bow.o \
+		$(COMMON_DIR)debug.o
+
+NIC_OBJS := 	$(NIC_DIR)nic.o \
+		$(NIC_DIR)nic_tx.o \
+		$(NIC_DIR)nic_rx.o \
+		$(NIC_DIR)nic_pwr_mgt.o \
+		$(NIC_DIR)nic_rate.o \
+		$(NIC_DIR)cmd_buf.o \
+		$(NIC_DIR)que_mgt.o \
+		$(NIC_DIR)nic_cmd_event.o \
+		$(NIC_DIR)radiotap.o
+
+ifeq ($(CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT), y)
+NIC_OBJS += $(NIC_DIR)nic_uni_cmd_event.o
+endif
+
+ifeq ($(os), none)
+OS_OBJS := 	$(OS_DIR)gl_dependent.o \
+		$(OS_DIR)gl_init.o \
+		$(OS_DIR)gl_kal.o \
+		$(OS_DIR)gl_ate_agent.o \
+		$(OS_DIR)gl_qa_agent.o \
+		$(OS_DIR)gl_csi.o
+else
+OS_OBJS := 	$(OS_DIR)gl_init.o \
+		$(OS_DIR)gl_kal.o \
+		$(OS_DIR)gl_bow.o \
+		$(OS_DIR)gl_wext.o \
+		$(OS_DIR)gl_wext_priv.o \
+		$(OS_DIR)gl_ate_agent.o \
+		$(OS_DIR)gl_qa_agent.o \
+		$(OS_DIR)gl_hook_api.o \
+		$(OS_DIR)gl_rst.o \
+		$(OS_DIR)gl_cfg80211.o \
+		$(OS_DIR)gl_proc.o \
+		$(OS_DIR)gl_vendor.o \
+		$(OS_DIR)gl_custom.o \
+		$(OS_DIR)platform.o \
+		$(OS_DIR)gl_emi.o \
+		$(OS_DIR)gl_csi.o \
+		$(OS_DIR)gl_sa_log.o \
+                $(OS_DIR)gl_ics.o \
+		$(OS_DIR)gl_reg_rule.o \
+		$(OS_DIR)gl_cmd_validate.o \
+		$(OS_DIR)gl_met_log.o
+	ifeq ($(WMT_SUPPORT), y)
+		OS_OBJS += $(OS_DIR)gl_sys_lock.o
+	endif
+    ifeq ($(CONFIG_MTK_CONNSYS_DEDICATED_LOG_PATH), y)
+        OS_OBJS += $(OS_DIR)gl_fw_log.o
+    endif
+    ifeq ($(CONFIG_WIFI_COREDUMP_SUPPORT), y)
+        OS_OBJS += $(OS_DIR)gl_coredump.o
+    endif
+    ifeq ($(CONFIG_SUPPORT_FW_IDX_LOG_SAVE), y)
+        OS_OBJS += $(OS_DIR)gl_fw_dev.o
+    endif
+    ifeq ($(CONFIG_SUPPORT_MBRAIN), y)
+        OS_OBJS += $(OS_DIR)gl_mbrain.o
+    endif
+endif
+
+MGMT_OBJS := 	$(MGMT_DIR)ais_fsm.o \
+		$(MGMT_DIR)aaa_fsm.o \
+		$(MGMT_DIR)assoc.o \
+		$(MGMT_DIR)auth.o \
+		$(MGMT_DIR)bss.o \
+		$(MGMT_DIR)cnm.o \
+		$(MGMT_DIR)cnm_timer.o \
+		$(MGMT_DIR)cnm_mem.o \
+		$(MGMT_DIR)hem_mbox.o \
+		$(MGMT_DIR)mib.o \
+		$(MGMT_DIR)privacy.o \
+		$(MGMT_DIR)rate.o \
+		$(MGMT_DIR)rlm.o \
+		$(MGMT_DIR)rlm_domain.o \
+		$(MGMT_DIR)reg_rule.o \
+		$(MGMT_DIR)rlm_obss.o \
+		$(MGMT_DIR)rlm_protection.o \
+		$(MGMT_DIR)rrm.o \
+		$(MGMT_DIR)fils.o \
+		$(MGMT_DIR)rsn.o \
+		$(MGMT_DIR)saa_fsm.o \
+		$(MGMT_DIR)scan.o \
+		$(MGMT_DIR)scan_fsm.o \
+		$(MGMT_DIR)scan_cache.o \
+		$(MGMT_DIR)swcr.o \
+		$(MGMT_DIR)roaming_fsm.o \
+		$(MGMT_DIR)tkip_mic.o \
+		$(MGMT_DIR)hs20.o \
+		$(MGMT_DIR)tdls.o \
+		$(MGMT_DIR)wnm.o \
+		$(MGMT_DIR)qosmap.o \
+		$(MGMT_DIR)wmm.o \
+		$(MGMT_DIR)mddp.o \
+		$(MGMT_DIR)thrm.o \
+		$(MGMT_DIR)ie_sort.o \
+		$(MGMT_DIR)mscs.o \
+		$(MGMT_DIR)rtt.o \
+		$(MGMT_DIR)mlr.o \
+		$(MGMT_DIR)wlan_ring.o \
+		$(MGMT_DIR)gcm.o \
+		$(MGMT_DIR)arp_mon.o \
+		$(MGMT_DIR)ccm.o
+
+ifeq ($(NEED_CRYPTO), y)
+ccflags-y += -DCFG_SUPPORT_CRYPTO=1
+CRYPTO_OBJS :=  $(WPA_DIR)FourWayHandShake.o\
+                $(WPA_DIR)src/utils/common.o\
+                $(WPA_DIR)src/crypto/sha1.o\
+                $(WPA_DIR)src/crypto/sha1-internal.o\
+                $(WPA_DIR)src/crypto/sha1-prf.o\
+                $(WPA_DIR)src/crypto/aes-wrap.o\
+                $(WPA_DIR)src/crypto/aes-internal.o\
+                $(WPA_DIR)src/crypto/aes-unwrap.o\
+                $(WPA_DIR)src/crypto/aes-internal-enc.o\
+                $(WPA_DIR)src/crypto/aes-internal-dec.o\
+                $(WPA_DIR)src/crypto/aes-siv.o\
+                $(WPA_DIR)src/crypto/aes-ctr.o\
+                $(WPA_DIR)src/crypto/aes-omac1.o\
+                $(WPA_DIR)src/crypto/sha256.o\
+                $(WPA_DIR)src/crypto/sha256-prf.o\
+                $(WPA_DIR)src/crypto/sha256-internal.o\
+                $(WPA_DIR)src/crypto/pbkdf2-sha256.o\
+                $(WPA_DIR)src/crypto/sha384-internal.o\
+                $(WPA_DIR)src/crypto/sha512-internal.o\
+                $(WPA_DIR)src/crypto/sha384-prf.o\
+                $(WPA_DIR)src/crypto/sha384.o \
+                $(WPA_DIR)src/crypto/sha256-kdf.o \
+                $(WPA_DIR)src/crypto/sha384-kdf.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_EXT), y)
+COMMON_OBJS += 	$(EXT_DIR)$(COMMON_DIR)wlan_oid_ext.o
+OS_OBJS +=	$(EXT_DIR)$(OS_DIR)gl_sys.o \
+            $(EXT_DIR)$(OS_DIR)gl_wext_priv_ext.o
+MGMT_OBJS +=	$(EXT_DIR)$(MGMT_DIR)log_ext.o \
+            $(EXT_DIR)$(MGMT_DIR)p2p_ext.o \
+            $(EXT_DIR)$(MGMT_DIR)roaming_ext.o \
+            $(EXT_DIR)$(MGMT_DIR)twt_ext.o
+endif
+
+# ---------------------------------------------------
+# Chips Objects List
+# ---------------------------------------------------
+MGMT_OBJS += $(MGMT_DIR)stats.o
+
+CHIPS_OBJS += $(CHIPS_CMM)cmm_asic_common.o \
+              $(CHIPS_CMM)fw_log.o
+
+ifeq ($(CONFIG_MTK_WIFI_CONNAC2X), y)
+CHIPS_OBJS += $(CHIPS_CMM)cmm_asic_connac2x.o \
+              $(CHIPS_CMM)dbg_connac2x.o
+NIC_OBJS += $(NIC_DIR)nic_ext_cmd_event.o \
+            $(NIC_DIR)nic_txd_v2.o \
+            $(NIC_DIR)nic_rxd_v2.o
+else ifeq ($(CONFIG_MTK_WIFI_CONNAC3X), y)
+CHIPS_OBJS += $(CHIPS_CMM)cmm_asic_connac3x.o
+CHIPS_OBJS += $(CHIPS_CMM)dbg_connac3x.o \
+              $(CHIPS_CMM)dbg_wtbl_connac3x.o
+    ifeq ($(CONFIG_MTK_WIFI_FW_LOG_MMIO), y)
+        CHIPS_OBJS += $(CHIPS_CMM)fw_log_mmio.o
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_FW_LOG_EMI), y)
+        CHIPS_OBJS += $(CHIPS_CMM)fw_log_emi.o
+    endif
+    ifeq ($(CONFIG_MTK_WIFI_MET_LOG_EMI), y)
+        CHIPS_OBJS += $(CHIPS_CMM)met_log_emi.o
+    endif
+NIC_OBJS += $(NIC_DIR)nic_ext_cmd_event.o \
+            $(NIC_DIR)nic_txd_v3.o \
+            $(NIC_DIR)nic_rxd_v3.o
+else
+CHIPS_OBJS += $(CHIPS_CMM)cmm_asic_connac.o \
+              $(CHIPS_CMM)dbg_connac.o
+NIC_OBJS += $(NIC_DIR)nic_txd_v1.o \
+            $(NIC_DIR)nic_rxd_v1.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_APS_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_APS=1
+MGMT_OBJS += $(MGMT_DIR)aps.o
+else
+ccflags-y += -DCFG_SUPPORT_APS=0
+MGMT_OBJS += $(MGMT_DIR)ap_selection.o
+endif
+
+ifeq ($(CONFIG_SUPPORT_DUAL_SAP_SINGLE_LINK_MLO), y)
+ccflags-y += -DCFG_SUPPORT_DUAL_SAP_SINGLE_LINK_MLO=1
+else
+ccflags-y += -DCFG_SUPPORT_DUAL_SAP_SINGLE_LINK_MLO=0
+endif
+
+ifeq ($(CONFIG_SUPPORT_PRE_ON_PHY_ACTION), y)
+    CHIPS_OBJS += $(CHIPS_CMM)pre_cal.o
+    ccflags-y += -DCFG_SUPPORT_PRE_ON_PHY_ACTION=1
+else
+    ccflags-y += -DCFG_SUPPORT_PRE_ON_PHY_ACTION=0
+endif
+
+CHIPS_OBJS += $(CHIPS_CMM)fw_dl.o
+ifeq ($(CONFIG_MTK_WIFI_SUPPORT_IPC), y)
+CHIPS_OBJS += $(CHIPS_CMM)wlan_ipc.o
+endif
+
+ifneq ($(filter MT6632,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt6632/mt6632.o
+endif
+ifneq ($(filter MT7668,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7668/mt7668.o
+endif
+ifneq ($(filter MT7663,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7663/mt7663.o
+endif
+ifneq ($(filter CONNAC,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)connac/connac.o
+endif
+ifneq ($(filter SOC2_1X1,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)soc2_1x1/soc2_1x1.o
+endif
+ifneq ($(filter SOC2_2X2,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)soc2_2x2/soc2_2x2.o
+endif
+ifneq ($(findstring MT7915,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7915/mt7915.o
+CHIPS_OBJS +=  $(CHIPS)mt7915/dbg_mt7915.o
+endif
+ifneq ($(findstring 3_0,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)soc3_0/soc3_0.o
+CHIPS_OBJS += $(CHIPS)soc3_0/dbg_soc3_0.o
+CHIPS_OBJS += $(CHIPS)soc3_0/hal_dmashdl_soc3_0.o
+endif
+ifneq ($(findstring MT7961,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7961/mt7961.o
+CHIPS_OBJS += $(CHIPS)mt7961/dbg_mt7961.o
+CHIPS_OBJS += $(CHIPS)mt7961/hal_dmashdl_mt7961.o
+CHIPS_OBJS += $(CHIPS)mt7961/hal_wfsys_reset_mt7961.o
+endif
+ifneq ($(findstring 5_0,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)soc5_0/soc5_0.o
+CHIPS_OBJS += $(CHIPS)soc5_0/dbg_soc5_0.o
+CHIPS_OBJS += $(CHIPS)soc5_0/hal_dmashdl_soc5_0.o
+endif
+ifneq ($(findstring 7_0,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)soc7_0/soc7_0.o
+CHIPS_OBJS += $(CHIPS)soc7_0/dbg_soc7_0.o
+CHIPS_OBJS += $(CHIPS)soc7_0/hal_dmashdl_soc7_0.o
+endif
+
+ifneq ($(filter BELLWETHER,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)bellwether/bellwether.o
+CHIPS_OBJS += $(CHIPS)bellwether/dbg_bellwether.o
+CHIPS_OBJS += $(CHIPS)bellwether/hal_dmashdl_bellwether.o
+endif
+
+ifneq ($(filter MT6639,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt6639/mt6639.o
+CHIPS_OBJS += $(CHIPS)mt6639/dbg_mt6639.o
+CHIPS_OBJS += $(CHIPS)mt6639/hal_dmashdl_mt6639.o
+CHIPS_OBJS += $(CHIPS)mt6639/hal_wfsys_reset_mt6639.o
+endif
+
+ifneq ($(filter MT6653,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt6653/mt6653.o
+CHIPS_OBJS += $(CHIPS)mt6653/dbg_mt6653.o
+CHIPS_OBJS += $(CHIPS)mt6653/hal_dmashdl_mt6653.o
+ifeq ($(CONFIG_MTK_WIFI_CONNFEM_DEFAULT), y)
+CHIPS_OBJS += $(CHIPS)mt6653/connfem_mt6653.o
+endif
+endif
+
+ifneq ($(filter MT6655,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt6655/mt6655.o
+CHIPS_OBJS += $(CHIPS)mt6655/dbg_mt6655.o
+CHIPS_OBJS += $(CHIPS)mt6655/hal_dmashdl_mt6655.o
+endif
+
+ifneq ($(filter MT7990,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7990/mt7990.o
+CHIPS_OBJS += $(CHIPS)mt7990/dbg_mt7990.o
+CHIPS_OBJS += $(CHIPS)mt7990/hal_dmashdl_mt7990.o
+endif
+
+ifneq ($(filter MT7925,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7925/mt7925.o
+CHIPS_OBJS += $(CHIPS)mt7925/dbg_mt7925.o
+CHIPS_OBJS += $(CHIPS)mt7925/hal_dmashdl_mt7925.o
+CHIPS_OBJS += $(CHIPS)mt7925/hal_wfsys_reset_mt7925.o
+endif
+
+ifneq ($(filter MT7935,$(MTK_COMBO_CHIP)),)
+CHIPS_OBJS += $(CHIPS)mt7935/mt7935.o
+CHIPS_OBJS += $(CHIPS)mt7935/dbg_mt7935.o
+CHIPS_OBJS += $(CHIPS)mt7935/hal_dmashdl_mt7935.o
+endif
+
+ifeq ($(CONFIG_SUPPORT_FW_IDX_LOG_TRANS), y)
+CHIPS_OBJS += $(CHIPS_CMM)fw_log_parser.o
+endif
+
+# ---------------------------------------------------
+# P2P Objects List
+# ---------------------------------------------------
+
+COMMON_OBJS += $(COMMON_DIR)wlan_p2p.o
+
+NIC_OBJS += $(NIC_DIR)p2p_nic.o
+
+ifneq ($(os), none)
+OS_OBJS += $(OS_DIR)gl_p2p.o \
+           $(OS_DIR)gl_p2p_cfg80211.o \
+           $(OS_DIR)gl_p2p_init.o
+endif
+OS_OBJS += $(OS_DIR)gl_p2p_kal.o
+
+MGMT_OBJS += $(MGMT_DIR)p2p_dev_fsm.o\
+            $(MGMT_DIR)p2p_dev_state.o\
+            $(MGMT_DIR)p2p_role_fsm.o\
+            $(MGMT_DIR)p2p_role_state.o\
+            $(MGMT_DIR)p2p_func.o\
+            $(MGMT_DIR)p2p_scan.o\
+            $(MGMT_DIR)p2p_ie.o\
+            $(MGMT_DIR)p2p_rlm.o\
+            $(MGMT_DIR)p2p_assoc.o\
+            $(MGMT_DIR)p2p_bss.o\
+            $(MGMT_DIR)p2p_rlm_obss.o\
+            $(MGMT_DIR)p2p_fsm.o\
+            $(MGMT_DIR)p2p_link.o
+
+
+MGMT_OBJS += $(MGMT_DIR)wapi.o
+
+# ---------------------------------------------------
+# NAN Objects List
+# ---------------------------------------------------
+ifeq ($(CONFIG_MTK_WIFI_NAN), y)
+OS_OBJS  += $(OS_DIR)gl_nan.o \
+            $(OS_DIR)gl_vendor_nan.o \
+            $(OS_DIR)gl_vendor_ndp.o
+NAN_OBJS := $(NAN_DIR)nan_dev.o \
+            $(NAN_DIR)nanDiscovery.o\
+            $(NAN_DIR)nanScheduler.o\
+            $(NAN_DIR)nanReg.o\
+            $(NAN_DIR)nan_data_engine.o\
+            $(NAN_DIR)nan_data_engine_util.o\
+            $(NAN_DIR)nan_ranging.o\
+            $(NAN_DIR)nan_txm.o
+
+ifeq ($(CONFIG_MTK_WIFI_NAN_EXT), y)
+OS_OBJS +=  $(EXT_DIR)$(OS_DIR)gl_sys.o
+
+NAN_OBJS += $(EXT_DIR)$(NAN_DIR)nan_ext.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_ccm.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_pa.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_mdc.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_asc.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_amc.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_ascc.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_fr.o \
+            $(EXT_DIR)$(NAN_DIR)nan_ext_adsdc.o
+endif
+
+NAN_SEC_OBJS := $(NAN_DIR)nan_sec.o\
+                $(WPA_DIR)src/ap/wpa_auth.o\
+                $(WPA_DIR)src/common/wpa_common.o\
+                $(WPA_DIR)src/rsn_supp/wpa.o\
+                $(WPA_DIR)wpa_supplicant/wpas_glue.o\
+                $(WPA_DIR)wpa_supplicant/wpa_supplicant.o\
+                $(WPA_DIR)src/ap/wpa_auth_glue.o
+endif
+
+# ---------------------------------------------------
+# HE Objects List
+# ---------------------------------------------------
+
+COMMON_OBJS += $(COMMON_DIR)wlan_he.o
+
+ifeq ($(CONFIG_MTK_WIFI_11AX_SUPPORT), y)
+MGMT_OBJS += $(MGMT_DIR)he_ie.o \
+             $(MGMT_DIR)he_rlm.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_SUPPORT), y)
+MGMT_OBJS += $(MGMT_DIR)eht_rlm.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_MLO_SUPPORT), y)
+MGMT_OBJS += $(MGMT_DIR)mlo.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_EPCS), y)
+MGMT_OBJS += $(MGMT_DIR)epcs.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_11BE_T2LM), y)
+MGMT_OBJS += $(MGMT_DIR)t2lm.o
+endif
+
+ifeq ($(CONFIG_MTK_WIFI_TWT_SUPPORT), y)
+MGMT_OBJS += $(MGMT_DIR)twt_req_fsm.o \
+             $(MGMT_DIR)twt.o \
+             $(MGMT_DIR)twt_planner.o
+endif
+
+ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
+HIF_OBJS :=  $(HIF_DIR)arm.o \
+             $(HIF_DIR)sdio.o \
+             $(HIF_DIR)hal_api.o
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
+HIF_OBJS :=  $(HIF_COMMON_DIR)hal_pdma.o \
+             $(HIF_COMMON_DIR)kal_pdma.o \
+             $(HIF_COMMON_DIR)dbg_pdma.o \
+             $(HIF_COMMON_DIR)hif_mem.o \
+             $(HIF_COMMON_DIR)sw_emi_ring.o \
+             $(HIF_DIR)pcie.o \
+             $(HIF_DIR)pcie_msi.o
+ifeq ($(CONFIG_MTK_HOST_OFFLOAD_SUPPORT), y)
+HIF_OBJS +=  $(HIF_COMMON_DIR)hal_offload.o
+endif
+ifeq ($(CONFIG_SUPPORT_MTK_WIFI_MBU), y)
+HIF_OBJS +=  $(HIF_COMMON_DIR)hal_mbu.o
+endif
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
+HIF_OBJS :=  $(HIF_COMMON_DIR)hal_pdma.o \
+             $(HIF_COMMON_DIR)kal_pdma.o \
+             $(HIF_COMMON_DIR)dbg_pdma.o \
+             $(HIF_COMMON_DIR)sw_wfdma.o \
+             $(HIF_COMMON_DIR)hif_mem.o \
+             $(HIF_DIR)axi.o
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
+HIF_OBJS :=  $(HIF_DIR)usb.o \
+             $(HIF_DIR)hal_api.o
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), ut)
+HIF_OBJS :=  $(HIF_DIR)ut.o \
+             $(HIF_DIR)hal_api.o
+else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+HIF_OBJS :=  $(HIF_DIR)none.o
+endif
+
+# wed support
+ifeq ($(CONFIG_MTK_WIFI_WED), y)
+HIF_OBJS += $(HIF_COMMON_DIR)hal_wed.o
+ccflags-y += -DCFG_SUPPORT_WED_PROXY=1
+else
+ccflags-y += -DCFG_SUPPORT_WED_PROXY=0
+endif
+
+ifeq ($(CONFIG_MTK_SUPPORT_LIGHT_MDDP), y)
+    ccflags-y += -DCFG_MTK_SUPPORT_LIGHT_MDDP=1
+else
+    ccflags-y += -DCFG_MTK_SUPPORT_LIGHT_MDDP=0
+endif
+
+# ---------------------------------------------------
+# Platform Objects List
+# ---------------------------------------------------
+ifneq ($(PLAT_DIR),)
+
+PLAT_PRIV_C = $(KO_CODE_PATH)/$(PLAT_DIR)plat_priv.c
+
+# search path (out of kernel tree)
+IS_EXIST_PLAT_PRIV_C := $(wildcard $(PLAT_PRIV_C))
+# search path (build-in kernel tree)
+IS_EXIST_PLAT_PRIV_C += $(wildcard $(srctree)/$(PLAT_PRIV_C))
+
+ifneq ($(strip $(IS_EXIST_PLAT_PRIV_C)),)
+PLAT_OBJS := $(PLAT_DIR)plat_priv.o
+$(MODULE_NAME)-objs  += $(PLAT_OBJS)
+endif
+endif
+
+# ---------------------------------------------------
+# System Dvt Objects List
+# ---------------------------------------------------
+ifeq ($(CFG_SUPPORT_WIFI_SYSDVT), 1)
+SYSDVT_OBJS += $(SYSDVT_DIR)dvt_common.o \
+               $(SYSDVT_DIR)dvt_phtput.o
+
+ifeq ($(CFG_SUPPORT_DMASHDL_SYSDVT), 1)
+SYSDVT_OBJS += $(SYSDVT_DIR)dvt_dmashdl.o
+endif
+endif
+
+# ---------------------------------------------------
+# Service git List
+# ---------------------------------------------------
+MTK_WLAN_SERVICE_PATH  := wlan_service/
+
+ifneq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
+ifneq ($(findstring wlan_service,$(MTK_WLAN_SERVICE_PATH)),)
+MTK_WLAN_SERVICE=yes
+SERVICE_DIR  := $(MTK_WLAN_SERVICE_PATH)
+$(info SERVICE_DIR is [{$(MTK_WLAN_SERVICE_PATH)}])
+endif
+endif
+
+ifeq ($(MTK_WLAN_SERVICE), yes)
+ccflags-y += -DCONFIG_WLAN_SERVICE=1
+ccflags-y += -DCONFIG_TEST_ENGINE_OFFLOAD=1
+ccflags-y += -I$(KO_CODE_PATH)/$(SERVICE_DIR)include
+ccflags-y += -I$(KO_CODE_PATH)/$(SERVICE_DIR)service/include
+ccflags-y += -I$(KO_CODE_PATH)/$(SERVICE_DIR)glue/osal/include
+ccflags-y += -I$(KO_CODE_PATH)/$(SERVICE_DIR)glue/hal/include
+$(info $$CCFLAG is [{$(ccflags-y)}])
+SERVICE_OBJS := $(SERVICE_DIR)agent/agent.o \
+                $(SERVICE_DIR)service/service_test.o \
+                $(SERVICE_DIR)service/test_engine.o \
+                $(SERVICE_DIR)glue/osal/gen4m/sys_adaption_gen4m.o \
+                $(SERVICE_DIR)glue/osal/gen4m/net_adaption_gen4m.o \
+                $(SERVICE_DIR)glue/hal/gen4m/operation_gen4m.o
+$(MODULE_NAME)-objs  += $(SERVICE_OBJS)
+$(info $$MTK_WLAN_SERVICE is [{$(SERVICE_OBJS)}])
+else
+ccflags-y += -DCONFIG_WLAN_SERVICE=0
+ccflags-y += -DCONFIG_TEST_ENGINE_OFFLOAD=0
+endif
+
+$(MODULE_NAME)-objs  += $(COMMON_OBJS)
+$(MODULE_NAME)-objs  += $(NIC_OBJS)
+$(MODULE_NAME)-objs  += $(OS_OBJS)
+$(MODULE_NAME)-objs  += $(HIF_OBJS)
+$(MODULE_NAME)-objs  += $(MGMT_OBJS)
+$(MODULE_NAME)-objs  += $(CHIPS_OBJS)
+$(MODULE_NAME)-objs  += $(SYSDVT_OBJS)
+$(MODULE_NAME)-objs  += $(CRYPTO_OBJS)
+$(MODULE_NAME)-objs  += $(NAN_OBJS)
+$(MODULE_NAME)-objs  += $(NAN_SEC_OBJS)
+
+ifneq ($(findstring UT_TEST_MODE,$(MTK_COMBO_CHIP)),)
+include $(KO_CODE_PATH)/test/ut.make
+endif
+
+#
+# mtprealloc
+#
+ifeq ($(CONFIG_MTK_PREALLOC_MEMORY), y)
+ccflags-y += -DCFG_PREALLOC_MEMORY
+ccflags-y += -I$(KO_CODE_PATH)/prealloc/include
+ifeq ($(MODULE_NAME_PREALLOC),)
+MODULE_NAME_PREALLOC = $(MODULE_NAME)_prealloc
+endif
+PREALLOC_OBJS := prealloc/prealloc.o
+$(MODULE_NAME_PREALLOC)-objs += $(PREALLOC_OBJS)
+obj-m += $(MODULE_NAME_PREALLOC).o
+endif
+
+#
+# mtreset
+#
+ifeq ($(CONFIG_CHIP_RESET_KO_SUPPORT), y)
+ccflags-y += -DCFG_CHIP_RESET_KO_SUPPORT=1
+ccflags-y += -I$(KO_CODE_PATH)/reset/include
+ifeq ($(MODULE_NAME_PREALLOC),)
+MODULE_NAME_RESET = $(MODULE_NAME)_reset
+endif
+RESET_OBJS += reset/reset.o
+RESET_OBJS += reset/reset_fsm.o
+RESET_OBJS += reset/reset_fsm_def.o
+RESET_OBJS += reset/reset_hif.o
+$(MODULE_NAME_RESET)-objs += $(RESET_OBJS)
+obj-m += $(MODULE_NAME_RESET).o
+else
+ccflags-y += -DCFG_CHIP_RESET_KO_SUPPORT=0
+endif
+
+#
+# Frame size
+#
+ifeq ($(WMT_SUPPORT), y)
+    ifeq ($(CONFIG_FRAME_WARN),)
+        ccflags-y += -Wframe-larger-than=2048
+    endif
+else
+    ccflags-y += -Wframe-larger-than=2048
+endif

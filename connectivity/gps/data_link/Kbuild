@@ -1,0 +1,6 @@
+obj-m += plat/v010/
+obj-m += plat/v030/
+obj-m += plat/v050/
+obj-m += plat/v051/
+obj-m += plat/v060/
+obj-m += plat/v061/

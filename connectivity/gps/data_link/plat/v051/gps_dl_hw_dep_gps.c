@@ -1,0 +1,224 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ */
+#include "gps_dl_config.h"
+
+#include "gps_dl_hw_ver.h"
+#include "gps_dl_hw_dep_api.h"
+#include "gps_dl_hw_dep_macro.h"
+
+#include "../gps_dl_hw_priv_util.h"
+#include "gps_dl_hal.h"
+#include "gps_dl_hw_atf.h"
+#if GPS_DL_HAS_CONNINFRA_DRV
+#if GPS_DL_ON_LINUX
+#include "conninfra.h"
+#elif GPS_DL_ON_CTP
+#include "conninfra_ext.h"
+#endif
+#endif
+
+bool gps_dl_hw_dep_set_dsp_on_and_poll_ack(enum gps_dl_link_id_enum link_id)
+{
+	bool poll_okay = false;
+
+	if (GPS_DATA_LINK_ID0 == link_id) {
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L1_CR_RGU_GPS_L1_ON, 1);
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L1_CR_RGU_GPS_L1_SOFT_RST_B, 1);
+		GDL_HW_POLL_GPS_ENTRY(
+			BGF_GPS_CFG_ON_GPS_L1_SLP_PWR_CTL_GPS_L1_SLP_PWR_CTL_CS, 4,
+			POLL_DEFAULT, &poll_okay);
+	} else if (GPS_DATA_LINK_ID1 == link_id) {
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L5_CR_RGU_GPS_L5_ON, 1);
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L5_CR_RGU_GPS_L5_SOFT_RST_B, 1);
+		GDL_HW_POLL_GPS_ENTRY(
+			BGF_GPS_CFG_ON_GPS_L5_SLP_PWR_CTL_GPS_L5_SLP_PWR_CTL_CS, 4,
+			POLL_DEFAULT, &poll_okay);
+	}
+	if (!poll_okay)
+		return false;
+
+	if (GPS_DATA_LINK_ID1 == link_id) {
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L5_DLY_CHAIN_CTL_RGU_GPS_L5_MEM_PDN_DELAY_DUMMY_NUM, 0xC);
+	}
+	return poll_okay;
+}
+
+void gps_dl_hw_dep_set_dsp_off(enum gps_dl_link_id_enum link_id)
+{
+	if (GPS_DATA_LINK_ID0 == link_id) {
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L1_CR_RGU_GPS_L1_SOFT_RST_B, 0);
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L1_CR_RGU_GPS_L1_ON, 0);
+	} else if (GPS_DATA_LINK_ID1 == link_id) {
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L5_CR_RGU_GPS_L5_SOFT_RST_B, 0);
+		GDL_HW_SET_GPS_ENTRY(
+			BGF_GPS_RGU_ON_GPS_L5_CR_RGU_GPS_L5_ON, 0);
+	}
+}
+
+bool gps_dl_hw_dep_poll_gps_sleep_state(enum gps_dl_link_id_enum link_id)
+{
+	bool poll_okay = false;
+
+	if (GPS_DATA_LINK_ID0 == link_id) {
+		GDL_HW_POLL_GPS_ENTRY(
+			BGF_GPS_CFG_ON_GPS_L1_SLP_PWR_CTL_GPS_L1_SLP_PWR_CTL_CS, 0xb,
+			POLL_DEFAULT, &poll_okay);
+		if (!poll_okay) {
+			GDL_LOGE("_fail_poll_l1_gps_sleep_not_okay");
+			return false;
+		}
+	} else if (GPS_DATA_LINK_ID1 == link_id) {
+		GDL_HW_POLL_GPS_ENTRY(
+			BGF_GPS_CFG_ON_GPS_L5_SLP_PWR_CTL_GPS_L5_SLP_PWR_CTL_CS, 0xb,
+			POLL_DEFAULT, &poll_okay);
+		if (!poll_okay) {
+			GDL_LOGE("_fail_poll_l5_gps_sleep_not_okay");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void gps_dl_hw_dep_common_enter_dpstop_dsleep(void)
+{
+	struct arm_smccc_res res;
+	int ret;
+
+	/*close a-die*/
+	if (0x6686 == gps_dl_hal_get_adie_ver())
+		gps_dl_hw_dep_gps_control_adie_off_6878();
+
+	arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_DL_COMMON_ENTER_DPSTOP_DSLEEP,
+			0, 0, 0, 0, 0, 0, &res);
+	ret = res.a0;
+}
+
+void gps_dl_hw_dep_common_leave_dpstop_dsleep(void)
+{
+	struct arm_smccc_res res;
+	int ret;
+	bool poll_okay;
+
+	arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_DL_COMMON_LEAVE_DPSTOP_DSLEEP,
+			0, 0, 0, 0, 0, 0, &res);
+	ret = res.a0;
+
+	poll_okay = gps_dl_hw_dep_poll_bgf_bus_and_gps_top_ack();
+	if (!poll_okay) {
+		/* Just show log */
+		GDL_LOGE("_fail_bgf_check\n");
+		return;
+	}
+
+	arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_DL_COMMON_LEAVE_DPSTOP_DSLEEP2,
+			0, 0, 0, 0, 0, 0, &res);
+	ret = res.a0;
+
+	/*open a-die*/
+	if (0x6686 == gps_dl_hal_get_adie_ver()) {
+		gps_dl_hw_dep_gps_control_adie_on_6878();
+	} else {
+		arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_DL_COMMON_ENABLE_ADIE,
+				0, 0, 0, 0, 0, 0, &res);
+	}
+	ret = res.a0;
+
+#if GPS_DL_HAS_CONNINFRA_DRV
+	if (0x6637 == gps_dl_hal_get_adie_ver()) {
+		/*open mt6637 top clock buffer : ADIE TOP 0xB18[1] = 1*/
+		if (conninfra_spi_update_bits(SYS_SPI_TOP, 0xB18, 0x2, 0x2) != 0) {
+			GDL_LOGE("conninfra_spi_update_bits_not_okay");
+			return;
+		}
+	}
+#endif
+
+	arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_COMMON_ON_PART5_OPID,
+			0, 0, 0, 0, 0, 0, &res);
+	ret = res.a0;
+}
+
+void gps_dl_hw_dep_common_clear_wakeup_source(void)
+{
+	struct arm_smccc_res res;
+	int ret;
+
+	arm_smccc_smc(MTK_SIP_KERNEL_GPS_CONTROL, SMC_GPS_DL_COMMON_CLEAR_WAKEUP_SOURCE,
+			0, 0, 0, 0, 0, 0, &res);
+	ret = res.a0;
+}
+
+void gps_dl_hw_dep_cfg_dsp_mem(enum dsp_ctrl_enum ctrl)
+{
+	switch (ctrl) {
+	case GPS_L1_DSP_ENTER_DSLEEP:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_PDN_EN_RGU_GPS_L1_PRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_SLP_EN_RGU_GPS_L1_PRAM_HWCTL_SLP, 0x3FFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_PDN_EN_RGU_GPS_L1_XRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_SLP_EN_RGU_GPS_L1_XRAM_HWCTL_SLP, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN_M, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP, 0xFFFFFFFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP_M, 0x1F);
+		break;
+	case GPS_L1_DSP_ENTER_DSTOP:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_PDN_EN_RGU_GPS_L1_PRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_SLP_EN_RGU_GPS_L1_PRAM_HWCTL_SLP, 0x3FFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_PDN_EN_RGU_GPS_L1_XRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_SLP_EN_RGU_GPS_L1_XRAM_HWCTL_SLP, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN, 0xFFFFFFFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN_M, 0x1F);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP_M, 0);
+		break;
+	case GPS_L1_DSP_OFF:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_PDN_EN_RGU_GPS_L1_PRAM_HWCTL_PDN, 0x3FFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPPRAM_SLP_EN_RGU_GPS_L1_PRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_PDN_EN_RGU_GPS_L1_XRAM_HWCTL_PDN, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPXRAM_SLP_EN_RGU_GPS_L1_XRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN, 0xFFFFFFFF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_PDN_EN_RGU_GPS_L1_YRAM_HWCTL_PDN_M, 0x1F);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L1_DSPYRAM_2_SLP_EN_RGU_GPS_L1_YRAM_HWCTL_SLP_M, 0);
+		break;
+	case GPS_L5_DSP_ENTER_DSLEEP:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_PDN_EN_RGU_GPS_L5_PRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_SLP_EN_RGU_GPS_L5_PRAM_HWCTL_SLP, 0x3FF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_PDN_EN_RGU_GPS_L5_XRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_SLP_EN_RGU_GPS_L5_XRAM_HWCTL_SLP, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_PDN_EN_RGU_GPS_L5_YRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_SLP_EN_RGU_GPS_L5_YRAM_HWCTL_SLP, 0x3FF);
+		break;
+	case GPS_L5_DSP_ENTER_DSTOP:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_PDN_EN_RGU_GPS_L5_PRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_SLP_EN_RGU_GPS_L5_PRAM_HWCTL_SLP, 0x3FF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_PDN_EN_RGU_GPS_L5_XRAM_HWCTL_PDN, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_SLP_EN_RGU_GPS_L5_XRAM_HWCTL_SLP, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_PDN_EN_RGU_GPS_L5_YRAM_HWCTL_PDN, 0x3FF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_SLP_EN_RGU_GPS_L5_YRAM_HWCTL_SLP, 0);
+		break;
+	case GPS_L5_DSP_OFF:
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_PDN_EN_RGU_GPS_L5_PRAM_HWCTL_PDN, 0x3FF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPPRAM_SLP_EN_RGU_GPS_L5_PRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_PDN_EN_RGU_GPS_L5_XRAM_HWCTL_PDN, 0xF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPXRAM_SLP_EN_RGU_GPS_L5_XRAM_HWCTL_SLP, 0);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_PDN_EN_RGU_GPS_L5_YRAM_HWCTL_PDN, 0x3FF);
+		GDL_HW_SET_GPS_ENTRY(BGF_GPS_RGU_ON_GPS_L5_DSPYRAM_SLP_EN_RGU_GPS_L5_YRAM_HWCTL_SLP, 0);
+		break;
+	default:
+		/* Do nothing */
+		break;
+	}
+}
+

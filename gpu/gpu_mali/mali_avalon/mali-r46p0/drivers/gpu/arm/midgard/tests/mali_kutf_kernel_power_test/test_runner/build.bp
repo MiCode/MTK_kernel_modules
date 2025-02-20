@@ -1,0 +1,44 @@
+/*
+ * Copyright:
+ * ----------------------------------------------------------------------------
+ * This confidential and proprietary software may be used only as authorized
+ * by a licensing agreement from ARM Limited.
+ *      (C) COPYRIGHT 2021-2023 ARM Limited, ALL RIGHTS RESERVED
+ * The entire notice above must be reproduced on all authorized copies and
+ * copies may only be made to the extent permitted by a licensing agreement
+ * from ARM Limited.
+ * ----------------------------------------------------------------------------
+ */
+
+bob_binary {
+    name: "mali_kutf_kernel_power_test_runner",
+    defaults: [
+        "ddk_defaults",
+        "global_includes",
+        "test_defaults",
+    ],
+    srcs: [
+        "mali_kutf_kernel_power_test_runner_main.c",
+        "mali_kutf_kernel_power_test_extra.c",
+    ],
+    static_libs: [
+        "libkutf_test_runner",
+        "libmalibase",
+        "libbase_test_helpers",
+        "libbase_cmn",
+    ],
+    gpu_has_csf: {
+        static_libs: [
+            "libbase_csf_test_helpers",
+        ],
+    },
+    shared_libs: [
+        "libmali",
+    ],
+    cflags: ["-DMALI_ERROR_INJECT_ON={{.mali_error_inject_on}}"],
+    install_group: "IG_tests",
+    enabled: false,
+    mali_kutf_kernel_power_test: {
+        enabled: true,
+    },
+}

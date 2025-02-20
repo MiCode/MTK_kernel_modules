@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0
+
+MTK_CCD_REMOTEPROC_MODULE := mtk_ccd_remoteproc
+
+subdir-ccflags-y += \
+	-I$(srctree)/$(src) \
+	-I$(srctree)/drivers/remoteproc \
+	-I$(DEVICE_MODULES_PATH)/include/ \
+	-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu/
+
+$(MTK_CCD_REMOTEPROC_MODULE)-objs := mtk_ccd.o mtk_ccd_mem.o
+
+obj-$(CONFIG_MTK_CCD_REMOTEPROC) += $(MTK_CCD_REMOTEPROC_MODULE).o

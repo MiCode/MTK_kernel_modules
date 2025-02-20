@@ -1,0 +1,29 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "include/*.h",
+    ]),
+)
+
+define_mgk_ko(
+    name = "jank_detection_common_utils",
+    srcs = glob([
+        "src/jank_detection_common.c",
+        "src/jank_detection_utils.c",
+        "include/jank_detection_common.h",
+        "include/jank_detection_common_core.h",
+        "include/jank_detection_utils.h",
+        "Kbuild",
+        "Makefile",
+    ]),
+    outs = ["jank_detection_common_utils.ko"],
+)
+

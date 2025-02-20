@@ -1,0 +1,192 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ */
+
+#ifndef __CONN_GPIO_REGS_H__
+#define __CONN_GPIO_REGS_H__
+
+#include "hal_common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define CONN_GPIO_BASE \
+	(0x18016000 + CONN_INFRA_REMAPPING_OFFSET)
+
+#define CONN_GPIO_GPIO_DOUT1_ADDR \
+	(CONN_GPIO_BASE + 0x000)
+#define CONN_GPIO_GPIO_DOUT1_SET_ADDR \
+	(CONN_GPIO_BASE + 0x004)
+#define CONN_GPIO_GPIO_DOUT1_RESET_ADDR \
+	(CONN_GPIO_BASE + 0x008)
+#define CONN_GPIO_GPIO_OE1_ADDR \
+	(CONN_GPIO_BASE + 0x00C)
+#define CONN_GPIO_GPIO_OE1_SET_ADDR \
+	(CONN_GPIO_BASE + 0x010)
+#define CONN_GPIO_GPIO_OE1_RESET_ADDR \
+	(CONN_GPIO_BASE + 0x014)
+#define CONN_GPIO_GPIO_DIN_ADDR \
+	(CONN_GPIO_BASE + 0x018)
+#define CONN_GPIO_MON_SEL1_ADDR \
+	(CONN_GPIO_BASE + 0x01C)
+#define CONN_GPIO_MON_SEL2_ADDR \
+	(CONN_GPIO_BASE + 0x020)
+#define CONN_GPIO_MON_SEL3_ADDR \
+	(CONN_GPIO_BASE + 0x024)
+#define CONN_GPIO_MON_SEL4_ADDR \
+	(CONN_GPIO_BASE + 0x028)
+#define CONN_GPIO_MON_SEL5_ADDR \
+	(CONN_GPIO_BASE + 0x02C)
+#define CONN_GPIO_MON_SEL6_ADDR \
+	(CONN_GPIO_BASE + 0x030)
+#define CONN_GPIO_MON_SEL7_ADDR \
+	(CONN_GPIO_BASE + 0x034)
+#define CONN_GPIO_MON_SEL8_ADDR \
+	(CONN_GPIO_BASE + 0x038)
+#define CONN_GPIO_MON_SEL9_ADDR \
+	(CONN_GPIO_BASE + 0x03C)
+#define CONN_GPIO_PINMUX_SEL1_ADDR \
+	(CONN_GPIO_BASE + 0x040)
+#define CONN_GPIO_PINMUX_SEL2_ADDR \
+	(CONN_GPIO_BASE + 0x044)
+#define CONN_GPIO_PINMUX_SEL3_ADDR \
+	(CONN_GPIO_BASE + 0x048)
+#define CONN_GPIO_PINMUX_SEL4_ADDR \
+	(CONN_GPIO_BASE + 0x04C)
+#define CONN_GPIO_PINMUX_SEL5_ADDR \
+	(CONN_GPIO_BASE + 0x050)
+#define CONN_GPIO_MONFLG_RECORD_ADDR \
+	(CONN_GPIO_BASE + 0x054)
+#define CONN_GPIO_GPIO_MISC_CTRL_ADDR \
+	(CONN_GPIO_BASE + 0x058)
+#define CONN_GPIO_ant_rf_misc_1_ADDR \
+	(CONN_GPIO_BASE + 0x304)
+#define CONN_GPIO_ant_rf_misc_2_ADDR \
+	(CONN_GPIO_BASE + 0x308)
+#define CONN_GPIO_ant_rf_misc_3_ADDR \
+	(CONN_GPIO_BASE + 0x30C)
+#define CONN_GPIO_ant_rf_misc_4_ADDR \
+	(CONN_GPIO_BASE + 0x310)
+#define CONN_GPIO_ip1_ant_rf_misc_ADDR \
+	(CONN_GPIO_BASE + 0x314)
+#define CONN_GPIO_ip1_ant_rf_misc_2_ADDR \
+	(CONN_GPIO_BASE + 0x318)
+#define CONN_GPIO_ip1_ant_rf_misc_3_ADDR \
+	(CONN_GPIO_BASE + 0x31C)
+#define CONN_GPIO_ip1_ant_rf_misc_4_ADDR \
+	(CONN_GPIO_BASE + 0x320)
+#define CONN_GPIO_ant_cfg_16_ADDR \
+	(CONN_GPIO_BASE + 0x340)
+#define CONN_GPIO_ant_cfg_13_ADDR \
+	(CONN_GPIO_BASE + 0x34C)
+#define CONN_GPIO_ant_cfg_12_ADDR \
+	(CONN_GPIO_BASE + 0x350)
+#define CONN_GPIO_ant_cfg_9_ADDR \
+	(CONN_GPIO_BASE + 0x35C)
+#define CONN_GPIO_ant_cfg_8_ADDR \
+	(CONN_GPIO_BASE + 0x360)
+#define CONN_GPIO_ant_cfg_5_ADDR \
+	(CONN_GPIO_BASE + 0x36C)
+#define CONN_GPIO_ant_cfg_4_ADDR \
+	(CONN_GPIO_BASE + 0x370)
+#define CONN_GPIO_ant_cfg_1_ADDR \
+	(CONN_GPIO_BASE + 0x37C)
+#define CONN_GPIO_ant_cfg_0_ADDR \
+	(CONN_GPIO_BASE + 0x380)
+#define CONN_GPIO_ant_pin_cfg0_ADDR \
+	(CONN_GPIO_BASE + 0X400)
+#define CONN_GPIO_ant_pin_cfg1_ADDR \
+	(CONN_GPIO_BASE + 0x404)
+#define CONN_GPIO_ant_pin_cfg2_ADDR \
+	(CONN_GPIO_BASE + 0x408)
+#define CONN_GPIO_ant_pin_cfg3_ADDR \
+	(CONN_GPIO_BASE + 0x40C)
+#define CONN_GPIO_ant_pin_cfg4_ADDR \
+	(CONN_GPIO_BASE + 0x410)
+#define CONN_GPIO_ant_pin_cfg5_ADDR \
+	(CONN_GPIO_BASE + 0x414)
+#define CONN_GPIO_ant_pin_cfg6_ADDR \
+	(CONN_GPIO_BASE + 0x418)
+#define CONN_GPIO_ant_pin_cfg7_ADDR \
+	(CONN_GPIO_BASE + 0x41C)
+#define CONN_GPIO_ant_pin_cfg8_ADDR \
+	(CONN_GPIO_BASE + 0x420)
+#define CONN_GPIO_ant_pin_cfg9_ADDR \
+	(CONN_GPIO_BASE + 0x424)
+#define CONN_GPIO_ant_pin_cfg10_ADDR \
+	(CONN_GPIO_BASE + 0x428)
+#define CONN_GPIO_ant_pin_cfg11_ADDR \
+	(CONN_GPIO_BASE + 0x42C)
+#define CONN_GPIO_ant_pin_cfg12_ADDR \
+	(CONN_GPIO_BASE + 0x430)
+#define CONN_GPIO_ant_pin_cfg13_ADDR \
+	(CONN_GPIO_BASE + 0x434)
+#define CONN_GPIO_ant_pin_cfg14_ADDR \
+	(CONN_GPIO_BASE + 0x438)
+#define CONN_GPIO_ant_pin_cfg15_ADDR \
+	(CONN_GPIO_BASE + 0x43C)
+#define CONN_GPIO_ant_pin_cfg16_ADDR \
+	(CONN_GPIO_BASE + 0x440)
+#define CONN_GPIO_ant_pin_cfg17_ADDR \
+	(CONN_GPIO_BASE + 0x444)
+#define CONN_GPIO_ant_pin_cfg18_ADDR \
+	(CONN_GPIO_BASE + 0x448)
+#define CONN_GPIO_ant_pin_cfg19_ADDR \
+	(CONN_GPIO_BASE + 0x44C)
+#define CONN_GPIO_ant_pin_cfg20_ADDR \
+	(CONN_GPIO_BASE + 0x450)
+#define CONN_GPIO_ant_pin_cfg21_ADDR \
+	(CONN_GPIO_BASE + 0x454)
+#define CONN_GPIO_ant_pin_cfg22_ADDR \
+	(CONN_GPIO_BASE + 0x458)
+#define CONN_GPIO_ant_pin_cfg23_ADDR \
+	(CONN_GPIO_BASE + 0x45C)
+#define CONN_GPIO_ant_pin_cfg24_ADDR \
+	(CONN_GPIO_BASE + 0x460)
+#define CONN_GPIO_ant_pin_cfg25_ADDR \
+	(CONN_GPIO_BASE + 0x464)
+#define CONN_GPIO_ant_pin_cfg26_ADDR \
+	(CONN_GPIO_BASE + 0x468)
+#define CONN_GPIO_conn_ant_corx_en_rf0_ADDR \
+	(CONN_GPIO_BASE + 0x4B0)
+#define CONN_GPIO_conn_ant_corx_en_rf1_ADDR \
+	(CONN_GPIO_BASE + 0x4B4)
+#define CONN_GPIO_conn_ant_corx_sel_bpy_ADDR \
+	(CONN_GPIO_BASE + 0x4B8)
+#define CONN_GPIO_conn_ant_corx_sel_en_ADDR \
+	(CONN_GPIO_BASE + 0x4BC)
+
+
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_1_ADDR \
+	CONN_GPIO_MON_SEL9_ADDR
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_1_MASK \
+	0x00000FC0
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_1_SHFT \
+	6
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_0_ADDR \
+	CONN_GPIO_MON_SEL9_ADDR
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_0_MASK \
+	0x0000003F
+#define CONN_GPIO_MON_SEL9_MON_SYS_SEL_0_SHFT \
+	0
+
+#define CONN_GPIO_GPIO_MISC_CTRL_gpio_lb_en_ADDR \
+	CONN_GPIO_GPIO_MISC_CTRL_ADDR
+#define CONN_GPIO_GPIO_MISC_CTRL_gpio_lb_en_MASK \
+	0x00000010
+#define CONN_GPIO_GPIO_MISC_CTRL_gpio_lb_en_SHFT \
+	4
+#define CONN_GPIO_GPIO_MISC_CTRL_MON_FLAG_EN_ADDR \
+	CONN_GPIO_GPIO_MISC_CTRL_ADDR
+#define CONN_GPIO_GPIO_MISC_CTRL_MON_FLAG_EN_MASK \
+	0x00000002
+#define CONN_GPIO_GPIO_MISC_CTRL_MON_FLAG_EN_SHFT \
+	1
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __CONN_GPIO_REGS_H__ */

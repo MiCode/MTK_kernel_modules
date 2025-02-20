@@ -1,0 +1,24 @@
+# load btmtksdio
+#on boot
+#  insmod /vendor/lib/modules/btmtk_uart_unify.ko
+#  start uart_launcher
+
+on property:vendor.connsys.driver.ready=yes && property:ro.vendor.bt.connac3=yes
+  #insmod by ko table
+  #insmod /vendor/lib/modules/btmtk_uart_unify.ko
+  chown bluetooth bluetooth /dev/ttyS3
+  start uart_launcher
+  chown bluetooth bluetooth /proc/stpbt
+  chown bluetooth bluetooth /proc/stpbt/bt_fw_version
+  chown bluetooth bluetooth /proc/stpbt/bt_uart_launcher_notify
+
+on property:ro.vendor.bt.connac3=no
+  stop uart_launcher
+
+on property:vendor.connsys.driver.ready=no
+  stop uart_launcher
+
+# service for uart_launcher
+service uart_launcher /vendor/bin/uart_launcher -f 1 -p /dev/ttyS3
+  user bluetooth
+  group system

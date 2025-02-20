@@ -1,0 +1,3 @@
+mtk_c2ps_monitor_objs += \
+	src/c2ps_monitor.o \
+	src/c2ps_stat_selector.o

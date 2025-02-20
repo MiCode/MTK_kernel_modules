@@ -1,0 +1,278 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ */
+
+#ifndef _BTMTK_CHIP_COMMON_H_
+#define _BTMTK_CHIP_COMMON_H_
+
+#include "btmtk_define.h"
+#include "btmtk_main.h"
+#include "btmtk_fw_log.h"
+#include "btmtk_chip_7902.h"
+#include "btmtk_chip_7922.h"
+#include "btmtk_chip_7961.h"
+#include "btmtk_chip_66xx.h"
+#include "btmtk_chip_6639.h"
+#include "btmtk_chip_connac3.h"
+
+
+#define CONTINUE_RET 0xff
+
+/* CMD&Event sent by driver */
+#define READ_EFUSE_CMD_LEN 18
+#define READ_EFUSE_EVT_HDR_LEN 9
+#define HWERR_EVT_LEN 4
+#define HCI_RESET_CMD_LEN 4
+#define HCI_RESET_EVT_LEN 7
+#define SET_STP_CMD_LEN 13
+#define SET_STP_EVT_LEN 9
+#define SET_STP1_CMD_LEN 16
+#define SET_STP1_EVT_LEN 19
+#define WMT_POWER_ON_CMD_LEN 10
+#define WMT_POWER_ON_EVT_HDR_LEN 7
+#define WMT_POWER_OFF_CMD_LEN 10
+#define WMT_POWER_OFF_EVT_HDR_LEN 7
+#define EVT_HDR_LEN 2
+
+#define PICUS_ENABLE_CMD_LEN 8
+#define PICUS_ENABLE_EVT_HDR_LEN 9
+#define PICUS_DISABLE_CMD_LEN 8
+#define PICUS_DISABLE_EVT_HDR_LEN 9
+#define WMT_ASSERT_CMD_LEN 9
+#define FD5B_ASSERT_CMD_LEN 4
+#define RHW_ASSERT_CMD_LEN 13
+#define TXPOWER_CMD_LEN 16
+#define TXPOWER_EVT_LEN 7
+#define AUDIO_SETTING_CMD_LEN 8
+#define AUDIO_SETTING_EVT_LEN 7
+#define READ_PINMUX_CMD_LEN 8
+#define READ_PINMUX_EVT_CMP_LEN 6
+#define WRITE_PINMUX_CMD_LEN 12
+#define WRITE_PINMUX_EVT_LEN 7
+#define READ_ADDRESS_CMD_LEN 4
+#define READ_ADDRESS_EVT_HDR_LEN 7
+
+#define RES_APCF_CMD_LEN 9
+#define RES_APCF_EVT_LEN 5
+#define WOBLE_ENABLE_DEFAULT_CMD_LEN 40
+#define WOBLE_ENABLE_DEFAULT_EVT_LEN 5
+#define WOBLE_DISABLE_DEFAULT_CMD_LEN 9
+#define WOBLE_DISABLE_DEFAULT_EVT_LEN 5
+#define RADIO_OFF_CMD_LEN 9
+#define RADIO_OFF_EVT_LEN 5
+#define RADIO_ON_CMD_LEN 9
+#define RADIO_ON_EVT_LEN 5
+#define APCF_FILTER_CMD_LEN 14
+#define APCF_FILTER_EVT_HDR_LEN 8
+#define APCF_CMD_LEN 43
+#define APCF_EVT_HDR_LEN 7
+#define APCF_DELETE_CMD_LEN 7
+#define APCF_DELETE_EVT_HDR_LEN 8
+#define APCF_RESUME_EVT_HDR_LEN 7
+#define CHECK_WOBX_DEBUG_CMD_LEN 8
+#define CHECK_WOBX_DEBUG_EVT_HDR_LEN 2
+#define NOTIFY_ALT_EVT_LEN 7
+#define LD_PATCH_CMD_LEN 10
+#define LD_PATCH_EVT_LEN 8
+#define LD_PATCH_CMD_LEN_USB 9
+#define READ_REGISTER_CMD_LEN 16
+#define READ_REGISTER_EVT_HDR_LEN 11
+
+#define SETBAUD_CMD_LEN_CONNAC2 13
+#define WRITE_REGISTER_CMD_LEN		24
+#define WRITE_REGISTER_EVT_HDR_LEN		11
+#define SETBAUD_CMD_LEN 14
+#define SETBAUD_EVT_LEN 9
+#define GETBAUD_CMD_LEN 9
+#define GETBAUD_EVT_LEN 9
+#define WAKEUP_CMD_LEN 5
+#define WAKEUP_EVT_LEN 9
+#define FWOWN_TEST_CMD_LEN 9
+#define DRVOWN_TEST_CMD_LEN 1
+#define OWNTYPE_TEST_EVT_LEN 9
+
+#define SET_ADDRESS_CMD_LEN 10
+#define SET_ADDRESS_EVT_LEN 7
+#define SET_RADIO_CMD_LEN 12
+#define SET_RADIO_EVT_LEN 7
+#define SET_GRP_CMD_LEN 13
+#define SET_GRP_EVT_LEN 7
+#define SET_PWR_OFFSET_CMD_LEN 14
+#define SET_PWR_OFFSET_EVT_LEN 7
+
+#define PINMUX_REG_NUM_7902 4
+
+#define SET_EFEM_CMD_LEN 15
+#define SET_EFEM_EVT_LEN 9
+
+#define WIFI_PATCH_QUERY_CMD_LEN 9
+#define WIFI_PATCH_QUERY_EVT_LEN 7
+
+#define WIFI_PATCH_ENABLE_CMD_LEN 9
+#define WIFI_PATCH_ENBALE_EVT_LEN 8
+
+#define SET_RADIO_CMD_LEN_6639 27
+#define SET_RADIO_EVT_LEN_6639 8
+
+#define SET_BT_LOSS_CMD_LEN 8
+#define SET_BT_LOSS_EVT_LEN 7
+
+#define SET_COMPENSATION_CMD_LEN 20
+#define SET_COMPENSATION_EVT_LEN 7
+
+#define SET_COMPENSATION_CMD_LEN_6639 53
+#define SET_COMPENSATION_EVT_LEN_6639 7
+
+#define BT_MISC 0x70002510
+#define MCU_BT0_INIT_DONE (0x1 << 8)
+#define MCU_BT1_INIT_DONE (0x1 << 9)
+#define BT_SUBSYS_RST 0x70002610
+#define UDMA_INT_STA_BT 0x74000024
+#define UDMA_INT_STA_BT1 0x74000308
+#define BT_WDT_STATUS 0x740003A0
+#define EP_RST_OPT 0x74011890
+#define RST_AUTO_REVERT 0x70002610
+#define BT_EP_RST_OPT 0x74011890
+#define EP_RST_IN_OUT_OPT 0x00010001
+#define BT_RADIO_OFF_DONE_7925 0x7c059400
+
+enum cmd_index_s {
+	/* UNKNOWN = 0, */
+	READ_EFUSE_CMD = 1,
+	READ_EFUSE_EVT,
+	HWERR_EVT,
+	HCI_RESET_CMD,
+	HCI_RESET_EVT,
+	STP0_CMD,
+	STP0_EVT,
+	STP1_CMD,
+	STP1_EVT,
+	WMT_POWER_ON_CMD,		/* 10 */
+	WMT_POWER_ON_EVT,
+	WMT_POWER_OFF_CMD,
+	WMT_POWER_OFF_EVT,
+	PHASE1_WMT_EVT,
+	VENDOR_EVT,
+	PICUS_ENABLE_CMD,
+	PICUS_ENABLE_EVT,
+	PICUS_DISABLE_CMD,
+	PICUS_DISABLE_EVT,
+	WMT_ASSERT_CMD,			/* 20 */
+	FD5B_ASSERT_CMD,
+	TXPOWER_CMD,
+	TXPOWER_EVT,
+	AUDIO_SLAVE_CMD,
+	AUDIO_SLAVE_EVT,
+	READ_PINMUX_CMD,
+	READ_PINMUX_EVT,
+	WRITE_PINMUX_CMD,
+	WRITE_PINMUX_EVT,
+	READ_ADDRESS_CMD,		/* 30 */
+	READ_ADDRESS_EVT,
+	RES_APCF_CMD,
+	RES_APCF_EVT,
+	WOBLE_ENABLE_DEFAULT_CMD,
+	WOBLE_ENABLE_DEFAULT_EVT,
+	WOBLE_DISABLE_DEFAULT_CMD,
+	WOBLE_DISABLE_DEFAULT_EVT,
+	RADIO_OFF_CMD,
+	RADIO_OFF_EVT,
+	RADIO_ON_CMD,			/* 40 */
+	RADIO_ON_EVT,
+	APCF_FILTER_CMD,
+	APCF_FILTER_EVT,
+	APCF_CMD,
+	APCF_EVT,
+	APCF_DELETE_CMD,
+	APCF_DELETE_EVT,
+	APCF_RESUME_EVT,
+	CHECK_WOBX_DEBUG_CMD,
+	CHECK_WOBX_DEBUG_EVT,	/* 50 */
+	NOTIFY_ALT_EVT,
+	LD_PATCH_CMD,
+	LD_PATCH_EVT,
+	LD_PATCH_CMD_USB,
+	READ_REGISTER_CMD,
+	READ_REGISTER_EVT,
+	WRITE_REGISTER_CMD,
+	WRITE_REGISTER_EVT,
+	SET_BAUD_CMD_115200,
+	SET_BAUD_CMD_230400,	/* 60 */
+	SET_BAUD_CMD_921600,
+	SET_BAUD_CMD_2M,
+	SET_BAUD_CMD_3M,
+	SET_BAUD_CMD_4M,
+	SET_BAUD_EVT,
+	GET_BAUD_CMD,
+	GET_BAUD_EVT,
+	UART_WAKEUP_CMD,
+	UART_WAKEUP_EVT,
+	UART_FW_OWN_CMD,		/* 70 */
+	UART_FW_OWN_EVT,
+	UART_DRIVER_OWN_CMD,
+	UART_DRIVER_OWN_EVT,
+	SET_ADDRESS_CMD,
+	SET_ADDRESS_EVT,
+	SET_RADIO_CMD,
+	SET_RADIO_EVT,
+	SET_GRP_CMD,
+	SET_GRP_EVT,
+	SET_PWR_OFFSET_CMD,		/* 80 */
+	SET_PWR_OFFSET_EVT,
+	AUDIO_PINMUX_NUM,
+	AUDIO_PINMUX_MODE,
+	SET_EFEM1_CMD,
+	SET_EFEM1_EVT,
+	WIFI_PATCH_QUERY_CMD,
+	WIFI_PATCH_QUERY_EVT,
+	WIFI_PATCH_ENABLE_CMD,
+	WIFI_PATCH_ENABLE_EVT,
+	SET_RADIO_CMD_6639,		/* 90 */
+	SET_RADIO_EVT_6639,
+	SET_BT_LOSS_CMD,
+	SET_BT_LOSS_EVT,
+	SET_COMPENSATION_CMD,
+	SET_COMPENSATION_EVT,
+	SET_COMPENSATION_CMD_6639,
+	SET_COMPENSATION_EVT_6639,
+	RHW_ASSERT_CMD,
+
+	BTMTK_CMD_NUM
+};
+
+enum usage_s {
+	/* UNKNOWN = 0, */
+	DEFAULT = 0,
+	FROM_BIN,
+	SEND_NULL
+};
+
+struct data_struct {
+	u32	len;
+	char	*content;
+};
+
+struct bt_cmds_s {
+	char *name;
+	struct data_struct chip_data[SEND_NULL];
+	enum usage_s usage;
+};
+
+int btmtk_cif_chip_deregister(struct btmtk_dev *bdev);
+int btmtk_cif_chip_register(struct btmtk_dev *bdev);
+int btmtk_cif_chip_common_register(void);
+void btmtk_get_cmd_or_event(struct btmtk_dev *bdev, enum cmd_index_s type, struct data_struct *default_cmd);
+int btmtk_common_data_initialize(struct btmtk_dev *bdev);
+int btmtk_send_cmd_to_fw(struct btmtk_dev *bdev,
+		enum cmd_index_s cmd_type, enum cmd_index_s evt_type,
+		int delay, int retry, int pkt_type, bool flag);
+
+#define BTMTK_GET_CMD_OR_EVENT_DATA(bdev, type, cmd_or_event) \
+	do {	\
+		btmtk_get_cmd_or_event(bdev, type, &cmd_or_event);\
+		if (cmd_or_event.content == NULL || cmd_or_event.len == 0)\
+			return -1;\
+	} while (0)
+
+#endif /* __BTMTK_CHIP_COMMON_H__ */

@@ -1,0 +1,171 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mt6897_outs = [
+    "mt6897/mali_avalon/mali-r48p0/drivers/base/arm/memory_group_manager/mali_mgm_mt6897_r48.ko",
+    "mt6897/mali_avalon/mali-r48p0/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6897_r48.ko",
+    "mt6897/mali_avalon/mali-r48p0/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6897_r48.ko",
+    "mt6897/mali_avalon/mali-r48p0/drivers/gpu/arm/midgard/mali_kbase_mt6897_r48.ko",
+]
+
+mt6989_outs = [
+    "mt6989/mali_avalon/mali-r48p0/drivers/base/arm/memory_group_manager/mali_mgm_mt6989_r48.ko",
+    "mt6989/mali_avalon/mali-r48p0/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6989_r48.ko",
+    "mt6989/mali_avalon/mali-r48p0/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6989_r48.ko",
+    "mt6989/mali_avalon/mali-r48p0/drivers/gpu/arm/midgard/mali_kbase_mt6989_r48.ko",
+    "mt6989/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6989_r49.ko",
+    "mt6989/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6989_r49.ko",
+    "mt6989/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6989_r49.ko",
+    "mt6989/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6989_r49.ko",
+]
+
+mt6768_outs = [
+    "mt6768/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6768_r49.ko",
+    "mt6768/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6768_r49.ko",
+    "mt6768/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6768_r49.ko",
+    "mt6768/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6768_r49.ko",
+]
+
+mt6761_outs = [
+     "mt6761/m24.2ED6620798/pvrsrvkm_mt6761.ko",
+]
+
+mt6765_outs = [
+     "mt6765/m24.2ED6620798/pvrsrvkm_mt6765.ko",
+]
+
+mt6877_outs = [
+    "mt6877/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6877_r49.ko",
+    "mt6877/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6877_r49.ko",
+    "mt6877/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6877_r49.ko",
+    "mt6877/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6877_r49.ko",
+]
+
+mt6899_outs = [
+    "mt6899/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6899_r49.ko",
+    "mt6899/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6899_r49.ko",
+    "mt6899/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6899_r49.ko",
+    "mt6899/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6899_r49.ko",
+]
+
+mt6991_outs = [
+    "mt6991/mali_avalon/mali-r48p0/drivers/base/arm/memory_group_manager/mali_mgm_mt6991_r48.ko",
+    "mt6991/mali_avalon/mali-r48p0/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6991_r48.ko",
+    "mt6991/mali_avalon/mali-r48p0/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6991_r48.ko",
+    "mt6991/mali_avalon/mali-r48p0/drivers/gpu/arm/midgard/mali_kbase_mt6991_r48.ko",
+    "mt6991/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6991_r49.ko",
+    "mt6991/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6991_r49.ko",
+    "mt6991/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6991_r49.ko",
+    "mt6991/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6991_r49.ko",
+]
+
+mt6893_outs = [
+    "mt6893/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6893_r49.ko",
+    "mt6893/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6893_r49.ko",
+    "mt6893/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6893_r49.ko",
+    "mt6893/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6893_r49.ko",
+]
+
+mt6781_outs = [
+    "mt6781/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6781_r49.ko",
+    "mt6781/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6781_r49.ko",
+    "mt6781/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6781_r49.ko",
+    "mt6781/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6781_r49.ko",
+]
+
+mt6853_outs = [
+    "mt6853/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6853_r49.ko",
+    "mt6853/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6853_r49.ko",
+    "mt6853/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6853_r49.ko",
+    "mt6853/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6853_r49.ko",
+]
+
+mt6833_outs = [
+    "mt6833/mali_avalon/mali-r49p1/drivers/base/arm/memory_group_manager/mali_mgm_mt6833_r49.ko",
+    "mt6833/mali_avalon/mali-r49p1/drivers/base/arm/protected_memory_allocator/mali_prot_alloc_mt6833_r49.ko",
+    "mt6833/mali_avalon/mali-r49p1/drivers/base/arm/dma_buf_test_exporter/mali_dmabuf_test_mt6833_r49.ko",
+    "mt6833/mali_avalon/mali-r49p1/drivers/gpu/arm/midgard/mali_kbase_mt6833_r49.ko",
+]
+
+define_mgk_ko(
+    name = "gpu",
+    srcs = glob(["**"]),
+    outs = (
+        mt6897_outs if glob(["mt6897/*"]) else []
+    ) + (
+        mt6989_outs if glob(["mt6989/*"]) else []
+    ) + (
+        mt6899_outs if glob(["mt6899/*"]) else []
+    ) + (
+        mt6991_outs if glob(["mt6991/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6768",
+    srcs = glob(["**"]),
+    outs = (
+    mt6768_outs if glob(["mt6768/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6877",
+    srcs = glob(["**"]),
+    outs = (
+    mt6877_outs if glob(["mt6877/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6893",
+    srcs = glob(["**"]),
+    outs = (
+    mt6893_outs if glob(["mt6893/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6781",
+    srcs = glob(["**"]),
+    outs = (
+    mt6781_outs if glob(["mt6781/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6833",
+    srcs = glob(["**"]),
+    outs = (
+    mt6833_outs if glob(["mt6833/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6761",
+    srcs = glob(["**"]),
+    outs = (
+    mt6761_outs if glob(["mt6761/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6765",
+    srcs = glob(["**"]),
+    outs = (
+    mt6765_outs if glob(["mt6765/*"]) else []
+    ),
+)
+
+define_mgk_ko(
+    name = "gpu_mt6853",
+    srcs = glob(["**"]),
+    outs = (
+    mt6853_outs if glob(["mt6853/*"]) else []
+    ),
+)

@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+subdir-ccflags-y += -Werror
+
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir := $(patsubst %/,%,$(dir $(realpath $(mkfile_path))))
+
+MTK_CUSTOM_PATH := $(DEVICE_MODULES_PATH)/drivers/misc/mediatek
+CAM_CAL_SRC_PATH := $(mkfile_dir)/..
+CAM_CAL_CUSTOM_SRC_PATH := $(CAM_CAL_SRC_PATH)/custom
+CAM_CAL_CUSTOM_SRC_LAYOUT_PATH := $(CAM_CAL_CUSTOM_SRC_PATH)/layout
+COMMON_VERSION := v2
+
+subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
+                    -I$(CAM_CAL_SRC_PATH)/../inc \
+                    -I$(CAM_CAL_CUSTOM_SRC_PATH) \
+                    -I$(CAM_CAL_SRC_PATH)/common/$(COMMON_VERSION)
+
+# XIAOMI ADD
+subdir-ccflags-y += -D__XIAOMI_CAMERA__
+ifeq ($(CONFIG_BUILD_XIAOMI_CAMERA_IMAGE_NAMES),"rodin")
+subdir-ccflags-y += -DRODIN_CAM
+endif
+# XIAOMI END
+
+# Common code
+obj-m += camera_eeprom_v4l2.o
+camera_eeprom_v4l2-objs := ../common/$(COMMON_VERSION)/eeprom_driver.o
+camera_eeprom_v4l2-objs += ../common/$(COMMON_VERSION)/eeprom_i2c_common_driver.o
+camera_eeprom_v4l2-objs += ../common/$(COMMON_VERSION)/eeprom_utils.o
+
+# Platform code
+camera_eeprom_v4l2-objs += eeprom_i2c_custom_driver.o
+camera_eeprom_v4l2-objs += cam_cal_list.o
+# XIAOMI ADD
+camera_eeprom_v4l2-objs += xiaomi_cam_cal_config.o
+# XIAOMI END
+
+comma := ,
+empty :=
+space := $(empty) $(empty)
+
+KERNEL_CAM_CAL_SRC := $(notdir $(wildcard $(CAM_CAL_CUSTOM_SRC_LAYOUT_PATH)/*.c))
+KERNEL_CAM_CAL_OBJ := $(addprefix layout/,$(patsubst %.c, %.o, $(KERNEL_CAM_CAL_SRC)))
+KERNEL_CAM_CAL := $(basename $(KERNEL_CAM_CAL_SRC))
+CAM_CAL_CONFIG_LIST := $(subst $(space),$(comma),$(foreach e,$(subst ",,$(KERNEL_CAM_CAL)),E($(e))))
+subdir-ccflags-y += -D'CAM_CAL_CONFIG_LIST=$(CAM_CAL_CONFIG_LIST)'
+
+camera_eeprom_v4l2-objs += cam_cal_config.o
+camera_eeprom_v4l2-objs += $(KERNEL_CAM_CAL_OBJ)

@@ -1,0 +1,42 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_me_outs = [
+    # keep sorted
+    "mtk-ipesys-me.ko",
+]
+
+filegroup(
+    name = "public_headers",
+    srcs = glob([
+        "*.h",
+    ]),
+)
+
+filegroup(
+    name = "kbuild_makefiles",
+    srcs = [
+        "Kbuild",
+        "Makefile",
+    ],
+)
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk-ipesys-me",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/legacy:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/imgsys/isp71:public_headers",
+#        "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/legacy:kbuild_makefiles",
+#       "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:kbuild_makefiles",
+    ],
+
+
+    outs = mgk_me_outs,
+)

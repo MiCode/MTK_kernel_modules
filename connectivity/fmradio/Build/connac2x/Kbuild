@@ -1,0 +1,7 @@
+CFG_FM_PLAT := connac2x
+CFG_BUILD_CONNAC2 := true
+CFG_FM_CHIP_ID :=
+CFG_FM_CHIP := mt6635
+KO_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+include $(KO_PATH)/../../Kbuild.include

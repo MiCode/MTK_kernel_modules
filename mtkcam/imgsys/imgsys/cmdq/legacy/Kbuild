@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_CMDQ_MODULE := mtk_imgsys_cmdq
+
+#platform dependent
+ccflags-y += -I$(KO_CODE_PATH)/../../../../mtk-hcp
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(KO_CODE_PATH)/../../../common/
+ccflags-y += -I$(KO_CODE_PATH)/
+ccflags-y += -I$(KO_CODE_PATH)/../../isp7sp/
+ccflags-y += -I$(KO_CODE_PATH)/../../../../mtk-ipesys-me/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/rv/
+
+ccflags-y += -ferror-limit=0
+
+$(info "imgsys, cmdq device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys, cmdq srctree_path = $(srctree)")
+$(info "imgsys, cmdq src_path = $(src)")
+$(info "imgsys, cmdq ko_code_path = $(KO_CODE_PATH)")
+
+$(info "imgsys, cmdq subdir-ccflags-y = $(subdir-ccflags-y)")
+
+subdir-ccflags-y += -DMTK_IOVA_SINK2KERNEL
+
+#
+#  imgsys-cmdq
+#
+$(info "imgsys cmdq, subdir-ccflags-y = $(subdir-ccflags-y)")
+
+$(IMGSYS_CMDQ_MODULE)-objs := \
+mtk_imgsys-cmdq.o \
+isp71/mtk_imgsys-cmdq-plat.o \
+isp7s/mtk_imgsys-cmdq-plat.o \
+isp7sp/mtk_imgsys-cmdq-plat.o \
+isp7sp/mtk_imgsys-cmdq-qof.o \
+isp7sp/mtk_imgsys-cmdq-dvfs.o \
+isp7sp/mtk_imgsys-cmdq-qos.o 
+
+obj-$(CONFIG_VIDEO_MTK_ISP_IMGSYS_CMDQ) += $(IMGSYS_CMDQ_MODULE).o

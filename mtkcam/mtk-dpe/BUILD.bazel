@@ -1,0 +1,37 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_dpe_outs = [
+    # keep sorted
+    "camera_dpe_isp7s.ko",
+    "camera_dpe_isp7sp.ko",
+    "camera_dpe_isp8.ko",
+]
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk-dpe",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:kbuild_makefiles",
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/camsys:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam:kbuild_makefiles",
+    ],
+
+    deps = [
+        "//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:mtk-img-frm-sync",
+        "//vendor/mediatek/kernel_modules/mtkcam/camsys:camsys",
+    ],
+
+    outs = mgk_dpe_outs,
+)

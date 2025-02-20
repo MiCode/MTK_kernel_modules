@@ -1,0 +1,33 @@
+/*
+ * Copyright:
+ * ----------------------------------------------------------------------------
+ * This confidential and proprietary software may be used only as authorized
+ * by a licensing agreement from ARM Limited.
+ *      (C) COPYRIGHT 2018, 2021-2023 ARM Limited, ALL RIGHTS RESERVED
+ * The entire notice above must be reproduced on all authorized copies and
+ * copies may only be made to the extent permitted by a licensing agreement
+ * from ARM Limited.
+ * ----------------------------------------------------------------------------
+ */
+
+bob_binary {
+    name: "mali_kutf_simple_test_runner",
+    defaults: [
+        "ddk_base_defaults",
+        "global_includes",
+        "test_defaults",
+    ],
+    srcs: [
+        "mali_kutf_simple_test_runner_main.c",
+        "mali_kutf_simple_test_userdata.c",
+        "mali_kutf_simple_test_kprobe.c",
+    ],
+    static_libs: [
+        "libkutf_test_runner",
+        "libbase_test_helpers",
+    ],
+    install_group: "IG_tests",
+    mali_kutf: {
+        enabled: true,
+    },
+}

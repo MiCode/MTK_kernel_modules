@@ -1,0 +1,22 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "mtk_cam_cal",
+    srcs = glob([
+        "**",
+        "*.h",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/cam_cal:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/cam_cal/src_v4l2:public_headers",
+    ],
+    outs = [
+        "camera_eeprom_v4l2.ko",
+    ],
+)

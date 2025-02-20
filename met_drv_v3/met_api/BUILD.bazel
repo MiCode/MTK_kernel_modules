@@ -1,0 +1,63 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+mgk_outs = [
+    "met_backlight_api/met_backlight_api.ko",
+    "met_emi_api/met_emi_api.ko",
+    "met_gpu_adv_api/met_gpu_adv_api.ko",
+    "met_gpu_api/met_gpu_api.ko",
+    "met_gpueb_api/met_gpueb_api.ko",
+    "met_ipi_api/met_ipi_api.ko",
+    "met_mcupm_api/met_mcupm_api.ko",
+    "met_scmi_api/met_scmi_api.ko",
+    "met_sspm_api/met_sspm_api.ko",
+    "met_vcore_api/met_vcore_api.ko",
+]
+
+define_mgk_ko(
+    name = "met_api_v3_cus",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:kbuilds",
+        "//vendor/mediatek/kernel_modules/met_drv_v3:headers",
+    ],
+    outs = mgk_outs,
+    deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+    ],
+)
+
+define_mgk_ko(
+    name = "met_api_v3_int",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:kbuilds",
+        "//vendor/mediatek/kernel_modules/met_drv_v3:headers",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:headers",
+    ],
+    outs = mgk_outs,
+    deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
+    ],
+)

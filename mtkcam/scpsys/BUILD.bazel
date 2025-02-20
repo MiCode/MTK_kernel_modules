@@ -1,0 +1,20 @@
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "public_headers",
+    srcs = glob([
+        "*.h",
+    ]),
+)
+
+filegroup(
+    name = "kbuild_makefiles",
+    srcs = [
+        "Kbuild",
+        "Makefile",
+    ],
+)

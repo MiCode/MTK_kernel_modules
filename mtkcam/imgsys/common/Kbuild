@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_V4L2_MODULE := mtk_imgsys_v4l2
+
+#platform dependent
+ccflags-y += -I$(KO_CODE_PATH)/../../mtk-hcp
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(KO_CODE_PATH)/
+ccflags-y += -I$(KO_CODE_PATH)/../imgsys/isp7sp/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/rv/
+
+ccflags-y += -ferror-limit=0
+
+$(info "imgsys, common device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys, common srctree_path = $(srctree)")
+$(info "imgsys, common src_path = $(src)")
+$(info "imgsys, common ko_code_path = $(KO_CODE_PATH)")
+
+$(info "imgsys, common subdir-ccflags-y = $(subdir-ccflags-y)")
+
+subdir-ccflags-y += -DMTK_IOVA_SINK2KERNEL
+
+#CFLAGS_mtk_imgsys-trace.o	:=-I$(src)
+# Utilities to provide frame-based streaming model
+# with v4l2 user interfaces and alloc context managing
+# memory shared between ISP and coprocessor
+$(IMGSYS_V4L2_MODULE)-objs := \
+mtk_imgsys-of.o \
+mtk_imgsys-worker.o \
+mtk_imgsys-trace.o \
+mtk_imgsys-v4l2.o \
+
+#mtk_imgsys_v4l2-objs += mtk_imgsys-cmdq.o
+
+#mtk_imgsys_v4l2-objs := mtk_imgsys_hw_isp71.o mtk_imgsys_util.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS} += $(IMGSYS_V4L2_MODULE).o
+
+

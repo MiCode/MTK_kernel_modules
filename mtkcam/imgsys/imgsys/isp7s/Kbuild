@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_ISP7S_MODULE := mtk_imgsys_isp7s
+
+#platform dependent
+ccflags-y += -I$(KO_CODE_PATH)/../../../mtk-hcp/legacy
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(KO_CODE_PATH)/../../common/
+ccflags-y += -I$(KO_CODE_PATH)/../cmdq/legacy
+ccflags-y += -I$(KO_CODE_PATH)/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+
+ccflags-y += -ferror-limit=0
+
+$(info "imgsys, isp7s device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys, isp7s srctree_path = $(srctree)")
+$(info "imgsys, isp7s src_path = $(src)")
+$(info "imgsys, isp7s ko_code_path = $(KO_CODE_PATH)")
+
+#register TF CB
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6985-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_7S_1
+  subdir-ccflags-y += -DPQDIP_7S_1
+else ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6886-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_7S_2
+endif
+$(info "imgsys, subdir-ccflags-y = $(subdir-ccflags-y)")
+
+subdir-ccflags-y += -DMTK_IOVA_SINK2KERNEL
+
+
+$(IMGSYS_ISP7S_MODULE)-objs := \
+mtk_imgsys-v4l2.o \
+mtk_imgsys-dev.o \
+mtk_imgsys-sys.o \
+mtk_imgsys-isp7s.o \
+mtk_imgsys-debug.o \
+imgsys_modules/mtk_imgsys-dip.o \
+imgsys_modules/mtk_imgsys-traw.o \
+imgsys_modules/mtk_imgsys-pqdip.o \
+imgsys_modules/mtk_imgsys-wpe.o \
+imgsys_modules/mtk_imgsys-me.o \
+imgsys_modules/mtk_imgsys-adl.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS_7S} += $(IMGSYS_ISP7S_MODULE).o

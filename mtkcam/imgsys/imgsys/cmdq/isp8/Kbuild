@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_CMDQ_ISP8_MODULE := mtk_imgsys_cmdq_isp8
+
+#platform dependent
+ccflags-y += -I$(KO_CODE_PATH)/../../../../mtk-hcp
+ccflags-y += -I$(KO_CODE_PATH)/../../../../img_frm_sync
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(KO_CODE_PATH)/../../../common/
+ccflags-y += -I$(KO_CODE_PATH)/
+ccflags-y += -I$(KO_CODE_PATH)/../../isp8/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/rv/
+
+ifeq ($(CONFIG_MTK_MBRAINK_BRIDGE), m)
+ccflags-y += -DCFG_SUPPORT_MBRAIN=1
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mbraink
+
+$(info "cmdq isp8 ccflags-y = $(ccflags-y)")
+
+check_path := $(shell if [ ! -d $(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mbraink/bridge ]; then echo "Error: Path $(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mbraink/bridge not found" >&2; exit 1; fi)
+endif
+
+ccflags-y += -ferror-limit=0
+
+$(info "imgsys, cmdq-isp8 device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys, cmdq-isp8 srctree_path = $(srctree)")
+$(info "imgsys, cmdq-isp8 src_path = $(src)")
+$(info "imgsys, cmdq-isp8 ko_code_path = $(KO_CODE_PATH)")
+
+$(info "imgsys, cmdq-isp8 subdir-ccflags-y = $(subdir-ccflags-y)")
+
+subdir-ccflags-y += -DMTK_IOVA_SINK2KERNEL
+subdir-ccflags-y += -DMTK_IOVA_NOTCHECK
+
+#
+#  imgsys-cmdq
+#
+$(info "imgsys cmdq-isp8, subdir-ccflags-y = $(subdir-ccflags-y)")
+
+$(IMGSYS_CMDQ_ISP8_MODULE)-objs := \
+mtk_imgsys-cmdq.o \
+mtk_imgsys-cmdq-plat.o \
+mtk_imgsys-cmdq-qof.o  \
+mtk_imgsys-cmdq-dvfs.o \
+mtk_imgsys-cmdq-hwqos.o \
+mtk_imgsys-cmdq-qos.o \
+mtk_imgsys_cmdq_token.o
+
+obj-$(CONFIG_VIDEO_MTK_ISP_IMGSYS_CMDQ_ISP8) += $(IMGSYS_CMDQ_ISP8_MODULE).o

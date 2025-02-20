@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+obj-y += common/
+obj-y += imgsys/isp71/
+obj-y += imgsys/isp7s/
+obj-y += imgsys/isp7sp/
+obj-y += imgsys/isp8/
+obj-y += imgsys/cmdq/

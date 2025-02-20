@@ -1,0 +1,200 @@
+# Makefile for MT76x8 combo driver
+
+##############################################################
+# Common settings
+##############################################################
+
+#BT_CHIP_ID := mt79xx
+
+PWD=$(shell pwd)
+DRIVER_DIR=$(PWD)
+
+MODULE_NAME := btmtk_usb_unify
+
+
+##############################################################
+# Platform specific
+##############################################################
+# Set default platform
+PLATFORM:=MT53XX
+
+ifeq ($(PLATFORM),MT53XX)
+TARGET = LINUX
+
+# Sets DRIVER_PARTIAL_BUILD to y to compile driver only, otherwise set to n
+DRIVER_PARTIAL_BUILD := n
+
+#
+# [ Driver Partial Build ]
+#
+ifeq ($(DRIVER_PARTIAL_BUILD),y)
+# Please adjust the following variables according to your build attempt
+ifeq ($(ANDROID),)
+	ANDROID=false
+endif
+64BIT_MODE := false
+LINUX_ROOT ?= $(word 1, $(subst /apollo/,/apollo /, $(shell pwd -L)))
+
+ifeq ($(ANDROID),true)
+# -> Android, driver partial build
+	SYSBUILD_NAME=m-base
+	RELEASE_NAME=mediatek/mt5891_eu_64
+	KERNEL_VER=3.18
+	KERNEL_CONFIG=mt5891_android_smp_mod_defconfig
+	ifeq ($(64BIT_MODE),true)
+		export 64BIT_MODE=true
+		export KERNEL_64BIT=true
+		export TOOL_CHAIN_64BIT=4.9.3
+	endif
+ifeq "$(UTOPIA)" "true"
+    LINUX_SRC = $(UTOPIA_KERNEL_ROOT)/$(subst linux-,,$(KERNEL_VER))
+else
+	LINUX_SRC=$(LINUX_ROOT)/../android/$(SYSBUILD_NAME)/out/mediatek_linux/output/$(RELEASE_NAME)/rel/obj/kernel/linux_core/kernel/linux-$(KERNEL_VER)/$(KERNEL_CONFIG)_modules
+endif
+	OBJ_ROOT ?= $(LINUX_ROOT)/../android/$(SYSBUILD_NAME)/out/mediatek_linux/output/$(RELEASE_NAME)/rel/obj
+	export KERNEL_OBJ_ROOT=$(LINUX_SRC)/../..
+
+else
+# -> Linux, driver partial build
+# !NOTE! Edit the following parameters!
+	SYSBUILD_NAME := sys_build/XXXX
+	RELEASE_NAME=mt5891_eu
+	KERNEL_VER=3.10?
+	KERNEL_CONFIG=mt5891_smp_mod_defconfig
+	ifeq ($(64BIT_MODE),true)
+		export 64BIT_MODE=true
+		export KERNEL_64BIT=true
+		export TOOL_CHAIN_64BIT=4.9.3
+	endif
+ifeq "$(UTOPIA)" "true"
+    LINUX_SRC = $(UTOPIA_KERNEL_ROOT)/$(subst linux-,,$(KERNEL_VER))
+else
+	LINUX_SRC=$(LINUX_ROOT)/$(SYSBUILD_NAME)/$(RELEASE_NAME)/rel_obj/kernel/linux_core/kernel/linux-$(KERNEL_VER)/$(KERNEL_CONFIG)_modules
+endif
+	OBJ_ROOT := $(LINUX_ROOT)/$(SYSBUILD_NAME)/$(RELEASE_NAME)/rel_obj
+	export KERNEL_OBJ_ROOT=$(LINUX_SRC)/../..
+	CROSS_COMPILE=$(KERNEL_CROSS_COMPILE)
+
+endif
+
+
+#
+# [ Sys build ]
+#
+else
+ifeq "$(UTOPIA)" "true"
+    LINUX_SRC = $(UTOPIA_KERNEL_ROOT)/$(subst linux-,,$(KERNEL_VER))
+    OUT_STA_KO_DIR = $(LINUX_ROOT)/linux_mts/ko_modules/bt_driver_linux_v2
+    OUT_STA_KO = $(LINUX_ROOT)/linux_mts/ko_modules/bt_driver_linux_v2/$(MODULE_NAME).ko
+else
+	LINUX_SRC=$(KERNEL_OBJ_ROOT)/$(KERNEL_VER)/$(KERNEL_CONFIG)_modules
+	# overwrite $(OUT_STA_KO) for MT53XX platform
+    OUT_STA_KO_DIR = $(OBJ_ROOT)/linux_mts/ko_modules/bt_driver_linux_v2
+	OUT_STA_KO = $(OBJ_ROOT)/linux_mts/ko_modules/bt_driver_linux_v2/$(MODULE_NAME).ko
+endif
+include $(LINUX_ROOT)/linux_mts/build/mak/toolchain.mak
+endif
+CROSS_COMPILE=$(KERNEL_CROSS_COMPILE)
+
+ifeq ($(CROSS_COMPILE),)
+CROSS_COMPILE=$(KERNEL_CROSS_COMPILE)
+endif
+ifeq "$(CC)" "gcc"
+CC ?= $(CROSS_COMPILE)gcc
+endif
+
+$(warning =============================================)
+$(warning bt driver unify LINUX_SRC=$(LINUX_SRC))
+$(warning CROSS_COMPILE=$(CROSS_COMPILE))
+$(warning KERNEL_CROSS_COMPILE=$(KERNEL_CROSS_COMPILE))
+$(warning =============================================)
+
+endif
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# MT53XX end
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+##############################################################
+# Compile options
+##############################################################
+
+
+##############################################################
+# Compile settings
+##############################################################
+
+all: driver
+
+driver:
+ifeq "$(UTOPIA)" "true"
+	+cd $(DRIVER_DIR) && make -C $(LINUX_SRC) M=$(DRIVER_DIR) PLATFORM_FLAGS="$(PLATFORM_FLAGS)" MTK_CHIP_IF=usb modules CROSS_COMPILE=$(KERNEL_CROSS_COMPILE)
+else
+	$(warning bt driver unify1111 LINUX_SRC=$(LINUX_SRC))
+	+cd $(DRIVER_DIR) && make -C $(LINUX_SRC) M=$(DRIVER_DIR) PLATFORM_FLAGS="$(PLATFORM_FLAGS)" MTK_CHIP_IF=usb modules
+endif
+ifeq ($(PLATFORM),MSTAR)
+	$(CROSS_COMPILE)strip --strip-unneeded $(MODULE_NAME).ko
+endif
+ifeq ($(PLATFORM),MT53XX)
+ifeq ($(DRIVER_PARTIAL_BUILD), y)
+	@cd $(DRIVER_DIR) && $(CROSS_COMPILE)strip --strip-unneeded $(MODULE_NAME).ko
+else
+	$(KERNEL_CROSS_COMPILE)strip --strip-unneeded $(OUT_STA_KO)
+endif
+endif
+
+##############################################################
+# Post processing
+##############################################################
+
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = =
+# MT53XX start
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ifeq ($(PLATFORM),MT53XX)
+ifneq ($(DRIVER_PARTIAL_BUILD), y)
+ifneq ($(ANDROID),true)
+	if [ -d $(OUTPUT_ROOT)/basic/bt_ko ]; then \
+		cp -f $(OUT_STA_KO) $(OUTPUT_ROOT)/basic/bt_ko/$(MODULE_NAME).ko; \
+		$(KERNEL_STRIP) $(STRIP_FLAG) $(OUTPUT_ROOT)/basic/bt_ko/$(MODULE_NAME).ko; \
+	fi
+else
+	if [ ! -d $(OUTPUT_ROOT)/basic/modules ]; then \
+		mkdir -p $(OUTPUT_ROOT)/basic/modules/; \
+	fi
+	if [ -d $(OUTPUT_ROOT)/basic/modules ]; then \
+		cp -f $(OUT_STA_KO) $(OUTPUT_ROOT)/basic/modules/$(MODULE_NAME).ko; \
+	fi
+endif # ifneq ($(ANDROID),true)
+
+
+endif # ifneq ($(DRIVER_PARTIAL_BUILD), y)
+endif # ifeq ($(PLATFORM),MT53XX)
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# MT53XX end
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+clean: driver_clean
+ifeq ($(PLATFORM),MT53XX)
+ifeq ($(S_PLATFORM),true)
+	if [ -d $(OUTPUT_ROOT)/basic/modules ]; then \
+		rm -f $(OUTPUT_ROOT)/basic/modules/mt7921_patch_e1_hdr.bin; \
+		rm -f $(OUTPUT_ROOT)/basic/modules/mt7921_patch_e2_hdr.bin; \
+	fi
+endif
+endif
+
+driver_clean:
+ifneq ($(ANDROID),true)
+	rm -rf $(THIRDPARTY_LIB_ROOT)/bt
+endif
+	if [ -d $(DRIVER_DIR) ] && [ -d $(LINUX_SRC) ]; then \
+		cd $(DRIVER_DIR) && make -C $(LINUX_SRC) M=$(DRIVER_DIR) MODULE_NAME=$(MODULE_NAME) clean; \
+	fi
+	if [ -e $(DRIVER_DIR)/$(MODULE_NAME).ko ]; then rm $(DRIVER_DIR)/$(MODULE_NAME).ko; fi;
+
+
+
+
+.PHONY: all clean driver driver_clean
+

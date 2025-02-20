@@ -1,0 +1,3 @@
+mtk_c2ps_regulator_objs += \
+	src/c2ps_regulator.o \
+	src/c2ps_regulator_policy.o

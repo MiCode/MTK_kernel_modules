@@ -1,0 +1,24 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mgk_sched_outs = [
+    # keep sorted
+    "c2ps/mtk_c2ps.ko",
+    "c2ps_ioctl/c2ps_perf_ioctl.ko"
+]
+
+define_mgk_ko(
+    name = "c2ps",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]),
+    outs = mgk_sched_outs
+)

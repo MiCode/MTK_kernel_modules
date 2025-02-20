@@ -1,0 +1,20 @@
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_MTKCAM_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)/..
+
+$(info KO_MTKCAM_CODE_PATH=$(KO_MTKCAM_CODE_PATH))
+
+subdir-ccflags-y += -I$(KO_MTKCAM_CODE_PATH)/
+subdir-ccflags-y += -I$(KO_MTKCAM_CODE_PATH)/include
+
+obj-y += isp7_1/
+obj-y += isp7s/
+obj-y += isp7sp/
+obj-y += isp8/
+obj-$(CONFIG_RPMSG_MTK_CCD) += rpmsg/
+obj-$(CONFIG_MTK_CCD_REMOTEPROC) += remoteproc/
