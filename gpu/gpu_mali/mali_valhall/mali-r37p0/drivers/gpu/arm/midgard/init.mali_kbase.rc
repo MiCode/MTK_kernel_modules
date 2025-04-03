@@ -1,0 +1,8 @@
+on early-init
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules \
+    mali_kbase_${ro.board.platform}.ko config_system_coherency=0
+
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules \
+    mali_prot_alloc.ko \
+    mali_mgm.ko	\
+    mali_kbase_${ro.board.platform}.ko \

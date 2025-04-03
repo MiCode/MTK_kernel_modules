@@ -1,0 +1,5 @@
+obj-m += met_gpu_api.o
+
+ccflags-y += -I$(srctree)/include/
+
+met_gpu_api-y := default/met_api/met_gpu_api/met_gpu_api.o
