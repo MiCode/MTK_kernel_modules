@@ -1,0 +1,5 @@
+CONNAC_VER := 3_0
+MODULE_NAME := wmt_chrdev_wifi_connac3
+KO_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+include $(KO_PATH)/../../Kbuild

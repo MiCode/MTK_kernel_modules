@@ -1,0 +1,23 @@
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+#include $(src)/Kbuild-mtk-custom-env
+
+curr := platform/mtk_platform_common
+
+mali_kbase-y += $(curr)/mtk_platform_common.o
+mali_kbase-y += $(curr)/mtk_platform_debug.o
+
+ifeq ($(CONFIG_MALI_MTK_DEVFREQ),y)
+    mali_kbase-y += $(curr)/mtk_gpu_dvfs.o
+    mali_kbase-y += $(curr)/mtk_gpu_devfreq_governor.o
+    ifeq ($(CONFIG_MALI_MTK_DEVFREQ_THERMAL),y)
+        mali_kbase-y += $(curr)/mtk_gpu_devfreq_thermal.o
+    endif ## CONFIG_MALI_MTK_DEVFREQ_THERMAL ##
+endif ## CONFIG_MALI_MTK_DEVFREQ ##
+ccflags-y += -I$(srctree)/drivers/devfreq/
+
