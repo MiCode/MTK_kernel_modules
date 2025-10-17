@@ -1,0 +1,5 @@
+obj-m += met_backlight_api.o
+
+ccflags-y += -I$(srctree)/include/
+
+met_backlight_api-y := default/met_api/met_backlight_api/met_backlight_api.o

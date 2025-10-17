@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_FRM_SYNC_MODULE := mtk_img_frm_sync
+
+#platform dependent
+ccflags-y += -I$(KO_CODE_PATH)/../imgsys/imgsys/isp8
+ccflags-y += -I$(KO_CODE_PATH)/../imgsys/common
+ccflags-y += -I$(KO_CODE_PATH)/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+
+
+ccflags-y += -ferror-limit=0
+
+$(info "img_frm_sync, device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "img_frm_sync, srctree_path = $(srctree)")
+$(info "img_frm_sync, src_path = $(src)")
+$(info "img_frm_sync, ko_code_path = $(KO_CODE_PATH)")
+
+$(info img_frm_sync DEVICE_MODULES_PATH=$(DEVICE_MODULES_PATH))
+NOTDIR_DEVICE_MODULES_PATH = $(notdir $(DEVICE_MODULES_PATH))
+$(info img_frm_sync NOTDIR_DEVICE_MODULES_PATH=$(NOTDIR_DEVICE_MODULES_PATH))
+KERNEL_VERSION = $(patsubst kernel_device_modules-%,%,$(NOTDIR_DEVICE_MODULES_PATH))
+$(info img_frm_sync KERNEL_VERSION=$(KERNEL_VERSION))
+
+#$(info mtk_aov sort=$(sort 6.6 $(KERNEL_VERSION)))
+#$(info mtk_aov word=$(word 1,$(sort 6.6 $(KERNEL_VERSION))))
+
+ifeq (6.6,$(word 1,$(sort 6.6 $(KERNEL_VERSION))))
+ccflags-y += -DNEW_KERNEL_API
+endif
+
+#CFLAGS_mtk_imgsys-trace.o	:=-I$(src)
+# Utilities to provide frame-based streaming model
+# with v4l2 user interfaces and alloc context managing
+# memory shared between ISP and coprocessor
+$(IMGSYS_FRM_SYNC_MODULE)-objs := \
+mtk_imgsys_frm_sync.o   \
+mtk_imgsys_frm_sync_isp8.o
+
+obj-${CONFIG_MTK_IMGSYS_FRM_SYNC_ISP8} += $(IMGSYS_FRM_SYNC_MODULE).o
+#obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS} += $(IMGSYS_V4L2_MODULE).o
+
+

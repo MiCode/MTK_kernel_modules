@@ -1,0 +1,42 @@
+/*
+ * Copyright:
+ * ----------------------------------------------------------------------------
+ * This confidential and proprietary software may be used only as authorized
+ * by a licensing agreement from ARM Limited.
+ *      (C) COPYRIGHT 2019-2022 ARM Limited, ALL RIGHTS RESERVED
+ * The entire notice above must be reproduced on all authorized copies and
+ * copies may only be made to the extent permitted by a licensing agreement
+ * from ARM Limited.
+ * ----------------------------------------------------------------------------
+ */
+
+bob_binary {
+    name: "mali_kutf_csf_timeout_unit_test_runner",
+    defaults: [
+        "hwspecific_defaults",
+        "ddk_defaults",
+        "global_includes",
+        "test_defaults",
+    ],
+    srcs: [
+        "mali_kutf_csf_timeout_unit_test_runner_main.c",
+        "mali_kutf_csf_timeout_unit_test_extra.c",
+    ],
+    local_include_dirs: [
+        "../../../../../../../../base/tests/internal/api_tests",
+    ],
+    static_libs: [
+        "libkutf_test_runner",
+        "libmalibase",
+        "libbase_test_helpers",
+        "libbase_csf_test_helpers",
+    ],
+    shared_libs: [
+        "libmali",
+    ],
+    install_group: "IG_tests",
+    enabled: false,
+    mali_kutf_csf_tests: {
+        enabled: true,
+    },
+}

@@ -1,0 +1,9 @@
+obj-m += Build/connac2x/
+obj-m += Build/mt6625/
+obj-m += Build/mt6627/
+obj-m += Build/mt6630/
+obj-m += Build/mt6631/
+obj-m += Build/mt6631_6635/
+#obj-m += Build/mt6632/
+obj-m += Build/mt6635/
+obj-m += Build/soc/

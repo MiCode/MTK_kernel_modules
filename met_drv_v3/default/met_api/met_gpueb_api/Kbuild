@@ -1,0 +1,5 @@
+obj-m += met_gpueb_api.o
+
+ccflags-y += -I$(srctree)/include/
+
+met_gpueb_api-y := default/met_api/met_gpueb_api/met_gpueb_api.o

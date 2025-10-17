@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+        <INCLUDES Condition="'$(OVERRIDE_INCLUDES)'!='true'">
+            $(INCLUDES);
+            $(SRC_ROOT)\..\..\..\include;
+            $(SRC_ROOT)\..\..\..\include\chips;
+            $(SRC_ROOT)\..\..\..\include\mgmt;
+            $(SRC_ROOT)\..\..\..\include\nan;
+            $(SRC_ROOT)\..\..\..\include\nic;
+            $(SRC_ROOT)\..\..\..\os;
+            $(SRC_ROOT)\..\include; <!-- for common part add new kal -->
+            $(SRC_ROOT)\include;
+            $(SRC_ROOT)\hif\pcie\include;
+            $(SRC_ROOT)\hif\common\include;
+		</INCLUDES>
+	</PropertyGroup>
+	<PropertyGroup>
+		<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+		$(SOURCES)
+		..\gl_impl.c
+		</SOURCES>
+	</PropertyGroup>
+</Project>

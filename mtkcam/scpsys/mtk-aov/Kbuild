@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+subdir-ccflags-y += -Werror
+
+# PATH
+KO_MTKCAM_INCLUDE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)/../../include
+
+$(info mtk_aov DEVICE_MODULES_PATH=$(DEVICE_MODULES_PATH))
+NOTDIR_DEVICE_MODULES_PATH = $(notdir $(DEVICE_MODULES_PATH))
+$(info mtk_aov NOTDIR_DEVICE_MODULES_PATH=$(NOTDIR_DEVICE_MODULES_PATH))
+KERNEL_VERSION = $(patsubst kernel_device_modules-%,%,$(NOTDIR_DEVICE_MODULES_PATH))
+$(info mtk_aov KERNEL_VERSION=$(KERNEL_VERSION))
+
+#$(info mtk_aov sort=$(sort 6.6 $(KERNEL_VERSION)))
+#$(info mtk_aov word=$(word 1,$(sort 6.6 $(KERNEL_VERSION))))
+ifeq (6.6,$(word 1,$(sort 6.6 $(KERNEL_VERSION))))
+ccflags-y += -DNEW_DMA_BUF_API
+endif
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/media/platform/mtk-isp
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/scp/include
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/dma-buf/heaps
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/slbc
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/dt-bindings/memory
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/linux/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include
+ccflags-y += -I$(KO_MTKCAM_INCLUDE_PATH)
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/geniezone/include
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/geniezone/public
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/memory-ssmr
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/trusted_mem/public
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/trusted_mem/ssmr
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/clk/mediatek/
+
+mtk_aov-objs := \
+	mtk-aov-drv.o \
+	mtk-aov-core.o \
+	mtk-aov-trace.o \
+	mtk-aov-aee.o \
+	mtk-aov-queue.o \
+	mtk-aov-mtee.o \
+	mtk-aov-ulposc.o \
+	alloc/tlsf/tlsf_alloc.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_AOV} += mtk_aov.o

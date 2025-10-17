@@ -1,0 +1,1 @@
+obj-$(CONFIG_MTK_C2PS) += c2ps_perf_ioctl.o
