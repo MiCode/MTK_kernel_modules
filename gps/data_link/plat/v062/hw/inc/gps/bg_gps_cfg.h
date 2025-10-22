@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (c) 2020 MediaTek Inc.
+ */
+#ifndef __BG_GPS_CFG_REGS_H__
+#define __BG_GPS_CFG_REGS_H__
+
+#define BG_GPS_CFG_BASE                                        0x80021000
+
+#define BG_GPS_CFG_BGF_IP_VERSION_ADDR                         (BG_GPS_CFG_BASE + 0x010)
+#define BG_GPS_CFG_GPS_CLKGEN_CTL1_ADDR                        (BG_GPS_CFG_BASE + 0x104)
+
+
+#define BG_GPS_CFG_BGF_IP_VERSION_BGFSYS_VERSION_ADDR          BG_GPS_CFG_BGF_IP_VERSION_ADDR
+#define BG_GPS_CFG_BGF_IP_VERSION_BGFSYS_VERSION_MASK          0xFFFFFFFF
+#define BG_GPS_CFG_BGF_IP_VERSION_BGFSYS_VERSION_SHFT          0
+
+
+#define BG_GPS_CFG_GPS_CLKGEN_CTL1_CR_GPS_DIGCK_DIV_EN_ADDR    BG_GPS_CFG_GPS_CLKGEN_CTL1_ADDR
+#define BG_GPS_CFG_GPS_CLKGEN_CTL1_CR_GPS_DIGCK_DIV_EN_MASK    0x00000010
+#define BG_GPS_CFG_GPS_CLKGEN_CTL1_CR_GPS_DIGCK_DIV_EN_SHFT    4
+
+
+#endif /* __BG_GPS_CFG_REGS_H__*/

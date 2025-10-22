@@ -1,0 +1,4 @@
+CONNAC_VER := gen3
+MODULE_NAME := wmt_chrdev_wifi_gen3
+
+include $(srctree)/$(src)/../../Kbuild

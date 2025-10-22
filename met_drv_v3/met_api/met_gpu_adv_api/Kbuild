@@ -1,0 +1,10 @@
+ifneq (,$(filter $(CONFIG_MTK_MET),y m))
+ORIGIN_SRC := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+override src := $(ORIGIN_SRC)/../..
+
+include $(src)/Kbuild
+
+override src := $(ORIGIN_SRC)
+
+obj-$(CONFIG_MTK_MET) := met_gpu_adv_api.o
+endif

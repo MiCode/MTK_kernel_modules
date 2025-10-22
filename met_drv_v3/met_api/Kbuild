@@ -1,0 +1,10 @@
+obj-m += met_gpu_api/
+obj-m += met_gpu_adv_api/
+obj-m += met_vcore_api/
+obj-m += met_backlight_api/
+obj-m += met_emi_api/
+obj-m += met_sspm_api/
+obj-m += met_mcupm_api/
+obj-m += met_gpueb_api/
+obj-m += met_ipi_api/
+obj-m += met_scmi_api/
