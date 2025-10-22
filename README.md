@@ -49,4 +49,4 @@
 | malachite-u-oss | Redmi Note 14 Pro | Android U | t-alps-release-u0.mp1.tc8sp3-V1 |[malachite-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/malachite-u-oss) |
 | beryl-u-oss | POCO M7 Pro 5G / Redmi Note 14 5G | Android U | t-alps-release-s0.mp1.tc8sp-cs3-V1.67 |[beryl-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/beryl-u-oss) |
 | emerald_r-u-oss | Redmi Note 14S | Android U | alps-mp-s0.mp1.tc8sp2-cs1-xm.V1.104_xiaomi.s0mp1.k6789v1.64_P50 |[emerald_r-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/emerald_r-u-oss) |
-
+| bsp-klimt-v-oss | Xiaomi 15T Pro | Android V | t-alps-release-v0.mp1.rc-V12.13 |[bsp-klimt-v-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-klimt-v-oss) |
