@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+DPE_MODULE_7SP := camera_dpe_isp7sp
+DPE_MODULE_7S := camera_dpe_isp7s
+
+$(info $(DEVICE_MODULES_PATH))
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mmp/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/v3/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/v3/$(MTK_PLATFORM)/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/staging/android/ion \
+             -I$(DEVICE_MODULES_PATH)/drivers/staging/android/ion/mtk
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu/arm/arm-smmu-v3/
+ccflags-$(CONFIG_MTK_IOMMU_V2) += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-$(CONFIG_MTK_IOMMU_V2) += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/
+
+
+$(warning "Bryan test")
+
+
+$(DPE_MODULE_7SP)-objs := \
+isp_7sp/engine_request.o\
+isp_7sp/camera_dpe.o\
+isp_7sp/videobuf2-dma-contig.o
+
+$(DPE_MODULE_7S)-objs := \
+isp_7s/engine_request.o\
+isp_7s/camera_dpe.o\
+isp_7s/videobuf2-dma-contig.o
+
+#obj-$(CONFIG_MTK_CAMERA_DPE_ISP7S) += camera_dpe_isp7s.o
+#camera_dpe_isp7s-objs += isp_7s/engine_request.o
+#camera_dpe_isp7s-objs  += isp_7s/camera_dpe.o
+#camera_dpe_isp7s-objs += isp_7s/videobuf2-dma-contig.o
+
+obj-$(CONFIG_MTK_CAMERA_DPE_ISP7SP) += $(DPE_MODULE_7SP).o
+obj-$(CONFIG_MTK_CAMERA_DPE_ISP7S) += $(DPE_MODULE_7S).o

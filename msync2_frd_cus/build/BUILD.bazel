@@ -1,0 +1,20 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "msync2_frd_cus",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+        "**/*.o_shipped",
+        "**/.*.o.cmd_shipped",
+    ]),
+    outs = ["msync2_frd.ko"],
+)

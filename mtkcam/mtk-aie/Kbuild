@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+AIE_MODULE := mtk_aie
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/dma-buf/heaps/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/media/platform/mtk-videobuf/
+ccflags-y += -I$(srctree)/$(src)/../imgsys/
+ccflags-y += -I$(srctree)/$(src)/../include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6897-larb-port.h),)
+ccflags-y += -DAIE_TF_DUMP_7SP
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6989-larb-port.h),)
+ccflags-y += -DAIE_TF_DUMP_7SP_1
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6878-larb-port.h),)
+ccflags-y += -DAIE_TF_DUMP_7SP_2
+endif
+
+$(AIE_MODULE)-objs := \
+mem/aie_videobuf2-dma-contig.o\
+mem/aie_videobuf2-memops.o\
+mem/aie_videobuf2-vmalloc.o\
+mtk_aie_53.o\
+mtk_aie-trace.o\
+mtk_aie_drv_isp7s.o \
+mtk_aie_drv_isp7sp.o
+
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += $(AIE_MODULE).o
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += mtk_aie_debug_7sp.o
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += mtk_aie_debug_7sp_1.o
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += mtk_aie_debug_7sp_2.o

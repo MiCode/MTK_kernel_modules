@@ -1,0 +1,24 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_dpe_outs = [
+    # keep sorted
+    "camera_dpe_isp7s.ko",
+    "camera_dpe_isp7sp.ko",
+]
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk-dpe",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]),
+
+    outs = mgk_dpe_outs,
+)

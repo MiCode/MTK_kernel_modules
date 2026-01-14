@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_V4L2_MODULE := mtk_imgsys_v4l2
+IMGSYS_ISP7S_MODULE := mtk_imgsys_isp7s
+IMGSYS_ISP7SP_MODULE := mtk_imgsys_isp7sp
+IMGSYS_CMDQ_MODULE := mtk_imgsys_cmdq
+
+#platform dependent
+ccflags-y += -I$(srctree)/$(src)/../mtk-hcp
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(srctree)/$(src)/platforms/
+ccflags-y += -I$(srctree)/$(src)/platforms/isp71
+ccflags-y += -I$(srctree)/$(src)
+ccflags-y += -I$(srctree)/$(src)/../mtk-ipesys-me/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(DEVICE_MODULES_PATH)/include/soc/mediatek
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/rv/
+
+ccflags-y += -ferror-limit=0
+
+$(info "imgsys, device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys, srctree_path = $(srctree)")
+$(info "imgsys, src_path = $(src)")
+$(info "imgsys, ko_code_path = $(KO_CODE_PATH)")
+
+#register TF CB
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6897-larb-port.h),)
+subdir-ccflags-y += -DIMGSYS_TF_DUMP_7SP_P
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6989-larb-port.h),)
+subdir-ccflags-y += -DIMGSYS_TF_DUMP_7SP_L
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6878-larb-port.h),)
+subdir-ccflags-y += -DIMGSYS_TF_DUMP_7SP_R
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6983-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_71_1
+else ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6879-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_71_2
+  subdir-ccflags-y += -DONEPIXEL_MODE
+endif
+
+ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6985-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_7S_1
+  subdir-ccflags-y += -DPQDIP_7S_1
+else ifneq ($(wildcard $(DEVICE_MODULES_PATH)/include/dt-bindings/memory/mt6886-larb-port.h),)
+  subdir-ccflags-y += -DWPE_TF_DUMP_7S_2
+endif
+$(info "imgsys, subdir-ccflags-y = $(subdir-ccflags-y)")
+
+subdir-ccflags-y += -DMTK_IOVA_SINK2KERNEL
+
+mtk_imgsys_v4l2-y += mtk_imgsys-trace.o
+#CFLAGS_mtk_imgsys-trace.o	:=-I$(src)
+# Utilities to provide frame-based streaming model
+# with v4l2 user interfaces and alloc context managing
+# memory shared between ISP and coprocessor
+$(IMGSYS_V4L2_MODULE)-objs := \
+mtk_imgsys-v4l2.o \
+mtk_imgsys-dev.o \
+mtk_imgsys-of.o \
+mtk_imgsys-sys.o \
+mtk_imgsys-worker.o \
+mtk_imgsys-trace.o \
+platforms/isp71/mtk_imgsys-debug.o \
+platforms/isp71/modules/mtk_imgsys-dip.o \
+platforms/isp71/modules/mtk_imgsys-traw.o \
+platforms/isp71/modules/mtk_imgsys-pqdip.o \
+platforms/isp71/modules/mtk_imgsys-wpe.o \
+platforms/isp71/modules/mtk_imgsys-adl.o
+
+#mtk_imgsys_v4l2-objs += mtk_imgsys-cmdq.o
+
+#mtk_imgsys_v4l2-objs := mtk_imgsys_hw_isp71.o mtk_imgsys_util.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS} += $(IMGSYS_V4L2_MODULE).o
+
+$(IMGSYS_ISP7S_MODULE)-objs := \
+mtk_imgsys-isp7s.o \
+platforms/isp7s/mtk_imgsys-debug.o \
+platforms/isp7s/modules/mtk_imgsys-dip.o \
+platforms/isp7s/modules/mtk_imgsys-traw.o \
+platforms/isp7s/modules/mtk_imgsys-pqdip.o \
+platforms/isp7s/modules/mtk_imgsys-wpe.o \
+platforms/isp7s/modules/mtk_imgsys-me.o \
+platforms/isp7s/modules/mtk_imgsys-adl.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS_7S} += $(IMGSYS_ISP7S_MODULE).o
+
+$(IMGSYS_ISP7SP_MODULE)-objs := \
+mtk_imgsys-isp7sp.o \
+platforms/isp7sp/mtk_imgsys-debug.o \
+platforms/isp7sp/modules/mtk_imgsys-dip.o \
+platforms/isp7sp/modules/mtk_imgsys-traw.o \
+platforms/isp7sp/modules/mtk_imgsys-pqdip.o \
+platforms/isp7sp/modules/mtk_imgsys-wpe.o \
+platforms/isp7sp/modules/mtk_imgsys-me.o \
+platforms/isp7sp/modules/mtk_imgsys-adl.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_IMGSYS_7SP} += $(IMGSYS_ISP7SP_MODULE).o
+#
+#  imgsys-cmdq
+#
+
+
+$(info "imgsys cmdq, subdir-ccflags-y = $(subdir-ccflags-y)")
+
+$(IMGSYS_CMDQ_MODULE)-objs := \
+mtk_imgsys-cmdq.o \
+mtk_imgsys-trace.o \
+platforms/isp71/mtk_imgsys-cmdq-plat.o \
+platforms/isp7s/mtk_imgsys-cmdq-plat.o \
+platforms/isp7sp/mtk_imgsys-cmdq-plat.o \
+platforms/isp7sp/mtk_imgsys-cmdq-qof.o
+
+obj-$(CONFIG_VIDEO_MTK_ISP_IMGSYS_CMDQ) += $(IMGSYS_CMDQ_MODULE).o

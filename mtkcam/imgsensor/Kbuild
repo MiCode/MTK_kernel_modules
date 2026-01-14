@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2020 MediaTek Inc.
+
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_IMGSENSOR_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)/..
+
+$(info KO_IMGSENSOR_CODE_PATH=$(KO_IMGSENSOR_CODE_PATH))
+
+subdir-ccflags-y += -I$(KO_IMGSENSOR_CODE_PATH)/
+
+obj-y += src-v4l2/

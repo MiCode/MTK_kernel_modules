@@ -1,0 +1,2 @@
+mtk_c2ps_monitor_objs += \
+	src/c2ps_monitor.o

@@ -1,0 +1,20 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "mtk_aov",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/mtkcam/camsys:camsys",
+        "//vendor/mediatek/kernel_modules/mtkcam/mtk-aie:mtk-aie",
+    ],
+)

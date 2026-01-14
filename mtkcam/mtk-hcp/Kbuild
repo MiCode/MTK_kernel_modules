@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+IMGSYS_HCP_MODULE := mtk_hcp
+
+subdir-ccflags-y += -Werror
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/m4u/2.4
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu/
+ccflags-y += -I$(srctree)/$(src)/../imgsys/
+ccflags-y += -I$(srctree)/$(src)/../imgsys
+ccflags-y += -I$(srctree)/$(src)
+ccflags-y += -I$(srctree)/include/media
+
+$(info "hcp, device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "hcp, srctree_path = $(srctree)")
+$(info "hcp, src_path = $(src)")
+$(info "hcp, ko_code_path = $(KO_CODE_PATH)")
+
+ifeq ($(CONFIG_MTK_ION),y)
+    ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/staging/android/mtk_ion/
+    ccflags-y  += -I$(DEVICE_MODULES_PATH)/drivers/staging/android/mtk_ion/mtk/
+else
+    ccflags-$(CONFIG_ION) += -I$(DEVICE_MODULES_PATH)/drivers/staging/android/aosp_ion/
+endif
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/slbc/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/dma-buf/heaps/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/iommu
+
+$(IMGSYS_HCP_MODULE)-objs := \
+mtk-hcp.o \
+mtk-hcp_isp71.o \
+mtk-hcp_isp7s.o \
+mtk-hcp_kernelfence.o \
+mtk-hcp_isp7sp.o
+#mem/hcp_videobuf2-memops.o \
+#mem/hcp_videobuf2-vmalloc.o \
+#mem/hcp_videobuf2-dma-contig.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_HCP} += $(IMGSYS_HCP_MODULE).o

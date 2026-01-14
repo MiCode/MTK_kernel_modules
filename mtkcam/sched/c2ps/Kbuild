@@ -1,0 +1,33 @@
+
+C2PS_TOP := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+C2PS_COMMON_TOP = $(C2PS_TOP)/common
+C2PS_MONITOR_TOP = $(C2PS_TOP)/monitor
+C2PS_UCLAMP_REGULATOR_TOP = $(C2PS_TOP)/uclamp_regulator
+
+subdir-ccflags-y += \
+        -I$(srctree)/include \
+        -I$(srctree)/kernel \
+        -I$(DEVICE_MODULES_PATH)/include/ \
+        -I$(DEVICE_MODULES_PATH)/kernel/ \
+        -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sched/ \
+        -I$(C2PS_COMMON_TOP)/include/ \
+        -I$(C2PS_MONITOR_TOP)/include/ \
+        -I$(C2PS_UCLAMP_REGULATOR_TOP)/include/
+
+#c2ps_main
+MTK_C2PS_MAIN = c2ps_main.o
+#common
+include $(C2PS_COMMON_TOP)/Kbuild
+MTK_C2PS_COMMON = $(mtk_c2ps_common_objs:%.o=common/%.o)
+
+#monitor
+include $(C2PS_MONITOR_TOP)/Kbuild
+MTK_C2PS_MONITOR = $(mtk_c2ps_monitor_objs:%.o=monitor/%.o)
+
+#uclamp regulator
+include $(C2PS_UCLAMP_REGULATOR_TOP)/Kbuild
+MTK_C2PS_UCLAMP_REGULATOR = $(mtk_c2ps_uclamp_regulator_objs:%.o=uclamp_regulator/%.o)
+
+MTK_C2PS_SRC = $(MTK_C2PS_MAIN) $(MTK_C2PS_COMMON) $(MTK_C2PS_MONITOR) $(MTK_C2PS_UCLAMP_REGULATOR)
+mtk_c2ps-objs += $(MTK_C2PS_SRC)
+obj-$(CONFIG_MTK_C2PS) += mtk_c2ps.o

@@ -1,0 +1,55 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mt6879_outs = [
+    "isp7_1/cam/mtk-cam-plat-mt6879.ko",
+]
+
+mt6895_outs = [
+    "isp7_1/cam/mtk-cam-plat-mt6895.ko",
+]
+
+mt6983_outs = [
+    "isp7_1/cam/mtk-cam-plat-mt6983.ko",
+]
+
+mgk_camsys_outs = [
+    # keep sorted
+    "isp7_1/cam/mtk-cam-isp.ko",
+    "isp7_1/cam/mtk-cam-plat-util.ko",
+    "isp7s/cam_legacy/mtk-cam-isp7s.ko",
+    "isp7sp/cam/mtk-cam-isp7sp.ko",
+    "isp7sp/unit_test/cam-ut.ko",
+    "remoteproc/mtk_ccd_remoteproc.ko",
+    "rpmsg/ccd_rpmsg.ko",
+]
+
+define_mgk_ko(
+    name = "camsys",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsensor:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsensor/src-v4l2:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam:kbuild_makefiles",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsensor/src-v4l2:mtk_imgsensor",
+    ],
+    outs = (
+        mt6879_outs if glob(["isp7_1/**/mtk_cam-plat-mt6879.c"]) else []
+    ) + (
+        mt6895_outs if glob(["isp7_1/**/mtk_cam-plat-mt6895.c"]) else []
+    ) + (
+        mt6983_outs if glob(["isp7_1/**/mtk_cam-plat-mt6983.c"]) else []
+    ) + mgk_camsys_outs,
+)

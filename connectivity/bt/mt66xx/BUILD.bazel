@@ -1,0 +1,48 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "include/**/*.h",
+    ]),
+)
+
+platforms = [
+    "6885",
+    "6893",
+    "6877",
+    "6983",
+    "6879",
+    "6895",
+    "6886",
+    "6897",
+    "6878",
+]
+
+define_mgk_ko(
+    name = "btif",
+    srcs = glob(["{}/**".format(p) for p in platforms]) + glob([
+        "*.c",
+        "btif/*.c",
+        "btif/*.h",
+    ]) + [
+        ":headers",
+        "Makefile",
+        "Kbuild",
+        "btif/Kbuild",
+    ] + [
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:headers",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:headers",
+    ],
+    outs = ["bt_drv_{}.ko".format(p) for p in platforms],
+    deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:connfem",
+    ],
+)

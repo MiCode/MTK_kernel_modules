@@ -1,0 +1,4 @@
+CONNAC_VER := 2_0
+MODULE_NAME := wmt_chrdev_wifi_connac2
+
+include $(srctree)/$(src)/../../Kbuild
