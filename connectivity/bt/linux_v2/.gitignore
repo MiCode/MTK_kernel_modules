@@ -1,0 +1,8 @@
+*.o
+*.cmd
+*.ko
+*.swp
+*.order
+*.symvers
+*.mod.c
+.tmp_versions
