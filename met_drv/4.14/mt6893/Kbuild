@@ -1,0 +1,7 @@
+MET_PLF := $(MTK_PLATFORM)
+
+met-y += $(MET_CORE)/cpu_pmue.o
+ccflags-y += -DMET_CPU_PMUE_SUPPORT
+
+# leds: mt6893 co-platforms with mt6885
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/leds/mt6885
