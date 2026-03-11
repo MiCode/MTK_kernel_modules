@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright (C) 2018 MediaTek Inc.
+#
+
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+ccflags-$(CONFIG_MTK_AEE_FEATURE) += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(srctree)/$(src)/../../../mtk-hcp/
+ccflags-y += -I$(srctree)/$(src)/../../../mtk-ipesys-me/
+ccflags-y += -I$(srctree)/$(src)/../../../imgsys/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/iommu
+
+$(info "imgsys_platform, device_module_path = $(DEVICE_MODULES_PATH)")
+$(info "imgsys_platform, srctree_path = $(srctree)")
+$(info "imgsys_platform, src_path = $(src)")
+$(info "imgsys_platform, ko_code_path = $(KO_CODE_PATH)")

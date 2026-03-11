@@ -1,0 +1,42 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mt6991_outs = [
+    "pda_drv_mt6991.ko",
+]
+
+mt6899_outs = [
+    "pda_drv_mt6899.ko",
+]
+
+mgk_pda_outs = [
+    # keep sorted
+    "pda_drv_dummy.ko",
+]
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk-pda",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "Kbuild",
+        "Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/camsys:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam:kbuild_makefiles",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/mtkcam/camsys:camsys",
+    ],
+    outs = (
+        mt6991_outs if glob(["isp_8/pda_mt6991.c"]) else []
+    ) + (
+        mt6899_outs if glob(["isp_8/pda_mt6899.c"]) else []
+    ) + mgk_pda_outs,
+)

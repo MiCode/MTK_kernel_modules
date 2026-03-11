@@ -1,0 +1,54 @@
+
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_imgsys_outs = [
+    # keep sorted
+    "mtk_imgsys_cmdq_isp8.ko",
+]
+
+filegroup(
+    name = "public_headers",
+    srcs = glob([
+        "*.h",
+        "**/*.h",
+    ]),
+)
+
+filegroup(
+    name = "kbuild_makefiles",
+    srcs = [
+        "Kbuild",
+        "Makefile",
+    ],
+)
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "imgsys_cmdq_isp8",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/isp8:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/imgsys/isp8:public_headers",
+"//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/isp8:kbuild_makefiles",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:kbuild_makefiles",
+"//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:kbuild_makefiles",
+    ],
+
+    deps = [
+        "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/isp8:mtk-hcp-isp8",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:imgsys_common",
+        "//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:mtk-img-frm-sync",
+    ],
+
+    outs = mgk_imgsys_outs,
+)

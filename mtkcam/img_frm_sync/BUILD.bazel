@@ -1,0 +1,40 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_frm_sync_outs = [
+    # keep sorted
+    "mtk_img_frm_sync.ko",
+]
+
+filegroup(
+    name = "public_headers",
+    srcs = glob([
+        "*.h",
+        "**/*.h",
+    ]),
+)
+
+filegroup(
+    name = "kbuild_makefiles",
+    srcs = [
+        "Kbuild",
+        "Makefile",
+    ],
+)
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk-img-frm-sync",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/imgsys/isp8:public_headers",
+        "//vendor/mediatek/kernel_modules/mtkcam/imgsys/common:public_headers",
+        #"//vendor/mediatek/kernel_modules/mtkcam/imgsys/imgsys/isp8:kbuild_makefiles",
+    ],
+
+    outs = mgk_frm_sync_outs,
+)

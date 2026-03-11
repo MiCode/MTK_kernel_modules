@@ -1,0 +1,3 @@
+$(info dev config)
+
+CONFIG_CONNAC2_LISTMODE_ENABLE=n

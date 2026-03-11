@@ -1,0 +1,52 @@
+#include $(src)/Kbuild-mtk-custom-env
+
+curr := platform/mtk_platform_common
+
+mali_kbase-y += $(curr)/mtk_platform_common.o
+
+ifeq ($(CONFIG_MALI_MTK_LOG_BUFFER),y)
+    mali_kbase-y += $(curr)/mtk_platform_logbuffer.o
+endif ## CONFIG_MALI_MTK_LOG_BUFFER ##
+
+ifeq ($(CONFIG_MALI_MTK_DEVFREQ_GOVERNOR),y)
+    mali_kbase-y += $(curr)/mtk_platform_dvfs.o
+    mali_kbase-y += $(curr)/mtk_platform_devfreq_governor.o
+    ifeq ($(CONFIG_MALI_MTK_DEVFREQ_THERMAL),y)
+        mali_kbase-y += $(curr)/mtk_platform_devfreq_thermal.o
+    endif ## CONFIG_MALI_MTK_DEVFREQ_THERMAL ##
+endif ## CONFIG_MALI_MTK_DEVFREQ_GOVERNOR ##
+
+ifeq ($(CONFIG_MALI_MTK_ADAPTIVE_POWER_POLICY),y)
+    mali_kbase-y += $(curr)/mtk_platform_adaptive_power_policy.o
+endif ## CONFIG_MALI_MTK_ADAPTIVE_POWER_POLICY ##
+
+ifeq ($(CONFIG_MALI_MTK_DEBUG),y)
+    mali_kbase-y += $(curr)/mtk_platform_debug.o
+endif ## CONFIG_MALI_MTK_DEBUG ##
+
+ifeq ($(CONFIG_MTK_GPU_SWPM_SUPPORT),y)
+    mali_kbase-y += $(curr)/mtk_mfg_counter.o
+    mali_kbase-y += $(curr)/mtk_ltr_pmu.o
+    mali_kbase-y += $(curr)/mtk_gpu_power_model_sspm_ipi.o
+endif ## CONFIG_MTK_GPU_SWPM_SUPPORT ##
+
+ifeq ($(CONFIG_MALI_MTK_IRQ_TRACE),y)
+    mali_kbase-y += $(curr)/mtk_platform_irq_trace.o
+endif ## CONFIG_MALI_MTK_IRQ_TRACE ##
+
+ifeq ($(CONFIG_MALI_MTK_CM7_TRACE),y)
+    mali_kbase-y += $(curr)/mtk_platform_cm7_trace.o
+endif ## CONFIG_MALI_MTK_CM7_TRACE ##
+
+ifeq ($(CONFIG_MALI_MTK_MEMTRACK),y)
+    mali_kbase-y += $(curr)/mtk_platform_memtrack.o
+endif ## CONFIG_MALI_MTK_MEMTRACK ##
+
+ifeq ($(CONFIG_MALI_MTK_DIAGNOSIS_MODE),y)
+    mali_kbase-y += $(curr)/mtk_platform_diagnosis_mode.o
+endif ## CONFIG_MALI_MTK_DIAGNOSIS_MODE ##
+
+ccflags-y += -I$(srctree)/drivers/devfreq/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/perf_common/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/tinysys_scmi/
+ccflags-y += -Wno-unused-variable
