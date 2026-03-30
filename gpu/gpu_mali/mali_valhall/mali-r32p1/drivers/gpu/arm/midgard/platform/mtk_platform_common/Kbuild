@@ -1,0 +1,22 @@
+include $(src)/Kbuild-mtk-custom-env
+
+curr := platform/mtk_platform_common
+
+mali_kbase-y += $(curr)/mtk_platform_common.o
+mali_kbase-y += $(curr)/mtk_platform_debug.o
+
+ifeq ($(CONFIG_MALI_MTK_DEVFREQ),y)
+mali_kbase-y += $(curr)/mtk_gpu_dvfs.o
+mali_kbase-y += $(curr)/mtk_gpu_devfreq_governor.o
+ifeq ($(CONFIG_MALI_MTK_DEVFREQ_THERMAL),y)
+mali_kbase-y += $(curr)/mtk_gpu_devfreq_thermal.o
+endif
+endif
+
+mali_kbase-y += $(curr)/mtk_mfg_counter.o
+mali_kbase-y += $(curr)/mtk_gpu_power_sspm_ipi.o
+
+ccflags-y += -I$(srctree)/drivers/devfreq/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/perf_common/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/tinysys_scmi/
+
