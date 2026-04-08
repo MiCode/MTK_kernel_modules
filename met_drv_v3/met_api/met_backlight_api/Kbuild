@@ -1,0 +1,17 @@
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(srctree)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+ifneq (,$(filter $(CONFIG_MTK_MET),y m))
+ORIGIN_SRC := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+override src := $(ORIGIN_SRC)/../..
+
+include $(src)/Kbuild
+
+override src := $(ORIGIN_SRC)
+
+obj-$(CONFIG_MTK_MET) := met_backlight_api.o
+endif

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+        <INCLUDES Condition="'$(OVERRIDE_INCLUDES)'!='true'">
+            $(INCLUDES);
+            $(SRC_ROOT)\..\..\..\include;
+            $(SRC_ROOT)\..\..\..\include\chips;
+            $(SRC_ROOT)\..\..\..\include\mgmt;
+            $(SRC_ROOT)\..\..\..\include\nan;
+            $(SRC_ROOT)\..\..\..\include\nic;
+            $(SRC_ROOT)\..\..\..\os;
+            $(SRC_ROOT)\..\include; <!-- for common part add new kal -->
+            $(SRC_ROOT)\include;
+            $(SRC_ROOT)\hif\pcie\include;
+            $(SRC_ROOT)\hif\common\include;
+		</INCLUDES>
+	</PropertyGroup>
+	<!-- GENERAL -->
+	<PropertyGroup>
+		<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+		$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\mt$(TARGET_CHIP).c
+		$(SRC_ROOT)\..\..\..\chips\common\cmm_asic_common.c
+		$(SRC_ROOT)\..\..\..\chips\common\fw_dl.c
+		$(SRC_ROOT)\..\..\..\chips\common\fw_log_parser.c
+		$(SRC_ROOT)\..\..\..\chips\common\fw_log.c
+		</SOURCES>
+	</PropertyGroup>
+	<!-- BY GENERATION -->
+	<Choose>
+	<When Condition="'$(HWIP_GEN)'=='CONNAC3'">
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\dbg_mt$(TARGET_CHIP).c
+			$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\hal_dmashdl_mt$(TARGET_CHIP).c
+			$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\hal_wfsys_reset_mt$(TARGET_CHIP).c
+			$(SRC_ROOT)\..\..\..\chips\common\cmm_asic_connac3x.c
+			$(SRC_ROOT)\..\..\..\chips\common\dbg_connac3x.c
+			$(SRC_ROOT)\..\..\..\chips\common\dbg_wtbl_connac3x.c
+			<!-- $(SRC_ROOT)\chips\common\fw_log_mmio.c
+			$(SRC_ROOT)\chips\common\pre_cal.c -->
+			</SOURCES>
+		</PropertyGroup>
+	</When>
+	<When Condition="'$(HWIP_GEN)'=='CONNAC2'">
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\dbg_mt$(TARGET_CHIP).c
+			$(SRC_ROOT)\..\..\..\chips\mt$(TARGET_CHIP)\hal_dmashdl_mt$(TARGET_CHIP).c
+			$(SRC_ROOT)\..\..\..\chips\common\cmm_asic_connac2x.c
+			$(SRC_ROOT)\..\..\..\chips\common\dbg_connac2x.c
+			</SOURCES>
+		</PropertyGroup>
+	</When>
+	<Otherwise>
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\chips\common\cmm_asic_connac.c
+			$(SRC_ROOT)\..\..\..\chips\connac\connac.c
+			$(SRC_ROOT)\..\..\..\chips\common\dbg_connac.c
+			</SOURCES>
+        </PropertyGroup>
+	</Otherwise>
+	</Choose>
+</Project>

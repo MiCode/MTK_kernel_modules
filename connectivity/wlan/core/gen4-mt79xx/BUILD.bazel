@@ -1,0 +1,25 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+define_mgk_ko(
+    name = "wlan_mt7961",
+    srcs = glob([
+        "**",
+    ]),
+	outs = [
+        "wlan_drv_gen4_mt7961.ko",
+        "wlan_drv_gen4_mt7961_prealloc.ko",
+    ],
+)

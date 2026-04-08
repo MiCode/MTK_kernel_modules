@@ -1,0 +1,26 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+mgk_mae_outs = [
+    # keep sorted
+    "mtk_mae.ko",
+    "mtk_mae_isp8.ko",
+]
+
+# TODO: enable this part later
+define_mgk_ko(
+    name = "mtk_mae",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/mtkcam:public_headers",
+    ],
+
+    outs = mgk_mae_outs,
+)

@@ -1,0 +1,23 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+mgk_isp_pspm_outs = [
+    # keep sorted
+    "isp_pspm_ioctl/isp_pspm_ioctl.ko"
+]
+
+define_mgk_ko(
+    name = "isp_pspm",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]),
+    outs = mgk_isp_pspm_outs
+)

@@ -1,0 +1,20 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "ccusys",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]),
+    outs = [
+        "mtk_ccuv.ko",
+    ],
+)

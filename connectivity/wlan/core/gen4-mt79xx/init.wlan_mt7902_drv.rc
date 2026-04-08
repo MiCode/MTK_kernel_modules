@@ -1,0 +1,2 @@
+on boot
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ wlan_mt7902_sdio.ko
