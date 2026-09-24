@@ -56,7 +56,7 @@
 | dash-w-oss | REDMI Turbo 5 Max | Android W | base-v-t-alps-release-v0.mp1.rc-V13.94 |[dash-w-oss](https://github.com/MiCode/MTK_kernel_modules/tree/dash-w-oss) |
 | rock-u-oss | POCO M5 / Redmi 11 Prime | Android U | alps-mp-s0.mp1.tc8sp2-cs1-xm.V1.0.13 |[rock-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/rock-u-oss) |
 | charoite-v-oss | REDMI Note 15 Pro | Android V | t-alps-release-s0.mp1.tc8sp2-cs1-xm-V1.143.1 |[charoite-v-oss](https://github.com/MiCode/MTK_kernel_modules/tree/charoite-v-oss) |
-| bsp-klee-w-oss | REDMI Trubo 5 | Android W | t-alps-release-v0.mp1.rc-V2 |[bsp-klee-w-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-klee-w-oss) |
+| bsp-klee-w-oss | REDMI Trubo 5 | Android W | alps-release-v0.mp1.tc8sp6-V1 |[bsp-klee-w-oss](https://github.com/MiCode/MTK_kernel_modules/tree/bsp-klee-w-oss) |
 | yili-w-oss | REDMI K Pad 2 | Android W | t-alps-release-b0.mp1.rc-V10.25 |[yili-w-oss](https://github.com/MiCode/MTK_kernel_modules/tree/yili-w-oss) |
 | agate-u-oss | Xiaomi 11T | Android U | alps-mp-s0.mp1.tc8sp-cs2-V1.14 |[agate-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/agate-u-oss) |
 | light-u-oss | POCO M4 5G/Redmi 10 5G/Redmi 11 Prime 5G/Redmi Note 11E | Android U | t-alps-release-s0.mp1.tc8sp2-cs1-xm-V1.0.13 |[light-u-oss](https://github.com/MiCode/MTK_kernel_modules/tree/light-u-oss) |
