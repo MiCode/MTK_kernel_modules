@@ -1,0 +1,3 @@
+# load btmtkusb
+on boot
+  exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ btmtk_usb_unify.ko

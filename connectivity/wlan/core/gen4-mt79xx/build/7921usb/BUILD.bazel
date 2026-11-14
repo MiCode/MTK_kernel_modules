@@ -1,0 +1,21 @@
+load("//mtktv-modules:mtk_bazel/bzl/mtktv_ko.bzl", "define_mtktv_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mtktv_ko(
+    name = "wlan_mt7961",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/tv/kernel/ko_modules/wlan_driver/gen4m_mt7961:sources",
+    ],
+	outs = [
+        "mtprealloc_mt7961.ko",
+        "mtreset.ko",
+        "wlan_mt7961.ko",
+    ],
+)

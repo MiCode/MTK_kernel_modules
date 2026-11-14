@@ -1,0 +1,102 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+fmdrv_common_srcs = [
+        "core/fm_module.c",
+        "core/fm_main.c",
+        "core/fm_config.c",
+        "core/fm_rds_parser.c",
+        "core/fm_patch.c",
+        "core/fm_utils.c",
+        "core/fm_link.c",
+        "core/fm_eint.c",
+        "core/fm_cmd.c",
+        "core/fm_reg_utils.c",
+        "dummy.c"
+]
+
+define_mgk_ddk_ko(
+    name = "fmradio",
+    srcs = [
+        "chips/mt6631/pub/mt6631_fm_rds.c",
+        "chips/mt6631/pub/mt6631_fm_lib.c",
+        "chips/mt6631/pub/mt6631_op_fm_lib.c",
+        "chips/mt6635/pub/mt6635_fm_rds.c",
+        "chips/mt6635/pub/mt6635_fm_lib.c",
+        "plat/legacy_wmt.c",
+    ] + fmdrv_common_srcs,
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv_headers",
+    ],
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv",
+    ],
+    includes = [
+        "inc",
+        "chips/mt6631/inc",
+        "chips/mt6635/inc",
+        "plat/inc",
+    ],
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT",
+        "WMT_IDC_SUPPORT=1",
+        "CFG_FM_CONNAC2=0",
+    ],
+    out = "fmradio_drv_mt6631_6635.ko",
+    copts = [
+        "-Wall",
+        "-Werror",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "fmradio-connac2",
+    srcs = [
+        "chips/mt6631/pub/mt6631_op_fm_lib.c",
+        "chips/mt6635/pub/mt6635_fm_rds.c",
+        "chips/connac2x/pub/connac2x_fm_lib.c",
+        "plat/conn_infra.c",
+    ] + fmdrv_common_srcs,
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra_headers"
+    ],
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+    ],
+    includes = [
+        "inc",
+        "chips/mt6631/inc",
+        "chips/mt6635/inc",
+        "plat/inc",
+    ],
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "CFG_FM_CONNAC2=1",
+        "FM_DTS_PROBE",
+    ],
+    out = "fmradio_drv_connac2x.ko",
+    copts = [
+        "-Wall",
+        "-Werror",
+    ],
+)

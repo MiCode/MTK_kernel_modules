@@ -1,0 +1,190 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+ddk_headers(
+    name = "btmtk_unify_ce_headers",
+    hdrs = glob(["**/*.h"])
+)
+
+
+print("[bt_drv] ddk start")
+
+
+# Common config macro
+CONFIG_SUPPORT_BT_DL_WIFI_PATCH="y"
+CONFIG_SUPPORT_BT_DL_ZB_PATCH="n"
+CONFIG_SUPPORT_BLUEZ="n"
+CONFIG_SUPPORT_DVT="n"
+CONFIG_SUPPORT_HW_DVT="n"
+CONFIG_SUPPORT_MULTI_DEV_NODE="n"
+
+
+
+# for ce
+MTK_CHIP_IF="sdio"
+CONFIG_GKI_SUPPORT="y"
+CONFIG_SUPPORT_WAKEUP_SER="y"
+CONFIG_BT_SWIP_SUPPORT="n"
+CONFIG_DISABLE_SYMBOL_GET_SET="y"
+
+CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT="n"
+SUPPORT_WAKEUP_IRQ="n"
+CONFIG_RUNTIME_SUSPEND="n"
+CONFIG_BT_SDK_SQC="n"
+
+CONFIG_SUPPORT_DEINT_IRQ="n"
+
+############ src ############
+srcs = [
+    "btmtk_main.c",
+    "btmtk_fw_log.c",
+    "btmtk_buffer_mode.c",
+]
+
+# for sdio
+srcs += [
+    "sdio/btmtksdio.c",
+    "btmtk_woble.c",
+    "btmtk_chip_reset.c",
+]
+
+
+
+############ local_defines ############
+local_defines = [
+    "ANDROID_OS",
+    "BTMTK_LOG_LVL=0",
+    "BTMTK_ISOC_TEST=0",
+]
+
+local_defines += [
+    "CONFIG_DISABLE_SYMBOL_GET_SET",
+] if CONFIG_DISABLE_SYMBOL_GET_SET == "y" else [
+]
+
+local_defines += [
+    "BUILD_QA_DBG=1",
+    "BTMTK_DEBUG_SOP",
+]
+
+local_defines += [
+    "CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT",
+] if CONFIG_SUPPORT_BT_DL_WIFI_PATCH == "y" else [
+]
+
+
+local_defines += [
+    "CFG_SUPPORT_BT_DL_WIFI_PATCH=1",
+] if CONFIG_SUPPORT_BT_DL_WIFI_PATCH == "y" else [
+    "CFG_SUPPORT_BT_DL_WIFI_PATCH=0",
+]
+
+
+local_defines += [
+    "CFG_SUPPORT_BT_DL_ZB_PATCH=1",
+] if CONFIG_SUPPORT_BT_DL_ZB_PATCH == "y" else [
+    "CFG_SUPPORT_BT_DL_ZB_PATCH=0",
+]
+
+
+local_defines += [
+    "CFG_SUPPORT_BLUEZ=1",
+] if CONFIG_SUPPORT_BLUEZ == "y" else [
+    "CFG_SUPPORT_BLUEZ=0",
+]
+
+local_defines += [
+    "CFG_SUPPORT_HW_DVT=1",
+] if CONFIG_SUPPORT_HW_DVT == "y" else [
+    "CFG_SUPPORT_HW_DVT=0",
+]
+
+local_defines += [
+    "CFG_SUPPORT_WAKEUP_IRQ=1",
+] if CONFIG_SUPPORT_WAKEUP_SER == "y" else [
+    "CFG_SUPPORT_WAKEUP_IRQ=0",
+]
+
+local_defines += [
+    "CFG_SUPPORT_DVT=1",
+] if CONFIG_SUPPORT_DVT == "y" else [
+    "CFG_SUPPORT_DVT=0",
+]
+
+local_defines += [
+    "CFG_GKI_SUPPORT=1",
+] if CONFIG_GKI_SUPPORT == "y" else [
+    "CFG_GKI_SUPPORT=0",
+]
+
+local_defines += [
+    "CFG_SUPPORT_MULTI_DEV_NODE=1",
+] if CONFIG_SUPPORT_MULTI_DEV_NODE == "y" else [
+    "CFG_SUPPORT_MULTI_DEV_NODE=0",
+]
+
+local_defines += [
+    "BT_SWIP_SUPPORT=1",
+    "CFG_SUPPORT_LEAUDIO_CLK=1",
+] if CONFIG_BT_SWIP_SUPPORT == "y" else [
+    "BT_SWIP_SUPPORT=0",
+    "CFG_SUPPORT_LEAUDIO_CLK=0",
+]
+
+local_defines += [
+    "CFG_SUPPORT_DEINT_IRQ=1",
+] if CONFIG_SUPPORT_DEINT_IRQ == "y" else [
+    "CFG_SUPPORT_DEINT_IRQ=0",
+]
+
+local_defines += [
+    "CHIP_IF_SDIO",
+    "SDIO_DEBUG=0",
+    "CFG_SUPPORT_CHIP_RESET_KO"
+] if MTK_CHIP_IF == "sdio" else [
+]
+
+
+
+############ copts ############
+copts = [
+    "-Werror",
+    "-I$(srctree)/include/",
+    "-I$(srctree)/drivers/bluetooth/",
+]
+
+
+
+define_mgk_ddk_ko(
+    name = "btmtk_unify",
+    srcs = srcs,
+    header_deps = [
+    ],
+    ko_deps  = [
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4-mt79xx:wlan_mt7902",
+    ],
+    hdrs = glob(["**/*.h"]),
+    includes = [
+        "include",
+        "include/sdio",
+    ],
+    local_defines = local_defines,
+    out = "btmtk_sdio_unify.ko",
+    copts = copts,
+)
+
+print("[bt_drv] ddk end")

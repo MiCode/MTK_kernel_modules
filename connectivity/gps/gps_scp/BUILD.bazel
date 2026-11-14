@@ -1,0 +1,23 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "gps_scp",
+    srcs = [
+        "gps2scp.c",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/conn_scp:connscp".format(kernel_version),
+    ],
+    copts = [
+        "-Wall",
+        "-Werror",
+    ],
+)
+

@@ -1,0 +1,21 @@
+config ARM64_AND_MTK_PERF_COMMON_AND_CFI_CLANG
+    bool "Enable feature ARM64_AND_MTK_PERF_COMMON_AND_CFI_CLANG"
+    depends on ARM64 && MTK_PERF_COMMON && CFI_CLANG
+    default y if ARM64 && MTK_PERF_COMMON && CFI_CLANG
+    help
+        it is only work when CONFIG_ARM64 set && CONFIG_MTK_PERF_COMMON && CONFIG_CFI_CLANG uns
+
+config ARM64_AND_MTK_PERF_COMMON_AND_NO_CFI_CLANG
+    bool "Enable feature ARM64_AND_MTK_PERF_COMMON_AND_NO_CFI_CLANG"
+    depends on ARM64 && MTK_PERF_COMMON && !CFI_CLANG
+    default y if ARM64 && MTK_PERF_COMMON && !CFI_CLANG
+    help
+        it is only work when CONFIG_ARM64 set && CONFIG_MTK_PERF_COMMON && !CONFIG_CFI_CLANG uns
+
+config ARM64_AND_MTK_PERF_COMMON
+    bool "Enable feature ARM64_AND_MTK_PERF_COMMON"
+    depends on ARM64 && MTK_PERF_COMMON
+    default y if ARM64 && MTK_PERF_COMMON
+    help
+        it is only work when CONFIG_ARM64 set && CONFIG_MTK_PERF_COMMON uns
+

@@ -1,0 +1,19 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "jank_detection_core_cus",
+    srcs = [
+        "src/jank_detection_core_init.c",
+        "src/jank_detection_core.o_shipped",
+        "src/.jank_detection_core.o.cmd_shipped",
+        "//vendor/mediatek/kernel_modules/afs_common_utils:headers",
+    ],
+    out = "jank_detection_core.ko",
+    ko_deps = ["//vendor/mediatek/kernel_modules/afs_common_utils:jank_detection_common_utils"],
+)

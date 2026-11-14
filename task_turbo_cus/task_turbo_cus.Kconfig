@@ -1,0 +1,20 @@
+config MTK_VE_CFI_INI
+    bool "Enable feature MTK_VE_CFI_INI"
+    depends on CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS && MTK_VIP_ENGINE
+    default y if CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS && MTK_VIP_ENGINE
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS && CONFIG_MTK_VIP_ENGINE set
+
+config MTK_VE_NO_INI
+    bool "Enable feature MTK_VE_NO_INI"
+    depends on CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS && MTK_VIP_ENGINE
+    default y if CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS && MTK_VIP_ENGINE
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS unset && CONFIG_MTK_VIP_ENGINE set
+
+config MTK_VE_NO_CFI
+    bool "Enable feature MTK_VE_NO_CFI"
+    depends on !CFI_CLANG && MTK_VIP_ENGINE
+    default y if !CFI_CLANG && MTK_VIP_ENGINE
+    help
+        it is only work when CONFIG_CFI_CLANG unset && CONFIG_MTK_VIP_ENGINE set

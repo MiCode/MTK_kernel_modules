@@ -1,0 +1,118 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_module")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+FILES_SUPPORT_APOLLO_FPGA = ["tc_apollo_debugfs.c"]
+FILES_SUPPORT_DMA_HEAP = ["dma_lma_heap.c", "tc_dmabuf_heap.c"]
+FILES_SUPPORT_ION = ["tc_ion.c", "ion_lma_heap.c"]
+FILES_TC = ["tc_apollo.c", "tc_odin.c", "tc_drv.c"]
+FILES_DRM_PDP = ["drm_pdp_debugfs.c",
+				 "drm_pdp_drv.c",
+				 "drm_pdp_gem.c",
+				 "drm_pdp_modeset.c",
+				 "drm_pdp_plane.c",
+				 "drm_pdp_crtc.c",
+				 "drm_pdp_dvi.c",
+				 "drm_pdp_tmds.c",
+				 "drm_pdp_fb.c",
+				 "pdp_apollo.c",
+				 "pdp_odin.c",
+				 "pdp_plato.c"
+				]
+
+ddk_headers(
+	name = "tc_headers",
+	hdrs = glob(["**/*.h"]),
+	includes = ["."],
+)
+
+filegroup(
+	name = "tc_sources",
+	srcs = glob(
+			FILES_TC,
+			exclude = FILES_SUPPORT_APOLLO_FPGA
+					+ FILES_SUPPORT_DMA_HEAP
+					+ FILES_SUPPORT_ION
+		)
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_ION": FILES_SUPPORT_ION,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_DMA_HEAP": FILES_SUPPORT_DMA_HEAP,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_APOLLO_FPGA": FILES_SUPPORT_APOLLO_FPGA,
+			"//conditions:default": [],
+		}),
+)
+
+ddk_module(
+	name = "tc",
+	srcs = [":tc_sources"]
+		 + ["//powervr/rogue_km:config_kernel_h"],
+	out = "tc.ko",
+	copts = ["-include",
+			 "$(location //powervr/rogue_km:config_kernel_h)"],
+	kernel_build = "@kleaf//common:kernel_x86_64",
+	hdrs = ["//powervr/rogue_km/kernel/drivers/staging/imgtec:imgtec_headers"]
+		 + [":tc_headers"]
+		 + ["//powervr/rogue_km/include:include_headers"]
+		 + select({
+			"//powervr/rogue_km:cs_PVR_ARCH_volcanic": ["//powervr/rogue_km/generated/volcanic:generated_headers"]
+				+ ["//powervr/rogue_km/include/volcanic:include_headers"],
+			"//powervr/rogue_km:cs_PVR_ARCH_rogue": ["//powervr/rogue_km/generated/rogue:generated_headers"]
+				+ ["//powervr/rogue_km/include/rogue:include_headers"],
+			"//conditions:default": [],
+		}) +
+		select({
+			"//powervr/rogue_km:cs_PVR_ARCH_volcanic": ["//powervr/rogue_km/services/system/volcanic:rgx_linux_tc_header"],
+			"//powervr/rogue_km:cs_PVR_ARCH_rogue": ["//powervr/rogue_km/services/system/rogue:rgx_linux_tc_header"],
+			"//conditions:default": [],
+		}),
+	visibility = ["//visibility:public"],
+)
+
+filegroup(
+	name = "drm_pdp_sources",
+	srcs = glob(
+			FILES_DRM_PDP,
+		)
+)
+
+ddk_module(
+	name = "drm_pdp",
+	srcs = ["//powervr/rogue_km/kernel/drivers/staging/imgtec/tc:drm_pdp_sources"]
+		 + glob(["**/*.h"])
+		 + ["//powervr/rogue_km:config_kernel_h"],
+	out = "drm_pdp.ko",
+	copts = ["-include",
+			 "$(location //powervr/rogue_km:config_kernel_h)"],
+	kernel_build = "@kleaf//common:kernel_x86_64",
+	deps=[":tc"],
+	hdrs = ["//powervr/rogue_km/kernel/drivers/staging/imgtec/tc:tc_headers"]
+		 + ["//powervr/rogue_km/kernel/drivers/staging/imgtec:imgtec_headers"]
+		 + ["//powervr/rogue_km/include:include_headers"]
+		 + select({
+			"//powervr/rogue_km:cs_PVR_ARCH_volcanic" : ["//powervr/rogue_km/generated/volcanic:generated_headers"]
+				+ ["//powervr/rogue_km/include/volcanic:include_headers"],
+			"//powervr/rogue_km:cs_PVR_ARCH_rogue" : ["//powervr/rogue_km/generated/rogue:generated_headers"]
+				+ ["//powervr/rogue_km/include/rogue:include_headers"],
+			"//conditions:default": [],
+		 }) +
+		 select({
+			"//powervr/rogue_km:cs_PVR_ARCH_volcanic": ["//powervr/rogue_km/services/system/volcanic:rgx_linux_tc_header"],
+			"//powervr/rogue_km:cs_PVR_ARCH_rogue": ["//powervr/rogue_km/services/system/rogue:rgx_linux_tc_header"],
+			"//conditions:default": [],
+		}),
+)

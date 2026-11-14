@@ -1,0 +1,6 @@
+obj-m := met.o
+
+ccflags-y += -I$(srctree)/include/
+
+met-y := default/met_main.o
+

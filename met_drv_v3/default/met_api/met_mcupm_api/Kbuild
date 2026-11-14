@@ -1,0 +1,5 @@
+obj-m += met_mcupm_api.o
+
+ccflags-y += -I$(srctree)/include/
+
+met_mcupm_api-y := default/met_api/met_mcupm_api/met_mcupm_api.o

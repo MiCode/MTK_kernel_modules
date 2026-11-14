@@ -1,0 +1,23 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+# for alps branch
+# load("//mtktv-modules:mtk_bazel/bzl/mtktv_ko.bzl", "define_mtktv_ko")
+# for dtv branch
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "wlan_drv_gen4m_mt7921pcie",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4-mt79xx:sources",
+    ],
+	outs = [
+        "wlan_drv_gen4m_mt7921pcie.ko",
+        "wlan_drv_gen4m_mt7921pcie_prealloc.ko",
+    ],
+)

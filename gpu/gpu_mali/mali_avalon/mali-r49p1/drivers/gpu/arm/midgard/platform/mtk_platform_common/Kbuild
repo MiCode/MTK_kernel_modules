@@ -1,0 +1,105 @@
+#include $(src)/Kbuild-mtk-custom-env
+
+curr := platform/mtk_platform_common
+
+mali_kbase-y += $(curr)/mtk_platform_common.o
+
+ifeq ($(CONFIG_MALI_MTK_DEVFREQ_GOVERNOR),y)
+    mali_kbase-y += $(curr)/mtk_platform_devfreq_governor.o
+    ifeq ($(CONFIG_MALI_MTK_DEVFREQ_THERMAL),y)
+        mali_kbase-y += $(curr)/mtk_platform_devfreq_thermal.o
+    endif ## CONFIG_MALI_MTK_DEVFREQ_THERMAL ##
+endif ## CONFIG_MALI_MTK_DEVFREQ_GOVERNOR ##
+
+ifeq ($(CONFIG_MALI_MTK_LOG_BUFFER),y)
+    mali_kbase-y += $(curr)/mtk_platform_logbuffer.o
+endif ## CONFIG_MALI_MTK_LOG_BUFFER ##
+
+ifeq ($(CONFIG_MALI_MTK_ADAPTIVE_POWER_POLICY),y)
+    mali_kbase-y += $(curr)/mtk_platform_adaptive_power_policy.o
+endif ## CONFIG_MALI_MTK_ADAPTIVE_POWER_POLICY ##
+
+ifeq ($(CONFIG_MALI_MTK_GPU_IDLE_STRESS_TEST),y)
+    mali_kbase-y += $(curr)/mtk_platform_gpu_idle_test.o
+endif ## CONFIG_MALI_MTK_GPU_IDLE_STRESS_TEST ##
+
+ifeq ($(CONFIG_MALI_MTK_DEBUG_DUMP),y)
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_csg.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_cpu.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_kcpu.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_gpu.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_gpu_debugfs.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_infra_status.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_pm_status.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_enop_metadata.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_iter_cshw.o
+    mali_kbase-y += $(curr)/mtk_platform_debug_dump_queue_data.o
+endif ## CONFIG_MALI_MTK_DEBUG_DUMP ##
+
+ifeq ($(CONFIG_MALI_MTK_DIAGNOSIS_MODE),y)
+    mali_kbase-y += $(curr)/mtk_platform_diagnosis_mode.o
+endif ## CONFIG_MALI_MTK_DIAGNOSIS_MODE ##
+
+ifeq ($(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT),y)
+    mali_kbase-y += $(curr)/mtk_platform_dvfs.o
+endif
+
+ifeq ($(CONFIG_MALI_MTK_CM7_TRACE),y)
+    mali_kbase-y += $(curr)/mtk_platform_cm7_trace.o
+endif ## CONFIG_MALI_MTK_CM7_TRACE ##
+
+ifeq ($(CONFIG_MALI_MTK_GPU_DVFS_HINT_26M_LOADING),y)
+    mali_kbase-y += $(curr)/mtk_platform_dvfs_hint_26m_perf_cnting.o
+endif ## CONFIG_MALI_MTK_GPU_DVFS_HINT_26M_LOADING ##
+
+ifeq ($(CONFIG_MTK_GPU_SWPM_SUPPORT),y)
+    mali_kbase-y += $(curr)/mtk_gpu_power_model_sspm_ipi.o
+    mali_kbase-y += $(curr)/mtk_ltr_pmu.o
+    mali_kbase-y += $(curr)/mtk_mfg_counter.o
+endif ## CONFIG_MTK_GPU_SWPM_SUPPORT ##
+
+ifeq ($(CONFIG_MALI_MTK_MEMTRACK),y)
+    mali_kbase-y += $(curr)/mtk_platform_memtrack.o
+endif ## CONFIG_MALI_MTK_MEMTRACK ##
+
+ifeq ($(CONFIG_MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY),y)
+    mali_kbase-y += $(curr)/mtk_platform_qinspect.o
+    mali_kbase-y += $(curr)/mtk_platform_qinspect_recovery.o
+endif ## CONFIG_MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_FORCE_HARD_RESET),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_force_hard_reset.o
+endif ## CONFIG_MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_DIRECTLY_HARD_RESET),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_directly_hard_reset.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_DIRECTLY_HARD_RESET ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_FORCE_HARD_RESET),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_force_terminate_csg.o
+endif ## CONFIG_MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_FAULT_WORKER),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_fault_worker.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_FAULT_WORKER ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_SCHEDULER),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_scheduler.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_SCHEDULER ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_SYNC_UPDATE),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_sync_update.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_SYNC_UPDATE ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_MEMORY_FOOTPRINT),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_memory_footprint.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_MEMORY_FOOTPRINT ##
+
+ifeq ($(CONFIG_MALI_MTK_WHITEBOX_MISSING_DOORBELL),y)
+    mali_kbase-y += $(curr)/mtk_platform_whitebox_missing_doorbell.o
+endif ## CONFIG_MALI_MTK_WHITEBOX_MISSING_DOORBELL ##
+
+ccflags-y += -I$(srctree)/drivers/devfreq/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/perf_common/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/tinysys_scmi/
+ccflags-y += -Wno-unused-variable -Wno-unused-function

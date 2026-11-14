@@ -1,0 +1,124 @@
+# SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+#
+# (C) COPYRIGHT 2025 ARM Limited. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the
+# GNU General Public License version 2 as published by the Free Software
+# Foundation, and any use by you of this program is subject to the terms
+# of such GNU license.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, you can access it online at
+# http://www.gnu.org/licenses/gpl-2.0.html.
+#
+#
+load(
+    "@kleaf//build/kernel/kleaf:kernel.bzl",
+    "ddk_headers",
+    "ddk_module",
+    "kernel_module_group",
+)
+load("//config:cflags.bzl", "COPTS_KBASE", "KUTF_CFLAGS")
+
+package(
+    default_visibility = [
+        "//:__subpackages__",
+        "@kleaf//common:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "kutf_kconfig",
+    srcs = ["Kconfig"],
+)
+
+ddk_headers(
+    name = "kutf_headers",
+    hdrs = glob(["include/kutf/*.h"]),
+    includes = ["include"],
+)
+
+kernel_module_group(
+    name = "mali_kutf_tests",
+    srcs = [
+        ":mali_kutf",
+        ":mali_kutf_clk_rate_trace_test",
+        ":mali_kutf_irq_test",
+        ":mali_kutf_mgm_integration_test",
+    ] + select({
+        "//config:mali_arbiter_support": [
+            ":mali_kutf_arbif_test",
+            ":kutf_arbif_test_helper",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+ddk_module(
+    name = "mali_kutf",
+    srcs = [
+        "kutf/kutf_helpers.c",
+        "kutf/kutf_helpers_user.c",
+        "kutf/kutf_kprobe.c",
+        "kutf/kutf_mem.c",
+        "kutf/kutf_resultset.c",
+        "kutf/kutf_suite.c",
+        "kutf/kutf_utils.c",
+    ],
+    out = "kutf.ko",
+    hdrs = [
+        ":kutf_headers",
+        "//drivers/gpu/arm/midgard:mali_kernel_headers",
+    ],
+    copts = KUTF_CFLAGS + COPTS_KBASE,
+    kernel_build = "@kleaf//common:kernel",
+    visibility = ["//visibility:public"],
+)
+
+ddk_module(
+    name = "mali_kutf_irq_test",
+    srcs = ["mali_kutf_irq_test/mali_kutf_irq_test_main.c"],
+    out = "mali_kutf_irq_test.ko",
+    hdrs = [
+        ":kutf_headers",
+        "//drivers/gpu/arm/midgard:mali_kernel_headers",
+    ],
+    copts = KUTF_CFLAGS + COPTS_KBASE,
+    kernel_build = "@kleaf//common:kernel",
+    deps = [
+        ":mali_kutf",
+        "//drivers/gpu/arm/midgard:mali_kbase",
+    ],
+)
+
+ddk_module(
+    name = "mali_kutf_clk_rate_trace_test",
+    srcs = ["mali_kutf_clk_rate_trace/kernel/mali_kutf_clk_rate_trace_test.c"],
+    out = "mali_kutf_clk_rate_trace_test_portal.ko",
+    hdrs = ["mali_kutf_clk_rate_trace/mali_kutf_clk_rate_trace_test.h"],
+    copts = KUTF_CFLAGS + COPTS_KBASE,
+    kernel_build = "@kleaf//common:kernel",
+    deps = [
+        ":mali_kutf",
+        "//drivers/gpu/arm/midgard:mali_kbase",
+    ],
+)
+
+ddk_module(
+    name = "mali_kutf_mgm_integration_test",
+    srcs = ["mali_kutf_mgm_integration_test/mali_kutf_mgm_integration_test_main.c"],
+    out = "mali_kutf_mgm_integration_test.ko",
+    hdrs = ["//drivers/gpu/arm/midgard:mali_kernel_headers"],
+    copts = KUTF_CFLAGS + COPTS_KBASE,
+    kernel_build = "@kleaf//common:kernel",
+    deps = [
+        ":mali_kutf",
+        "//drivers/gpu/arm/midgard:mali_kbase",
+    ],
+)
+

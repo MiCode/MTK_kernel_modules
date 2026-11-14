@@ -1,0 +1,46 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+ddk_headers(
+	name = "device_headers",
+	hdrs = glob(["**/*.h"])
+)
+
+FILES_SUPPORT_WORKLOAD_ESTIMATION = ["rgxworkest.c"]
+FILES_SUPPORT_PDUMP = ["rgxpdump.c"]
+
+filegroup(
+	name = "device_sources",
+	srcs = select({
+			"//powervr/rogue_km:cs_SUPPORT_RGX": [":private_support_rgx_sources"],
+			"//conditions:default": [],
+	}),
+)
+
+filegroup(
+	name = "private_support_rgx_sources",
+	srcs = glob(
+			["**/*.c"],
+			exclude = FILES_SUPPORT_WORKLOAD_ESTIMATION
+					+ FILES_SUPPORT_PDUMP
+		)
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_WORKLOAD_ESTIMATION": FILES_SUPPORT_WORKLOAD_ESTIMATION,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_PDUMP": FILES_SUPPORT_PDUMP,
+			"//conditions:default": [],
+		}),
+	visibility = ["//visibility:private"],
+)

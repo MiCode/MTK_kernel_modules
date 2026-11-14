@@ -1,0 +1,164 @@
+# SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+#
+# (C) COPYRIGHT 2025 ARM Limited. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the
+# GNU General Public License version 2 as published by the Free Software
+# Foundation, and any use by you of this program is subject to the terms
+# of such GNU license.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, you can access it online at
+# http://www.gnu.org/licenses/gpl-2.0.html.
+#
+#
+
+exports_files(glob([
+    "*.fragment",
+]))
+
+package(
+    default_visibility = [
+        "//:__subpackages__",
+        "@kleaf//common:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "baseconfig",
+    srcs =
+        [
+            ":base.fragment",
+        ] +
+        select({
+            "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:dma_shared_buffer": [":dma_buff.fragment"],
+            "//conditions:default": [],
+        }),
+)
+
+genrule(
+    name = "base_defconfig",
+    srcs = [":baseconfig"],
+    outs = ["common/base.defconfig"],
+    cmd = "cat $(SRCS) >> $(OUTS)",
+)
+
+filegroup(
+    name = "kbaseconfig",
+    srcs = ["midgard.fragment"] +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:no_mali": ["nomali.fragment"],
+               "//conditions:default": ["real_hw.fragment"],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert": ["mali_expert.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_sync_file": ["sync_file.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug": ["mali_debug.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:expert_no_mali": ["mali_expert_no_mali.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert_debug": ["mali_expert_debug.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert_debug_sync_file": ["mali_expert_debug_sync_file.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug_kutf": ["debug_kutf.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug_kutf_devfreq_no_mali": ["debug_kutf_devfreq_no_mali.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_meson": ["platform/meson.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress": ["platform/vexpress.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz.fragment"],
+               "//conditions:default": [],
+           }),
+)
+
+genrule(
+    name = "kbase_defconfig",
+    srcs = [":kbaseconfig"],
+    outs = ["common/kbase.defconfig"],
+    cmd = "cat $(SRCS) >> $(OUTS)",
+)
+
+filegroup(
+    name = "kbaseconfig_mt6768",
+    srcs = ["midgard.fragment", "mt6768.fragment"] +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:no_mali": ["nomali.fragment"],
+               "//conditions:default": ["real_hw.fragment"],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert": ["mali_expert.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_sync_file": ["sync_file.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug": ["mali_debug.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:expert_no_mali": ["mali_expert_no_mali.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert_debug": ["mali_expert_debug.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_expert_debug_sync_file": ["mali_expert_debug_sync_file.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug_kutf": ["debug_kutf.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug_kutf_devfreq_no_mali": ["debug_kutf_devfreq_no_mali.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_meson": ["platform/meson.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress": ["platform/vexpress.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57.fragment"],
+               "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz.fragment"],
+               "//conditions:default": [],
+           }),
+)
+
+genrule(
+    name = "kbase_defconfig_mt6768",
+    srcs = [":kbaseconfig_mt6768"],
+    outs = ["common/kbase_mt6768.defconfig"],
+    cmd = "cat $(SRCS) >> $(OUTS)",
+)
+
+filegroup(
+    name = "kutf_defconfig",
+    srcs = ["kutf.fragment"],
+)

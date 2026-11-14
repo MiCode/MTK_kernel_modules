@@ -1,0 +1,12 @@
+config GPS_DL_HAS_MOCK
+    bool "Enable mock for gps"
+    default n
+    help
+        Not used
+
+config GPS_DRV_CONTROL_LNA
+    bool "Enable control lna by driver"
+    default n
+    help
+        Is the lna controlled by driver
+

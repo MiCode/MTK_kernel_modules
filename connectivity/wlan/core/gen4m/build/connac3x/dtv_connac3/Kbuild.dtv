@@ -1,0 +1,210 @@
+##############################################################
+# Common settings
+##############################################################
+HIF                        = usb
+CONFIG_MTK_WIFI_ONLY       = m
+CONFIG_MTK_COMBO           = m
+CONFIG_MTK_COMBO_WIFI      = m
+CONFIG_MTK_COMBO_COMM      = m
+CONFIG_MTK_COMBO_COMM_UART = m
+CONFIG_MTK_COMBO_COMM_SDIO = m
+CONFIG_MT_WIFI_CHRDEV      = m
+WM_RAM                    := ce
+CFG_DIR                   := $(KO_CODE_PATH)/configs
+MTK_COMBO_CHIP            := MT6639
+WIFI_TARGET               := mt7927
+WLAN_CHIP_ID              := 6639
+ifneq ($(findstring mt7925,$(LOCAL_MODULE)),)
+MTK_COMBO_CHIP            := MT7925
+WIFI_TARGET               := mt7925
+WLAN_CHIP_ID              := 7925
+endif
+
+ifeq ($(HIF),)
+    HIF=usb
+endif
+CONFIG_MTK_COMBO_WIFI_HIF=$(HIF)
+
+MODULE_NAME               := wlan_$(WIFI_TARGET)
+MODULE_NAME_PREALLOC      := mtprealloc_connac3
+MODULE_NAME_RESET         := mtreset_connac3
+
+##############################################################
+#/***** Special Settings for DTV start ******/
+##############################################################
+CONFIG_MTK_PREALLOC_MEMORY=y
+CFG_POWER_OFF_CTRL_SUPPORT=y
+CFG_DC_USB_WOW_CALLBACK=y
+CFG_SUPPORT_MULTI_DONGLE=y
+CFG_SUPPORT_SINGLE_SKU_LOCAL_DB=0
+
+ifeq ($(shell expr $(VERSION).$(PATCHLEVEL) \>= 5.04),1)
+$(warning CONFIG_GKI_SUPPORT=y)
+CONFIG_GKI_SUPPORT=y
+endif
+
+ifeq ($(CONFIG_GKI_SUPPORT), y)
+    PLATFORM_FLAGS += -DCFG_ENABLE_GKI_SUPPORT=1
+else
+    PLATFORM_FLAGS += -DCFG_ENABLE_GKI_SUPPORT=0
+endif
+
+ifeq ($(CFG_POWER_OFF_CTRL_SUPPORT), y)
+   PLATFORM_FLAGS += -DCFG_POWER_OFF_CTRL_SUPPORT=1
+endif
+ifeq ($(CFG_DC_USB_WOW_CALLBACK), y)
+   PLATFORM_FLAGS += -DCFG_DC_USB_WOW_CALLBACK=1
+endif
+
+ifeq ($(CFG_SUPPORT_MULTI_DONGLE), y)
+ifneq ($(filter MT7961,$(MTK_COMBO_CHIP)),)
+   PLATFORM_FLAGS += -DCFG_WIFI_CFG_FN='"wifi_mt7961.cfg"'
+endif
+ifneq ($(filter MT7902,$(MTK_COMBO_CHIP)),)
+   PLATFORM_FLAGS += -DCFG_WIFI_CFG_FN='"wifi_mt7902.cfg"'
+endif
+ifneq ($(filter MT6639,$(MTK_COMBO_CHIP)),)
+   PLATFORM_FLAGS += -DCFG_WIFI_CFG_FN='"wifi_mt6639.cfg"'
+endif
+ifneq ($(filter MT7925,$(MTK_COMBO_CHIP)),)
+   PLATFORM_FLAGS += -DCFG_WIFI_CFG_FN='"wifi_mt7925.cfg"'
+endif
+endif
+
+CONFIG_MTK_ADVANCED_80211_BCN_PROT=y
+CONFIG_CHIP_RESET_SUPPORT=y
+CONFIG_CHIP_RESET_KO_SUPPORT=y
+CONFIG_CHIP_RESET_USE_DTS_GPIO_NUM=y
+PLATFORM_FLAGS += -DCFG_CHIP_RESET_USE_LINUX_GPIO_API=1
+PLATFORM_FLAGS += -DCHIP_RESET_DTS_COMPATIBLE_NAME='"mediatek,mtk-wifi-reset"'
+PLATFORM_FLAGS += -DCHIP_RESET_GPIO_PROPERTY_NAME='"reset-gpio-num"'
+PLATFORM_FLAGS += -DCHIP_RESET_INVERT_PROPERTY_NAME='"invert-ms"'
+PLATFORM_FLAGS += -DCHIP_RESET_DEFAULT_VAL_PROPERTY_NAME='"default-gpio-val"'
+PLATFORM_FLAGS += -DWPA_TYPES_DEFINED=1
+#/***** Special Settings for DTV stop ******/
+
+##############################################################
+# Compile options
+##############################################################
+#/***** Common part ******/
+
+WM_RAM ?= ce
+
+# Define maximum different channels supported for ieee80211_iface_combination setting.
+#CFG_NUM_DIFFERENT_CHANNELS_STA=1
+#CFG_NUM_DIFFERENT_CHANNELS_P2P=1
+
+# Define initial driver running mode.
+# 0=RUNNING_P2P_MODE, 1=RUNNING_AP_MODE, 2=RUNNING_DUAL_AP_MODE, 3=RUNNING_P2P_AP_MODE
+# CFG_DRIVER_INITIAL_RUNNING_MODE=3
+
+# Define to enable Android wake_lock
+CFG_ENABLE_WAKE_LOCK=0
+
+CFG_DEFAULT_DBG_LEVEL=0x2F
+
+CFG_TX_DIRECT=1
+
+CFG_RX_DIRECT=1
+
+CFG_USB_REQ_TX_DATA_FFA_CNT=6
+
+CFG_USB_REQ_TX_DATA_CNT=2
+
+CFG_USB_REQ_RX_DATA_CNT=4
+
+CFG_ENABLE_EFUSE_MAC_ADDR=1
+
+# Report all bss networks to cfg80211 when do p2p scan
+CFG_P2P_SCAN_REPORT_ALL_BSS=0
+
+# Support to change sta, p2p, ap interface names
+# y: enable, n: disable
+# eg. insmod wlan_mt76x8_usb.ko sta=wlan p2p=p2p ap=ap
+CFG_DRIVER_INF_NAME_CHANGE=n
+
+# 1: Enable SDIO RX Workqueue De-Aggregation
+# 0: Disable (default)
+CFG_SDIO_RX_AGG_WORKQUE=0
+
+#CFG_SUPPORT_SINGLE_SKU_LOCAL_DB=0
+
+#/***** Platform dependent part ******/
+ifeq ($(PLATFORM),MT53XX)
+CFG_SUPPORT_ROAMING=0
+endif
+
+# For wpa_supplicant w/o MTK priv lib
+# y: enable, n: disable
+CFG_ANDROID_AOSP_PRIV_CMD=n
+
+#/***** Manage configs into compile options ******/
+ifneq ($(CFG_NUM_DIFFERENT_CHANNELS_STA),)
+PLATFORM_FLAGS += -DCFG_NUM_DIFFERENT_CHANNELS_STA=$(CFG_NUM_DIFFERENT_CHANNELS_STA)
+endif
+
+ifneq ($(CFG_NUM_DIFFERENT_CHANNELS_P2P),)
+PLATFORM_FLAGS += -DCFG_NUM_DIFFERENT_CHANNELS_P2P=$(CFG_NUM_DIFFERENT_CHANNELS_P2P)
+endif
+
+ifneq ($(CFG_DRIVER_INITIAL_RUNNING_MODE),)
+PLATFORM_FLAGS += -DCFG_DRIVER_INITIAL_RUNNING_MODE=$(CFG_DRIVER_INITIAL_RUNNING_MODE)
+endif
+
+ifneq ($(CFG_ENABLE_WAKE_LOCK),)
+PLATFORM_FLAGS += -DCFG_ENABLE_WAKE_LOCK=$(CFG_ENABLE_WAKE_LOCK)
+endif
+
+ifneq ($(CFG_DEFAULT_DBG_LEVEL),)
+PLATFORM_FLAGS += -DCFG_DEFAULT_DBG_LEVEL=$(CFG_DEFAULT_DBG_LEVEL)
+endif
+
+ifneq ($(CFG_TX_DIRECT),)
+PLATFORM_FLAGS += -DCFG_TX_DIRECT=$(CFG_TX_DIRECT)
+endif
+
+ifneq ($(CFG_RX_DIRECT),)
+PLATFORM_FLAGS += -DCFG_RX_DIRECT=$(CFG_RX_DIRECT)
+endif
+
+ifneq ($(CFG_USB_REQ_TX_DATA_FFA_CNT),)
+PLATFORM_FLAGS += -DCFG_USB_REQ_TX_DATA_FFA_CNT=$(CFG_USB_REQ_TX_DATA_FFA_CNT)
+endif
+
+ifneq ($(CFG_USB_REQ_TX_DATA_CNT),)
+PLATFORM_FLAGS += -DCFG_USB_REQ_TX_DATA_CNT=$(CFG_USB_REQ_TX_DATA_CNT)
+endif
+
+ifneq ($(CFG_USB_REQ_RX_DATA_CNT),)
+PLATFORM_FLAGS += -DCFG_USB_REQ_RX_DATA_CNT=$(CFG_USB_REQ_RX_DATA_CNT)
+endif
+
+ifneq ($(CFG_ENABLE_EFUSE_MAC_ADDR),)
+PLATFORM_FLAGS += -DCFG_ENABLE_EFUSE_MAC_ADDR=$(CFG_ENABLE_EFUSE_MAC_ADDR)
+endif
+
+ifeq ($(CFG_DRIVER_INF_NAME_CHANGE), y)
+PLATFORM_FLAGS += -DCFG_DRIVER_INF_NAME_CHANGE
+endif
+
+ifneq ($(CFG_P2P_SCAN_REPORT_ALL_BSS),)
+PLATFORM_FLAGS += -DCFG_P2P_SCAN_REPORT_ALL_BSS=$(CFG_P2P_SCAN_REPORT_ALL_BSS)
+endif
+
+ifneq ($(CFG_SUPPORT_ROAMING),)
+PLATFORM_FLAGS += -DCFG_SUPPORT_ROAMING=$(CFG_SUPPORT_ROAMING)
+endif
+
+ifeq ($(CFG_ANDROID_AOSP_PRIV_CMD), y)
+PLATFORM_FLAGS += -DCFG_ANDROID_AOSP_PRIV_CMD
+endif
+
+ifneq ($(CFG_SUPPORT_SINGLE_SKU_LOCAL_DB),)
+PLATFORM_FLAGS += -DCFG_SUPPORT_SINGLE_SKU_LOCAL_DB=$(CFG_SUPPORT_SINGLE_SKU_LOCAL_DB)
+endif
+
+ifneq ($(CFG_SDIO_RX_AGG_WORKQUE),)
+PLATFORM_FLAGS += -DCFG_SDIO_RX_AGG_WORKQUE=$(CFG_SDIO_RX_AGG_WORKQUE)
+endif
+
+include $(KO_CODE_PATH)/Kbuild.main

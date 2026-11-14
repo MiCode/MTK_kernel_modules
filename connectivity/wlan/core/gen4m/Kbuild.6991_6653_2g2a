@@ -1,0 +1,15 @@
+# Sources path
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+# KO specfied attributes
+WLAN_CHIP_ID := 6653
+MTK_COMBO_CHIP := MT6653
+CONNAC_VER := 3_0
+CONFIG_MTK_COMBO_WIFI_HIF := pcie
+MTK_ANDROID_WMT := y
+MTK_ANDROID_EMI := y
+CONFIG_WIFI_DX4 := y
+
+MODULE_NAME := wlan_drv_gen4m_6991_6653_2g2a
+CONFIG_WLAN_PLATFORM := mt6991
+include $(KO_CODE_PATH)/Kbuild.main

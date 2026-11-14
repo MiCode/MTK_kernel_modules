@@ -1,0 +1,27 @@
+Checking list:
+    1. BT/WIFI FW/Driver MUST be updated at the same time. Please notify wifi owner for updating
+    2. bt.cfg and woble_setting.bin should updated according to the each project. Sync from SQC release first and then updated are recommended
+    3. If bin mode is enabled for the project, BT_ADDR/tx_power will be set by EEPROM.bin
+    4. wifi.cfg will enable bin mode or not, and set coex mode(hybrid, legacy, TDD). Please confirm with wifi owner
+
+20220126    CL: 5395583     support debug sop sdio/USB cr for script file
+                            userload disable.
+
+20220117    CL: 5516615     Fix Thread modeling issue
+                            don't show full MAC address
+
+20220110    CL: 5489513     Build pass with Linux K4.19 and Android K5.10
+                            Add MACRO: LINUX_OS&ANDROID_OS. Please define it for platform
+
+20211202    CL: 5332794     Add audio setting from bt.cfg.support to enable/disable audio setting cmd form bt.cfg.
+                            Need update with bt.cfg.
+
+20211208    CL: 5340131     Picus save one more cmd opcode, filter all the events
+
+20211210    CL: 5359047     Add -Werro, all warning will be dealed as error
+
+20211217    CL: 5400714     1.add # for comment in bt.cfg
+                            2.default to enable audio setting if no SUPPORT_BT_AUDIO_SETTING in bt.cfg
+                            3.support change audio pinmux in bt.cfg(mt8188 pinmux will different)
+                            4.add release note
+                            5.fix get_hci_reset will not be set 1 and can't set audio setting.

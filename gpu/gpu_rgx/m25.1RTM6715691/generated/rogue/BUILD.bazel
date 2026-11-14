@@ -1,0 +1,86 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+FILES_PDUMP = [
+	"pdump_bridge/server_pdump_bridge.c",
+	"pdump_bridge/client_pdump_direct_bridge.c",
+	"pdumpctrl_bridge/client_pdumpctrl_direct_bridge.c",
+	"pdumpctrl_bridge/server_pdumpctrl_bridge.c",
+	"pdumpmm_bridge/client_pdumpmm_direct_bridge.c",
+	"pdumpmm_bridge/server_pdumpmm_bridge.c",
+]
+
+FILES_PDUMP_and_SUPPORT_RGX = [
+	"rgxpdump_bridge/client_rgxpdump_direct_bridge.c",
+	"rgxpdump_bridge/server_rgxpdump_bridge.c",
+]
+
+FILES_PVRSRV_ENABLE_GPU_MEMORY_INFO = [
+	"ri_bridge/client_ri_direct_bridge.c",
+	"ri_bridge/server_ri_bridge.c",
+]
+
+FILES_PVRSRV_ENABLE_HTB = [
+	"htbuffer_bridge/server_htbuffer_bridge.c",
+	"htbuffer_bridge/client_htbuffer_direct_bridge.c"
+]
+
+FILES_SUPPORT_DMA_TRANSFER = [
+	"dma_bridge/server_dma_bridge.c",
+]
+
+FILES_SUPPORT_FALLBACK_FENCE_SYNC = [
+	"syncfallback_bridge/server_syncfallback_bridge.c"
+]
+
+ddk_headers(
+	name = "generated_headers",
+	hdrs = glob(["**/*.h"])
+)
+
+filegroup(
+	name = "generated_sources",
+	srcs = glob(
+			["**/*.c"],
+			exclude = FILES_PDUMP
+					+ FILES_PDUMP_and_SUPPORT_RGX
+					+ FILES_PVRSRV_ENABLE_GPU_MEMORY_INFO
+					+ FILES_PVRSRV_ENABLE_HTB
+					+ FILES_SUPPORT_DMA_TRANSFER
+					+ FILES_SUPPORT_FALLBACK_FENCE_SYNC
+		)
+		+ select({
+			"//powervr/rogue_km:cs_PDUMP": FILES_PDUMP,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_PDUMP_and_SUPPORT_RGX": FILES_PDUMP_and_SUPPORT_RGX,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_PVRSRV_ENABLE_GPU_MEMORY_INFO": FILES_PVRSRV_ENABLE_GPU_MEMORY_INFO,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_PVRSRV_ENABLE_HTB": FILES_PVRSRV_ENABLE_HTB,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_DMA_TRANSFER": FILES_SUPPORT_DMA_TRANSFER,
+			"//conditions:default": [],
+		})
+		+ select({
+			"//powervr/rogue_km:cs_SUPPORT_FALLBACK_FENCE_SYNC": FILES_SUPPORT_FALLBACK_FENCE_SYNC,
+			"//conditions:default": [],
+		})
+)

@@ -1,0 +1,60 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "gpu_api_headers",
+    hdrs = glob(["**/*.h"]),
+    includes = ["."],
+)
+
+define_mgk_ddk_ko(
+    name = "met_gpu_api_int",
+    hdrs = [":gpu_api_headers"],
+    srcs = glob(["met_gpu_api.c"]),
+    out = "met_gpu_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/hal:mtk_gpu_hal".format(kernel_version),
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/mt-plat:gpu_utility_headers".format(kernel_version),
+    ],
+    copts = [
+        "-I$(srctree)/drivers/gpu/mediatek/mt-plat/",
+    ],
+    local_defines = [
+        "MET_GPU",
+        "MET_GPU_LOAD_MONITOR",
+        "MET_GPU_DVFS_MONITOR",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "met_gpu_api_cus",
+    hdrs = [":gpu_api_headers"],
+    srcs = glob(["met_gpu_api.c"]),
+    out = "met_gpu_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/hal:mtk_gpu_hal".format(kernel_version),
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/mt-plat:gpu_utility_headers".format(kernel_version),
+    ],
+    copts = [
+        "-I$(srctree)/drivers/gpu/mediatek/mt-plat/",
+    ],
+    local_defines = [
+        "MET_GPU",
+        "MET_GPU_LOAD_MONITOR",
+        "MET_GPU_DVFS_MONITOR",
+    ],
+)

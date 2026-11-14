@@ -1,0 +1,110 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+/*
+ *
+ * (C) COPYRIGHT 2017-2023 ARM Limited. All rights reserved.
+ *
+ * This program is free software and is provided to you under the terms of the
+ * GNU General Public License version 2 as published by the Free Software
+ * Foundation, and any use by you of this program is subject to the terms
+ * of such GNU license.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can access it online at
+ * http://www.gnu.org/licenses/gpl-2.0.html.
+ *
+ */
+
+#ifndef _KUTF_IPA_UNIT_TEST_H_
+#define _KUTF_IPA_UNIT_TEST_H_
+
+#define IPA_APP_NAME "ipa_unit"
+#define IPA_SUITE_NAME_G72 "ipa_unit_g72"
+#define IPA_SUITE_NAME_G71 "ipa_unit_g71"
+#define IPA_SUITE_NAME_TNOX "ipa_unit_tnox"
+#define IPA_SUITE_NAME_G51 "ipa_unit_g51"
+#define IPA_SUITE_NAME_TGOX_R1 "ipa_unit_tgox_r1"
+#define IPA_SUITE_NAME_SIMPLE "ipa_unit_simple"
+#define IPA_SUITE_NAME_G77 "ipa_unit_g77"
+#define IPA_SUITE_NAME_TNAX "ipa_unit_tnax"
+#define IPA_SUITE_NAME_TBEX "ipa_unit_tbex"
+#define IPA_SUITE_NAME_TODX "ipa_unit_todx"
+#define IPA_SUITE_NAME_TGRX "ipa_unit_tgrx"
+#define IPA_SUITE_NAME_TVAX "ipa_unit_tvax"
+#define IPA_SUITE_NAME_TTUX "ipa_unit_ttux"
+#define IPA_SUITE_NAME_TTIX "ipa_unit_ttix"
+#define IPA_SUITE_NAME_TKRX "ipa_unit_tkrx"
+#define IPA_SUITE_FIXTURES 21
+#define IPA_UNIT_TEST_0 "ipa_sample_dummy"
+
+/* Input parameter names */
+#define IPA_IN_NAME_FREQ "FREQ"
+#define IPA_IN_NAME_VOLTAGE "VOLTAGE"
+#define IPA_IN_NAME_NUM_L2_SLICES "NUM_L2_SLICES"
+#define IPA_IN_NAME_L2_ACCESS "L2_ACCESS"
+#define IPA_IN_NAME_NUM_CORES "NUM_CORES"
+#define IPA_IN_NAME_EXEC_INSTR_COUNT "EXEC_INSTR_COUNT"
+#define IPA_IN_NAME_EXEC_INSTR_MSG "EXEC_INSTR_MSG"
+#define IPA_IN_NAME_EXEC_INSTR_FMA "EXEC_INSTR_FMA"
+#define IPA_IN_NAME_EXEC_INSTR_CVT "EXEC_INSTR_CVT"
+#define IPA_IN_NAME_EXEC_INSTR_SFU "EXEC_INSTR_SFU"
+#define IPA_IN_NAME_TEX_ISSUE "TEX_ISSUE"
+#define IPA_IN_NAME_TEX_FILT_NUM_OPERATIONS "TEX_FILT_NUM_OPERATIONS"
+#define IPA_IN_NAME_TILE_WB "TILE_WB"
+#define IPA_IN_NAME_TEX_TFCH_NUM_OPERATIONS "TEX_TFCH_NUM_OPERATIONS"
+#define IPA_IN_NAME_VARY_INSTR "VARY_INSTR"
+#define IPA_IN_NAME_GPU_ACTIVE "GPU_ACTIVE"
+
+#define IPA_IN_NAME_L2_RD_MSG_IN_CU "L2_RD_MSG_IN_CU"
+#define IPA_IN_NAME_L2_RD_MSG_IN "L2_RD_MSG_IN"
+#define IPA_IN_NAME_L2_WR_MSG_IN "L2_WR_MSG_IN"
+#define IPA_IN_NAME_L2_SNP_MSG_IN "L2_SNP_MSG_IN"
+#define IPA_IN_NAME_L2_RD_MSG_OUT "L2_RD_MSG_OUT"
+#define IPA_IN_NAME_L2_READ_LOOKUP "L2_READ_LOOKUP"
+#define IPA_IN_NAME_L2_EXT_READ_NOSNP "L2_EXT_READ_NOSNP"
+#define IPA_IN_NAME_L2_EXT_WRITE_NOSNP_FULL "L2_EXT_WRITE_NOSNP_FULL"
+#define IPA_IN_NAME_L2_RD_MSG_IN_STALL "L2_RD_MSG_IN_STALL"
+#define IPA_IN_NAME_L2_EXT_WRITE "L2_EXT_WRITE"
+#define IPA_IN_NAME_EXEC_STARVE_ARITH "EXEC_STARVE_ARITH"
+#define IPA_IN_NAME_TEX_TFCH_CLK_STALLED "TEX_TFCH_CLK_STALLED"
+#define IPA_IN_NAME_RT_RAYS_STARTED "RT_RAYS_STARTED"
+#define IPA_IN_NAME_TEX_CFCH_NUM_L1_CT_OPERATIONS "TEX_CFCH_NUM_L1_CT_OPERATIONS"
+#define IPA_IN_NAME_EXEC_INSTR_SLOT1 "EXEC_INSTR_SLOT1"
+#define IPA_IN_NAME_EXEC_ISSUE_SLOT_ANY "EXEC_ISSUE_SLOT_ANY"
+#define IPA_IN_NAME_PRIMASSY_POS_SHADER_WAIT "PRIMASSY_POS_SHADER_WAIT"
+#define IPA_IN_NAME_IDVS_POS_SHAD_STALL "IDVS_POS_SHAD_STALL"
+#define IPA_IN_NAME_PREFETCH_STALL "PREFETCH_STALL"
+#define IPA_IN_NAME_VFETCH_POS_READ_WAIT "VFETCH_POS_READ_WAIT"
+#define IPA_IN_NAME_VFETCH_VERTEX_WAIT "VFETCH_VERTEX_WAIT"
+#define IPA_IN_NAME_PRIMASSY_STALL "PRIMASSY_STALL"
+#define IPA_IN_NAME_IDVS_VAR_SHAD_STALL "IDVS_VAR_SHAD_STALL"
+#define IPA_IN_NAME_ITER_STALL "ITER_STALL"
+#define IPA_IN_NAME_PMGR_PTR_RD_STALL "PMGR_PTR_RD_STALL"
+#define IPA_IN_NAME_FRAG_STARVING "FRAG_STARVING"
+#define IPA_IN_NAME_FRAG_PARTIAL_QUADS_RAST "FRAG_PARTIAL_QUADS_RAST"
+#define IPA_IN_NAME_FRAG_QUADS_EZS_UPDATE "FRAG_QUADS_EZS_UPDATE"
+#define IPA_IN_NAME_FULL_QUAD_WARPS "FULL_QUAD_WARPS"
+#define IPA_IN_NAME_LS_MEM_READ_SHORT "LS_MEM_READ_SHORT"
+#define IPA_IN_NAME_LS_MEM_WRITE_SHORT "LS_MEM_WRITE_SHORT"
+#define IPA_IN_NAME_VARY_SLOT_16 "VARY_SLOT_16"
+#define IPA_IN_NAME_BEATS_RD_LSC_EXT "BEATS_RD_LSC_EXT"
+#define IPA_IN_NAME_BEATS_RD_TEX "BEATS_RD_TEX"
+#define IPA_IN_NAME_BEATS_RD_TEX_EXT "BEATS_RD_TEX_EXT"
+#define IPA_IN_NAME_FRAG_QUADS_COARSE "FRAG_QUADS_COARSE"
+
+#define IPA_IN_NAME_INTERVAL "INTERVAL"
+#define IPA_IN_NAME_TEMP "TEMP"
+#define IPA_IN_NAME_BUSY_TIME "BUSY_TIME"
+#define IPA_IN_NAME_SCALE "SCALE"
+#define IPA_IN_NAME_TS "TS"
+#define IPA_IN_NAME_STATIC_COEFFICIENT "STATIC_COEFFICIENT"
+#define IPA_IN_NAME_DYNAMIC_COEFFICIENT "DYNAMIC_COEFFICIENT"
+
+/* Output parameter names */
+#define IPA_OUT_NAME_POWER "POWER"
+
+#endif /* _KUTF_IPA_UNIT_TEST_H_ */

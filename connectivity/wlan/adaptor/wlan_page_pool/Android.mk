@@ -1,0 +1,15 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+MODULE_NAME := wlan_page_pool
+LOCAL_MODULE := $(MODULE_NAME).ko
+LOCAL_PROPRIETARY_MODULE := true
+LOCAL_MODULE_OWNER := mtk
+LOCAL_INIT_RC := init.wlan_page_pool.rc
+LOCAL_REQUIRED_MODULES :=
+
+WLAN_PAGE_POOL_OPTS := MODULE_NAME=$(MODULE_NAME)
+
+include $(MTK_KERNEL_MODULE)
+
+$(linked_module): OPTS += $(WLAN_PAGE_POOL_OPTS)

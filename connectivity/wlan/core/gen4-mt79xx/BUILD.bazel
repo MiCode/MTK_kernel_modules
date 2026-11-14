@@ -1,0 +1,509 @@
+# add new target :
+# define compare_opts_str = 'XXX' for py parse defconfig
+# define config_opts = {XXX} for BUILD.bzl get copts_def and srcs_diff
+# reuse genrule and generate_wlan_module
+# define ko module
+#
+# new feature solution:
+# update config_opts
+# update BUILD.bzl -I && .c soucre judgement rules
+
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load(":BUILD.bzl", "generate_wlan_module")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+#print("TARGET_BUILD_VARIANT=", TARGET_BUILD_VARIANT)
+#print("KERNEL_MTK_GKI_BUILD=", KERNEL_MTK_GKI_BUILD)
+#print("ANDROID_TOP=", TOP)
+
+filegroup(
+    name = "resetko_sources",
+    srcs = [
+        "reset/reset_fsm_def.c",
+        "reset/reset_fsm.c",
+        "reset/reset_hif.c",
+        "reset/reset.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "common_sources",
+    srcs = [
+        "common/dump.c",
+        "common/wlan_lib.c",
+        "common/wlan_oid.c",
+        "common/wlan_bow.c",
+        "common/debug.c",
+
+        "common/wlan_p2p.c",
+        "common/wlan_he.c"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nic_sources",
+    srcs = [
+        "nic/nic.c",
+        "nic/nic_tx.c",
+        "nic/nic_txd_v1.c",
+        "nic/nic_rxd_v1.c",
+        "nic/nic_rx.c",
+        "nic/nic_pwr_mgt.c",
+        "nic/nic_rate.c",
+        "nic/cmd_buf.c",
+        "nic/que_mgt.c",
+        "nic/nic_cmd_event.c",
+        "nic/nic_umac.c",
+        "nic/radiotap.c",
+        "nic/p2p_nic.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "none_os_sources",
+    srcs = [
+        "os/none/gl_init.c",
+        "os/none/gl_kal.c",
+        "os/none/gl_ate_agent.c",
+        "os/none/gl_qa_agent.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "linux_os_sources",
+    srcs = [
+        "os/linux/gl_init.c",
+        "os/linux/gl_kal.c",
+        "os/linux/gl_bow.c",
+        "os/linux/gl_wext.c",
+        "os/linux/gl_wext_priv.c",
+        "os/linux/gl_ate_agent.c",
+        "os/linux/gl_qa_agent.c",
+        "os/linux/gl_hook_api.c",
+        "os/linux/gl_rst.c",
+        "os/linux/gl_cfg80211.c",
+        "os/linux/gl_proc.c",
+        "os/linux/gl_sys.c",
+        "os/linux/gl_vendor.c",
+        "os/linux/gl_custom.c",
+        "os/linux/platform.c",
+
+        "os/linux/gl_p2p.c",
+        "os/linux/gl_p2p_cfg80211.c",
+        "os/linux/gl_p2p_init.c",
+        "os/linux/gl_p2p_kal.c",
+
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "mgmt_sources",
+    srcs = [
+        "mgmt/ais_fsm.c",
+        "mgmt/aaa_fsm.c",
+        "mgmt/assoc.c",
+        "mgmt/auth.c",
+        "mgmt/bss.c",
+        "mgmt/cnm.c",
+        "mgmt/cnm_timer.c",
+        "mgmt/cnm_mem.c",
+        "mgmt/hem_mbox.c",
+        "mgmt/mib.c",
+        "mgmt/privacy.c",
+        "mgmt/rate.c",
+        "mgmt/rlm.c",
+        "mgmt/rlm_domain.c",
+        "mgmt/reg_rule.c",
+        "mgmt/rlm_obss.c",
+        "mgmt/rlm_protection.c",
+        "mgmt/rrm.c",
+        "mgmt/rsn.c",
+        "mgmt/saa_fsm.c",
+        "mgmt/scan.c",
+        "mgmt/scan_fsm.c",
+        "mgmt/scan_cache.c",
+        "mgmt/swcr.c",
+        "mgmt/roaming_fsm.c",
+        "mgmt/tkip_mic.c",
+        "mgmt/hs20.c",
+        "mgmt/tdls.c",
+        "mgmt/wnm.c",
+        "mgmt/qosmap.c",
+        "mgmt/ap_selection.c",
+        "mgmt/wmm.c",
+        "mgmt/gcm.c",
+        "mgmt/rtt.c",
+        "mgmt/stats.c",
+        "mgmt/wapi.c",
+
+        "mgmt/p2p_dev_fsm.c",
+        "mgmt/p2p_dev_state.c",
+        "mgmt/p2p_role_fsm.c",
+        "mgmt/p2p_role_state.c",
+        "mgmt/p2p_func.c",
+        "mgmt/p2p_scan.c",
+        "mgmt/p2p_ie.c",
+        "mgmt/p2p_rlm.c",
+        "mgmt/p2p_assoc.c",
+        "mgmt/p2p_bss.c",
+        "mgmt/p2p_rlm_obss.c",
+        "mgmt/p2p_fsm.c",
+
+        #CONFIG_MTK_WIFI_11AX_SUPPORT == y
+        #"mgmt/he_ie.c",
+        #"mgmt/he_rlm.c",
+
+        #CONFIG_MTK_WIFI_TWT_SUPPORT == y
+        #"mgmt/twt_req_fsm.c",
+        #"mgmt/twt.c",
+        #"mgmt/twt_planner.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "chips_common_sources",
+    srcs = [
+        "chips/common/cmm_asic_connac.c",
+        "chips/common/dbg_connac.c",
+        "chips/common/fw_dl.c",
+
+        #CONFIG_MTK_WIFI_CONNAC2X == y
+        #"chips/common/dbg_connac2x.c",
+        #"chips/common/cmm_asic_connac2x.c",
+
+        #CONFIG_SUPPORT_FW_IDX_LOG_TRANS == y
+        #"chips/common/fw_log_parser.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "chips_mt7961_sources",
+    srcs = [
+        "chips/mt7961/mt7961.c",
+        "chips/mt7961/dbg_mt7961.c",
+        "chips/mt7961/hal_dmashdl_mt7961.c",
+        "chips/mt7961/hal_wfsys_reset_mt7961.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+filegroup(
+    name = "chips_mt7922_sources",
+    srcs = [
+        "chips/mt7922/mt7922.c",
+        "chips/mt7961/mt7961.c",
+        "chips/mt7961/dbg_mt7961.c",
+        "chips/mt7922/dbg_mt7922.c",
+        "chips/mt7961/hal_dmashdl_mt7961.c",
+        "chips/mt7961/hal_wfsys_reset_mt7961.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+filegroup(
+    name = "chips_mt7902_sources",
+    srcs = [
+        "chips/mt7902/mt7902.c",
+        "chips/mt7961/mt7961.c",
+        "chips/mt7961/dbg_mt7961.c",
+        "chips/mt7902/dbg_mt7902.c",
+        "chips/mt7902/hal_dmashdl_mt7902.c",
+        "chips/mt7961/hal_wfsys_reset_mt7961.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+filegroup(
+    name = "chips_mt7926_sources",
+    srcs = [
+        "chips/mt7926/mt7926.c",
+        "chips/mt7902/mt7902.c",
+        "chips/mt7902/dbg_mt7902.c",
+        "chips/mt7961/mt7961.c",
+        "chips/mt7961/dbg_mt7961.c",
+        "chips/mt7926/hal_wfsys_reset_mt7926.c",
+        "chips/mt7961/hal_wfsys_reset_mt7961.c",
+        "chips/mt7902/hal_dmashdl_mt7902.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_usb_sources",
+    srcs = [
+        "os/linux/hif/usb/usb.c",
+        "os/linux/hif/usb/hal_api.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_pcie_sources",
+    srcs = [
+        "os/linux/hif/common/hal_pdma.c",
+        "os/linux/hif/common/kal_pdma.c",
+        "os/linux/hif/common/dbg_pdma.c",
+        "os/linux/hif/common/hif_mem.c",
+        "os/linux/hif/pcie/pcie.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_axi_sources",
+    srcs = [
+        "os/linux/hif/common/hal_pdma.c",
+        "os/linux/hif/common/kal_pdma.c",
+        "os/linux/hif/common/dbg_pdma.c",
+        "os/linux/hif/axi/axi.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_sdio_sources",
+    srcs = [
+        "os/linux/hif/sdio/arm.c",
+        "os/linux/hif/sdio/sdio.c",
+        "os/linux/hif/sdio/hal_api.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_none_sources",
+    srcs = [
+        "os/none/hif/none/none.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hif_ut_sources",
+    srcs = [
+        "test/lib/hif/ut.c",
+        "test/lib/hif/hal_api.c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+src_r = "/vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4-mt79xx"
+
+#7961_usb
+compare_opts_str = '{"MTK_COMBO_CHIP":"MT7961","WM_RAM":"dtv","CFG_PROJECT":"dtv_main","CONFIG_MTK_COMBO_WIFI_HIF":"usb","CONFIG_MTK_PREALLOC_MEMORY":"y","CONFIG_CHIP_RESET_KO_SUPPORT":"y","CONFIG_GKI_SUPPORT":"y","MTK_ANDROID_VERSION":"16-base"}'
+config_opts = {
+    "CONFIG_MTK_WIFI_CONNAC2X": "y",
+    "CONFIG_MTK_WIFI_CONNAC3X": "n",
+    "CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT": "n",
+    "CONFIG_SUPPORT_FW_IDX_LOG_SAVE": "y",
+    "CONFIG_MTK_WIFI_CSI_VNI": "n",
+    "CONFIG_MTK_WIFI_FMCW_VNI": "n",
+    "CONFIG_MTK_PLATFORM": "mt8195",
+    "CONFIG_MTK_WIFI_11AX_SUPPORT": "y",
+    "CONFIG_MTK_WIFI_TWT_SUPPORT": "y",
+    "CONFIG_SUPPORT_FW_IDX_LOG_TRANS": "y",
+    "CFG_SUPPORT_WIFI_SYSDVT": "0",
+    "CFG_SUPPORT_DMASHDL_SYSDVT": "0",
+    "CONFIG_MTK_WIFI_NAN": "y",
+    "CONFIG_MTK_COMBO_WIFI_HIF": "usb",
+    "MTK_WLAN_SERVICE": "no",
+    "CONFIG_MTK_PREALLOC_MEMORY": "y",
+    "CONFIG_CHIP_RESET_KO_SUPPORT": "y",
+    "CONFIG_RX_PAGE_POOL_USE_CMA": "n"
+    }
+genrule(
+    name = "parse_makefile_7961",
+    srcs = ["Makefile", "parse_makefile.py"],
+    outs = ["parsed_config_7961.h"],
+    cmd = "python $(location parse_makefile.py) $(location Makefile) '{}' '{}' > $@".format(src_r, compare_opts_str),
+    local = True,
+)
+copts_7961_usb, srcs_7961_usb, include_7961_usb = generate_wlan_module(config_opts)
+
+define_mgk_ddk_ko(
+    name = "wlan_mt7961",
+    module_type = "main",
+    ko_deps = [
+        ":mtreset_usb_ko",
+        ":mtprealloc_usb_ko",
+        ":wlan_mt7961_usb_ko",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "mtreset_usb_ko",
+    module_type = "sub",
+    srcs = [":resetko_sources",
+            ":parse_makefile_7961"],
+    includes = include_7961_usb,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX"
+    ],
+    copts = copts_7961_usb + [
+        "-include", "$(location :parse_makefile_7961)",
+    ],
+    out = "mtreset.ko",
+)
+
+define_mgk_ddk_ko(
+    name = "mtprealloc_usb_ko",
+    module_type = "sub",
+    srcs = [
+        ":parse_makefile_7961",
+        "prealloc/prealloc.c",
+    ],
+    includes = include_7961_usb,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX"
+    ],
+    copts = copts_7961_usb + [
+        "-include", "$(location :parse_makefile_7961)",
+    ],
+    out = "mtprealloc_mt7961.ko",
+)
+
+define_mgk_ddk_ko(
+    name = "wlan_mt7961_usb_ko",
+    module_type = "sub",
+    srcs = srcs_7961_usb + [
+        ":parse_makefile_7961",
+        ":common_sources",
+        ":nic_sources",
+        ":linux_os_sources",
+        ":mgmt_sources",
+        ":chips_common_sources",
+        ":chips_mt7961_sources",
+        ":hif_usb_sources",
+    ],
+    includes = include_7961_usb,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX",
+    ],
+    copts = copts_7961_usb + [
+        "-include", "$(location :parse_makefile_7961)",
+    ],
+    out = "wlan_mt7961.ko",
+)
+
+#7902_sdio
+compare_opts_str = '{"MTK_COMBO_CHIP":"MT7902","WM_RAM":"alps","CFG_PROJECT":"","CONFIG_MTK_COMBO_WIFI_HIF":"sdio","CONFIG_MTK_PREALLOC_MEMORY":"y","CONFIG_CHIP_RESET_KO_SUPPORT":"y","CONFIG_GKI_SUPPORT":"y","MTK_ANDROID_VERSION":"16-base"}'
+config_opts = {
+    "CONFIG_MTK_WIFI_CONNAC2X": "y",
+    "CONFIG_MTK_WIFI_CONNAC3X": "n",
+    "CONFIG_MTK_WIFI_UNIFIED_COMMND_SUPPORT": "n",
+    "CONFIG_SUPPORT_FW_IDX_LOG_SAVE": "y",
+    "CONFIG_MTK_WIFI_CSI_VNI": "n",
+    "CONFIG_MTK_WIFI_FMCW_VNI": "n",
+    "CONFIG_MTK_PLATFORM": "mt8195",
+    "CONFIG_MTK_WIFI_11AX_SUPPORT": "y",
+    "CONFIG_MTK_WIFI_TWT_SUPPORT": "y",
+    "CONFIG_SUPPORT_FW_IDX_LOG_TRANS": "n",
+    "CFG_SUPPORT_WIFI_SYSDVT": "0",
+    "CFG_SUPPORT_DMASHDL_SYSDVT": "0",
+    "CONFIG_MTK_WIFI_NAN": "n",
+    "CONFIG_MTK_COMBO_WIFI_HIF": "sdio",
+    "MTK_WLAN_SERVICE": "no",
+    "CONFIG_MTK_PREALLOC_MEMORY": "y",
+    "CONFIG_CHIP_RESET_KO_SUPPORT": "y",
+    "CONFIG_RX_PAGE_POOL_USE_CMA": "n"
+    }
+genrule(
+    name = "parse_makefile_7902",
+    srcs = ["Makefile", "parse_makefile.py"],
+    outs = ["parsed_config_7902.h"],
+    cmd = "python $(location parse_makefile.py) $(location Makefile) '{}' '{}' > $@".format(src_r, compare_opts_str),
+    local = True,
+)
+copts_7902_sdio, srcs_7902_sdio, include_7902_sdio = generate_wlan_module(config_opts)
+
+define_mgk_ddk_ko(
+    name = "wlan_mt7902",
+    module_type = "main",
+    ko_deps = [
+        ":mtreset_sdio_ko",
+        ":mtprealloc_sdio_ko",
+        ":wlan_mt7902_sdio_ko",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "mtreset_sdio_ko",
+    module_type = "sub",
+    srcs = [":resetko_sources",
+            ":parse_makefile_7902"],
+    includes = include_7902_sdio,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX"
+    ],
+    copts = copts_7902_sdio + [
+        "-include", "$(location :parse_makefile_7902)",
+    ],
+    out = "mtreset.ko",
+)
+
+define_mgk_ddk_ko(
+    name = "mtprealloc_sdio_ko",
+    module_type = "sub",
+    srcs = [
+        ":parse_makefile_7902",
+        "prealloc/prealloc.c",
+    ],
+    includes = include_7902_sdio,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX"
+    ],
+    copts = copts_7902_sdio + [
+        "-include", "$(location :parse_makefile_7902)",
+    ],
+    out = "mtprealloc_mt7902.ko",
+)
+
+define_mgk_ddk_ko(
+    name = "wlan_mt7902_sdio_ko",
+    module_type = "sub",
+    srcs = srcs_7902_sdio + [
+        ":parse_makefile_7902",
+        ":common_sources",
+        ":nic_sources",
+        ":linux_os_sources",
+        ":mgmt_sources",
+        ":chips_common_sources",
+        ":chips_mt7902_sources",
+        ":hif_sdio_sources",
+    ],
+    includes = include_7902_sdio,
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    local_defines = [
+        "LINUX",
+    ],
+    copts = copts_7902_sdio + [
+        "-include", "$(location :parse_makefile_7902)",
+    ],
+    out = "wlan_mt7902.ko",
+)

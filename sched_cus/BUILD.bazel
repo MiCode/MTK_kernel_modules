@@ -1,0 +1,215 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_prebuilt_object", "kernel_build")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_prebuilt_object(
+	name = "eas_ext_grp_cfi_int",
+	src = "src/eas_ext_grp_cfi_int.o",
+	config = "CONFIG_MTK_GAS_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "eas_ext_grp_cfi",
+	src = "src/eas_ext_grp_cfi.o",
+	config = "CONFIG_MTK_GAS_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "eas_ext_grp_no_cfi",
+	src = "src/eas_ext_grp_no_cfi.o",
+	config = "CONFIG_MTK_GAS_NO_CFI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+define_mgk_ddk_ko(
+    name = "eas_ext_cus",
+
+    srcs = ["src/eas_ext_main.c"],
+    hdrs = glob([
+        "**/*.h",
+        ]),
+
+    ko_deps = ["//kernel_device_modules-{}/drivers/misc/mediatek/sched:scheduler".format(kernel_version)],
+
+    includes = [".", "src"],
+    prebuilt_srcs = [
+        ":eas_ext_grp_cfi_int",
+        ":eas_ext_grp_cfi",
+        ":eas_ext_grp_no_cfi",
+    ],
+
+    copts = [
+        "-I$(srctree)/kernel/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sched/",
+    ],
+    kconfig = "sched_int.Kconfig",
+    out = "eas_ext.ko",
+)
+
+ddk_prebuilt_object(
+	name = "cpuqos_build_utility_cfi_ini",
+	src = "src/cpuqos_build_utility_cfi_ini.o",
+	config = "CONFIG_MTK_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "cpuqos_build_utility_cfi_only",
+	src = "src/cpuqos_build_utility_cfi_only.o",
+	config = "CONFIG_MTK_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "cpuqos_build_utility_no_cfi",
+	src = "src/cpuqos_build_utility_no_cfi.o",
+	config = "CONFIG_CFI_CLANG",
+	config_bool_value = False,
+	visibility = ["//visibility:private"],
+)
+
+define_mgk_ddk_ko(
+    name = "cpuqos_ext_cus",
+
+    srcs = ["src/cpuqos_ext_main.c"],
+    hdrs = glob([
+        "**/*.h",
+        ]),
+
+    ko_deps = ["//kernel_device_modules-{}/drivers/misc/mediatek/cache-auditor:cpuqos_v3".format(kernel_version)],
+
+    includes = [".", "src"],
+    prebuilt_srcs = [
+        ":cpuqos_build_utility_cfi_ini",
+        ":cpuqos_build_utility_cfi_only",
+        ":cpuqos_build_utility_no_cfi",
+    ],
+
+    copts = [
+        "-I$(srctree)/kernel/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sched/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cache-auditor/cpuqos_v3/",
+    ],
+    kconfig = "sched_int.Kconfig",
+    out = "cpuqos_ext.ko",
+)
+
+ddk_prebuilt_object(
+    name = "mtk_em_build_utility_cfi_int",
+    src = "src/mtk_em/mtk_em_build_utility_cfi_int.o",
+    config = "CONFIG_MTK_CFI_N_INI",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "mtk_em_build_utility_cfi",
+    src = "src/mtk_em/mtk_em_build_utility_cfi.o",
+    config = "CONFIG_MTK_CFI_ONLY",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "mtk_em_build_utility_no_cfi",
+    src = "src/mtk_em/mtk_em_build_utility_no_cfi.o",
+    config = "CONFIG_CFI_CLANG",
+    config_bool_value = False,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "em_int_cfi_int",
+    src = "src/mtk_em/v3/em_int_cfi_int.o",
+    config = "CONFIG_MTK_CFI_N_INI",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "em_int_cfi",
+    src = "src/mtk_em/v3/em_int_cfi.o",
+    config = "CONFIG_MTK_CFI_ONLY",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "em_int_no_cfi",
+    src = "src/mtk_em/v3/em_int_no_cfi.o",
+    config = "CONFIG_CFI_CLANG",
+    config_bool_value = False,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "core_ctl_int_cfi_int",
+    src = "src/mtk_em/core_ctl/core_ctl_int_cfi_int.o",
+    config = "CONFIG_MTK_CFI_N_INI",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "core_ctl_int_cfi",
+    src = "src/mtk_em/core_ctl/core_ctl_int_cfi.o",
+    config = "CONFIG_MTK_CFI_ONLY",
+    config_bool_value = True,
+    visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+    name = "core_ctl_int_no_cfi",
+    src = "src/mtk_em/core_ctl/core_ctl_int_no_cfi.o",
+    config = "CONFIG_CFI_CLANG",
+    config_bool_value = False,
+    visibility = ["//visibility:private"],
+)
+
+define_mgk_ddk_ko(
+    name = "mtk_em_cus",
+    srcs = glob([
+        "src/mtk_em/**/*.h",
+        "src/mtk_em/**/*.c",
+    ]),
+    prebuilt_srcs = [
+        ":mtk_em_build_utility_cfi_int",
+        ":mtk_em_build_utility_cfi",
+        ":mtk_em_build_utility_no_cfi",
+        ":em_int_cfi_int",
+        ":em_int_cfi",
+        ":em_int_no_cfi",
+        ":core_ctl_int_cfi_int",
+        ":core_ctl_int_cfi",
+        ":core_ctl_int_no_cfi",
+    ],
+    includes = [
+        "src/mtk_em",
+    ],
+    copts = [
+        "-flto",
+        "-I$(srctree)/kernel/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sched/",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/sched:cpufreq_sugov_ext".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/sched:scheduler".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/sched:mtk_core_ctl".format(kernel_version),
+    ],
+    kconfig = "sched_int.Kconfig",
+    out = "mtk_em.ko",
+)

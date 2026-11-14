@@ -1,0 +1,408 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2022 MediaTek Inc.
+ */
+
+#include <linux/of.h>
+#include <linux/of_device.h>
+#include <linux/regmap.h>
+
+#include "connv3_hw.h"
+#include "connv3_pmic_mng.h"
+
+/*******************************************************************************
+*                         C O M P I L E R   F L A G S
+********************************************************************************
+*/
+
+/*******************************************************************************
+*                                 M A C R O S
+********************************************************************************
+*/
+
+
+/*******************************************************************************
+*                    E X T E R N A L   R E F E R E N C E S
+********************************************************************************
+*/
+
+/*******************************************************************************
+*                              C O N S T A N T S
+********************************************************************************
+*/
+
+/*******************************************************************************
+*                             D A T A   T Y P E S
+********************************************************************************
+*/
+
+/*******************************************************************************
+*                  F U N C T I O N   D E C L A R A T I O N S
+********************************************************************************
+*/
+
+#if COMMON_KERNEL_PMIC_SUPPORT
+static int connv3_mt6373_probe(struct platform_device *pdev);
+static int connv3_mt6661_4_probe(struct platform_device *pdev);
+static int connv3_mt6661_3_probe(struct platform_device *pdev);
+static int connv3_mt6688_probe(struct platform_device *pdev);
+#endif
+
+static int pmic_mng_register_device(void);
+static int pmic_mng_unregister_device(void);
+
+/*******************************************************************************
+*                            P U B L I C   D A T A
+********************************************************************************
+*/
+
+const struct connv3_platform_pmic_ops* g_connv3_platform_pmic_ops = NULL;
+#if COMMON_KERNEL_PMIC_SUPPORT
+struct regmap *g_connv3_regmap_mt6373;
+struct regmap *g_connv3_regmap_mt6661_4;
+struct regmap *g_connv3_regmap_mt6661_3;
+struct regmap *g_connv3_regmap_mt6688;
+#endif
+
+/*******************************************************************************
+*                           P R I V A T E   D A T A
+********************************************************************************
+*/
+
+#if COMMON_KERNEL_PMIC_SUPPORT
+#ifdef CONFIG_OF
+const struct of_device_id connv3_pmic_mt6373_of_ids[] = {
+	{.compatible = "mediatek,mt6373-connv3",},
+	{}
+};
+const struct of_device_id connv3_pmic_mt6661_4_of_ids[] = {
+	{.compatible = "mediatek,mt6661-4-connv3",},
+	{}
+};
+const struct of_device_id connv3_pmic_mt6661_3_of_ids[] = {
+	{.compatible = "mediatek,mt6661-3-connv3",},
+	{}
+};
+const struct of_device_id connv3_pmic_mt6688_of_ids[] = {
+	{.compatible = "mediatek,mt6688-connv3",},
+	{}
+};
+#endif
+
+static struct platform_driver connv3_mt6373_dev_drv = {
+	.probe = connv3_mt6373_probe,
+	.driver = {
+		.name = "mt6373-connv3",
+#ifdef CONFIG_OF
+		.of_match_table = connv3_pmic_mt6373_of_ids,
+#endif
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
+		},
+};
+
+static struct platform_driver connv3_mt6661_4_dev_drv = {
+	.probe = connv3_mt6661_4_probe,
+	.driver = {
+		.name = "mt6661-4-connv3",
+#ifdef CONFIG_OF
+		.of_match_table = connv3_pmic_mt6661_4_of_ids,
+#endif
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
+		},
+};
+static struct platform_driver connv3_mt6661_3_dev_drv = {
+	.probe = connv3_mt6661_3_probe,
+	.driver = {
+		.name = "mt6661-3-connv3",
+#ifdef CONFIG_OF
+		.of_match_table = connv3_pmic_mt6661_3_of_ids,
+#endif
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
+		},
+};
+static struct platform_driver connv3_mt6688_dev_drv = {
+	.probe = connv3_mt6688_probe,
+	.driver = {
+		.name = "mt6688-connv3",
+#ifdef CONFIG_OF
+		.of_match_table = connv3_pmic_mt6688_of_ids,
+#endif /* CONFIG_OF */
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
+	},
+};
+
+#endif /* COMMON_KERNEL_PMIC_SUPPORT */
+
+/*******************************************************************************
+*                              F U N C T I O N S
+********************************************************************************
+*/
+
+int connv3_pmic_mng_common_power_ctrl(unsigned int enable)
+{
+	int ret = 0;
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_common_power_ctrl)
+		ret = g_connv3_platform_pmic_ops->pmic_common_power_ctrl(enable);
+
+	return ret;
+}
+
+int connv3_pmic_mng_vsel_ctrl(u32 enable)
+{
+	int ret = 0;
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_vsel_ctrl)
+		ret = g_connv3_platform_pmic_ops->pmic_vsel_ctrl(enable);
+
+	return ret;
+}
+
+int connv3_pmic_mng_set_pmic_en0(int enable)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->set_pmic_en0)
+		ret = g_connv3_platform_pmic_ops->set_pmic_en0(enable);
+
+	return ret;
+}
+
+int connv3_pmic_mng_set_pmic_en1(int enable)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->set_pmic_en1)
+		ret = g_connv3_platform_pmic_ops->set_pmic_en1(enable);
+
+	return ret;
+}
+
+int connv3_pmic_mng_pwr_rst(void)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_pwr_rst)
+		ret = g_connv3_platform_pmic_ops->pmic_pwr_rst();
+
+	return ret;
+}
+
+int connv3_pmic_mng_parse_state(char *buffer, int buf_sz)
+{
+	int ret = 0;
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_parse_state)
+		ret = g_connv3_platform_pmic_ops->pmic_parse_state(buffer, buf_sz);
+	return ret;
+}
+
+int connv3_pmic_mng_set_pmic_state(void)
+{
+
+	return 0;
+}
+
+int connv3_pmic_mng_antenna_power_ctrl(u32 radio, unsigned int enable)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_antenna_power_ctrl)
+		ret = g_connv3_platform_pmic_ops->pmic_antenna_power_ctrl(radio, enable);
+
+	return ret;
+}
+
+int connv3_pmic_mng_get_connsys_chip_info(char *connsys_ecid, int connsys_ecid_size)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+                g_connv3_platform_pmic_ops->pmic_get_connsys_chip_info)
+                ret = g_connv3_platform_pmic_ops->pmic_get_connsys_chip_info(connsys_ecid, connsys_ecid_size);
+
+        return ret;
+}
+
+int connv3_pmic_mng_get_connsys_adie_chip_info(char *connsys_adie_info, int connsys_adie_info_size)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_get_connsys_adie_chip_info)
+		ret = g_connv3_platform_pmic_ops->pmic_get_connsys_adie_chip_info(connsys_adie_info, connsys_adie_info_size);
+
+	return 0;
+}
+
+int connv3_pmic_mng_get_pmic_chip_info(char *pmic_ecid, int pmic_ecid_size)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+                g_connv3_platform_pmic_ops->pmic_get_pmic_chip_info)
+                ret = g_connv3_platform_pmic_ops->pmic_get_pmic_chip_info(pmic_ecid, pmic_ecid_size);
+
+        return ret;
+}
+
+int connv3_pmic_mng_fmd_setting(u32 enable)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_fmd_setting)
+		ret = g_connv3_platform_pmic_ops->pmic_fmd_setting(enable);
+
+	return ret;
+}
+
+#if COMMON_KERNEL_PMIC_SUPPORT
+static int connv3_mt6373_probe(struct platform_device *pdev)
+{
+	g_connv3_regmap_mt6373 = dev_get_regmap(pdev->dev.parent, NULL);
+
+	if (!g_connv3_regmap_mt6373)
+		pr_notice("[%s] fail to get g_connv3_regmap_mt6373\n", __func__);
+	else
+		pr_info("[%s] get g_connv3_regmap_mt6373 successfully!\n", __func__);
+
+	return 0;
+}
+
+static int connv3_mt6661_4_probe(struct platform_device *pdev)
+{
+	int ret = 0, reg_val = 0;
+	struct device_node *np = pdev->dev.parent->of_node;
+
+	ret = of_property_read_u32_index(np, "reg", 0, &reg_val);
+	if (ret != 0 || reg_val != 4)
+		return 0;
+
+	g_connv3_regmap_mt6661_4 = dev_get_regmap(pdev->dev.parent, NULL);
+
+	if (!g_connv3_regmap_mt6661_4)
+		pr_notice("[%s] fail to get g_connv3_regmap_mt6661_4\n", __func__);
+	else
+		pr_info("[%s] get g_connv3_regmap_mt6661_4 successfully!\n", __func__);
+
+	return 0;
+}
+static int connv3_mt6661_3_probe(struct platform_device *pdev)
+{
+	int ret = 0, reg_val = 0;
+	struct device_node *np = pdev->dev.parent->of_node;
+
+	ret = of_property_read_u32_index(np, "reg", 0, &reg_val);
+	if (ret != 0 || reg_val != 3)
+		return 0;
+
+	g_connv3_regmap_mt6661_3 = dev_get_regmap(pdev->dev.parent, NULL);
+
+	if (!g_connv3_regmap_mt6661_3)
+		pr_notice("[%s] fail to get g_connv3_regmap_mt6661_3\n", __func__);
+	else
+		pr_info("[%s] get g_connv3_regmap_mt6661_3 successfully!\n", __func__);
+
+	return 0;
+}
+static int connv3_mt6688_probe(struct platform_device *pdev)
+{
+	g_connv3_regmap_mt6688 = dev_get_regmap(pdev->dev.parent, NULL);
+
+	if (!g_connv3_regmap_mt6688)
+		pr_notice("[%s] fail to get g_connv3_regmap_mt6688\n", __func__);
+	else
+		pr_info("[%s] get g_connv3_regmap_mt6688 successfully!\n", __func__);
+
+	return 0;
+}
+
+#endif
+
+static int pmic_mng_register_device(void)
+{
+#if COMMON_KERNEL_PMIC_SUPPORT
+	int ret;
+
+	ret = platform_driver_register(&connv3_mt6373_dev_drv);
+	if (ret)
+		pr_notice("[%s] connv3 pmic mt6373 registered failed(%d)\n", __func__, ret);
+	else
+		pr_info("[%s] connv3 pmic mt6373 registered successfully!\n", __func__);
+
+	ret = platform_driver_register(&connv3_mt6661_4_dev_drv);
+	if (ret)
+		pr_notice("[%s] connv3 pmic mt6661_4 registered failed(%d)\n", __func__, ret);
+	else
+		pr_info("[%s] connv3 pmic mt6661_4 registered successfully!\n", __func__);
+
+	ret = platform_driver_register(&connv3_mt6661_3_dev_drv);
+	if (ret)
+		pr_notice("[%s] connv3 pmic mt6661_3 registered failed(%d)\n", __func__, ret);
+	else
+		pr_info("[%s] connv3 pmic mt6661_3 registered successfully!\n", __func__);
+
+	ret = platform_driver_register(&connv3_mt6688_dev_drv);
+	if (ret)
+		pr_notice("[%s] connv3 pmic mt6688 registered failed(%d)\n", __func__, ret);
+	else
+		pr_info("[%s] connv3 pmic mt6688 registered successfully!\n", __func__);
+
+#endif
+	return 0;
+}
+
+static int pmic_mng_unregister_device(void)
+{
+#if COMMON_KERNEL_PMIC_SUPPORT
+	if (g_connv3_regmap_mt6373 != NULL) {
+		platform_driver_unregister(&connv3_mt6373_dev_drv);
+		g_connv3_regmap_mt6373 = NULL;
+	}
+	if (g_connv3_regmap_mt6661_4 != NULL) {
+		platform_driver_unregister(&connv3_mt6661_4_dev_drv);
+		g_connv3_regmap_mt6661_4 = NULL;
+	}
+	if (g_connv3_regmap_mt6661_3 != NULL) {
+		platform_driver_unregister(&connv3_mt6661_3_dev_drv);
+		g_connv3_regmap_mt6661_3 = NULL;
+	}
+	if (g_connv3_regmap_mt6688 != NULL) {
+		platform_driver_unregister(&connv3_mt6688_dev_drv);
+		g_connv3_regmap_mt6688 = NULL;
+	}
+#endif
+	return 0;
+}
+
+int connv3_pmic_mng_init(
+	struct platform_device *pdev,
+	struct connv3_dev_cb* dev_cb,
+	const struct connv3_plat_data* plat_data)
+{
+	int ret = 0;
+
+	if (g_connv3_platform_pmic_ops == NULL)
+		g_connv3_platform_pmic_ops =
+			(const struct connv3_platform_pmic_ops*)plat_data->platform_pmic_ops;
+
+	pmic_mng_register_device();
+
+	if (g_connv3_platform_pmic_ops &&
+		g_connv3_platform_pmic_ops->pmic_initial_setting)
+		ret = g_connv3_platform_pmic_ops->pmic_initial_setting(pdev, dev_cb);
+
+	return ret;
+}
+
+int connv3_pmic_mng_deinit(void)
+{
+	pmic_mng_unregister_device();
+	g_connv3_platform_pmic_ops = NULL;
+	return 0;
+}

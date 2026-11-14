@@ -1,0 +1,4 @@
+# load btmtkusb
+on boot
+  exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ btmtk_vnd.ko
+  exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -d /vendor/lib/modules/ btmtk_vnd_ce.ko

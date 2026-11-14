@@ -1,0 +1,22 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+)
+
+define_mgk_ddk_ko(
+    name = "wlan_page_pool",
+    srcs = [
+        "wifi_page_pool.c"
+    ],
+    copts = [
+        "-Wall",
+        "-Werror",
+    ],
+)

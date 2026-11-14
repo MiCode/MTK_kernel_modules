@@ -1,0 +1,24 @@
+$(info [bt_drv] vendor/Kbuild.ce start)
+# Support GKI mixed build
+ifeq ($(DEVICE_MODULES_PATH),)
+DEVICE_MODULES_PATH = $(DEVICE_MODULES_PATH)
+else
+LINUXINCLUDE := $(DEVCIE_MODULES_INCLUDE) $(LINUXINCLUDE)
+endif
+
+LOG_TAG := [BT_Drv][vendor]
+CONFIG_SUPPORT_DEINT_IRQ=n
+
+ifeq ($(CONFIG_SUPPORT_DEINT_IRQ), y)
+    ccflags-y += -DCFG_SUPPORT_DEINT_IRQ=1
+else
+    ccflags-y += -DCFG_SUPPORT_DEINT_IRQ=0
+endif
+ccflags-y += -I$(src)/
+ccflags-y += -Werror
+
+CFILES := btmtk_vendor.c
+btmtk_vnd_ce-objs := $(CFILES:.c=.o)
+obj-m += btmtk_vnd_ce.o
+
+$(info [bt_drv] vendor/Kbuild end)

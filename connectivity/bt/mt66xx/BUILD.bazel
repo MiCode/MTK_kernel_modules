@@ -1,0 +1,114 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+ddk_headers(
+    name = "bt_headers",
+    hdrs = glob(["**/*.h"])
+)
+
+platforms = [
+    "6895",
+    "6858",
+]
+
+define_mgk_ddk_ko(
+    name = "btif",
+    module_type = "main",
+    ko_deps = ["bt_drv_{}".format(p) if glob(["{}/**".format(p)]) else "" for p in platforms],
+    #ko_deps = ["bt_drv_6895"],
+)
+
+[define_mgk_ddk_ko(
+    name = "bt_drv_{}".format(p),
+    module_type = "sub",
+    srcs = ([
+        "{}/btif/btmtk_dbg.c".format(p),
+        "{}/btif/btmtk_dbg_tp_evt_if.c".format(p),
+        "{}/btif/btmtk_irq.c".format(p),
+        "{}/btif/btmtk_char_dev.c".format(p),
+        "{}/btmtk_fw_log.c".format(p),
+        "{}/btmtk_main.c".format(p),
+        "{}/btif/btmtk_mt66xx.c".format(p),
+        "{}/btif/btmtk_btif_main.c".format(p),
+        "{}/btif/btmtk_queue.c".format(p),
+        "{}/btif/btmtk_beif.c".format(p),
+        "{}/btif/btmtk_beif_plat.c".format(p),
+    ] if glob(["{}/**".format(p)]) else []) + glob(["**/*.h"]),
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:connfem",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/btif:btif_drv".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+    ],
+    includes = [
+        "include",
+        "include/btif",
+    ],
+    copts = [
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/connectivity/common",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/connectivity/power_throttling",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/btif/common/inc",
+        "-Wno-macro-redefined",
+    ],
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra_headers",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/btif:btif_drv_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:ddk_public_headers".format(kernel_version),
+    ],
+    local_defines = [
+        "FW_LOG_DEFAULT_ON=1",
+        "BUILD_QA_DBG=1",
+        "CONNAC20_CHIPID={}".format(p),
+        "CHIP_IF_BTIF",
+        "USE_DEVICE_NODE=1",
+        "CUSTOMER_FW_UPDATE=0",
+        "PM_QOS_CONTROL=0",
+        "CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT=1",
+    ] + ([
+        "SUPPORT_BEIF=0",
+        "SUPPORT_BIN2IMG=1",
+        "CFG_BT_ATF_SUPPORT=1",
+        "DTS_REORDERED=0",
+    ] if p in ["6886","6983"] else []) + ([
+        "SUPPORT_BEIF=1",
+        "SUPPORT_BIN2IMG=1",
+        "CFG_BT_ATF_SUPPORT=0",
+        "DTS_REORDERED=0",
+    ] if p == "6897" else []) + ([
+        "SUPPORT_BEIF=1",
+        "SUPPORT_BIN2IMG=1",
+        "CFG_BT_ATF_SUPPORT=0",
+        "DTS_REORDERED=1",
+    ] if p in ["6878","6899","6858"] else []) + ([
+        "SUPPORT_BEIF=0",
+        "SUPPORT_BIN2IMG=0",
+        "CFG_BT_ATF_SUPPORT=0",
+        "DTS_REORDERED=0",
+    ] if p not in ["6878","6886","6897","6983","6899","6858"] else []) + ([
+        "BT_COREDUMP_CHECK=1",
+    ] if p in ["6878","6899","6858"] else [
+        "BT_COREDUMP_CHECK=0",
+    ]) + ([
+        "BT_ANTENNA_CFG=1",
+    ] if p in ["6879","6886","6895","6899","6983","6858"] else [
+        "BT_ANTENNA_CFG=0",
+    ]),
+) for p in platforms]

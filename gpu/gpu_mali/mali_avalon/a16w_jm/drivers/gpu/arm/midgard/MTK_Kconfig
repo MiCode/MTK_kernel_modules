@@ -1,0 +1,248 @@
+menu "MTK GPU Config"
+config GPU_MT6789
+	bool ""
+	default n
+config MALI_MTK_COMMON
+	bool ""
+	default n
+config MALI_MTK_POWER_TRANSITION_TIMEOUT_DEBUG
+	bool ""
+	default n
+config MALI_MTK_BRINGUP
+	bool ""
+	default n
+config MALI_MTK_LOG_BUFFER
+	bool ""
+	default n
+config MALI_MTK_LOG_BUFFER_ENLARGE
+	bool ""
+	default n
+config MALI_MTK_FENCE_DEBUG
+	bool ""
+	default n
+config MALI_MTK_DEBUG_DUMP
+	bool ""
+	default n
+config MALI_MTK_CPUQ_DUMP_ENHANCEMENT
+	bool ""
+	default n
+config MALI_MTK_MMAP_LOGGING
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_FORCE_HARD_RESET
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_FORCE_TERMINATE_CSG
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_DIRECTLY_HARD_RESET
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_FAULT_WORKER
+	bool ""
+	default n
+config MALI_MTK_FENCE_TIMEOUT_RESET
+	bool ""
+	default n
+config MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY
+	bool ""
+	default n
+config MALI_MTK_SYSFS
+	bool ""
+	default n
+config MALI_MTK_PROC_FS
+	bool ""
+	default n
+config MALI_MTK_RESET_RELOAD_ON_FW
+	bool ""
+	default n
+config MALI_MTK_GPU_IDLE_STRESS_TEST
+	bool ""
+	default n
+config MALI_MTK_DEBUG_FS
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_MISSING_DOORBELL
+	bool ""
+	default n
+config MALI_MTK_HWCNT_HINT
+	bool ""
+	default n
+config MALI_MTK_KE_DUMP_FWLOG
+	bool ""
+	default n
+config MALI_MTK_PROTECTED_PATCH
+	bool ""
+	default n
+config MALI_MTK_PREVENT_PRINTK_TOO_MUCH
+	bool ""
+	default n
+config MALI_MTK_POWER_RESET
+	bool ""
+	default n
+config MALI_MTK_HARD_RESET_WA
+	bool ""
+	default n
+config MALI_MTK_DEVFREQ_GOVERNOR
+	bool ""
+	default n
+config MALI_MTK_DEVFREQ_THERMAL
+	bool ""
+	default n
+config MALI_MTK_GPUEB_IRQ
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_MCU
+	bool ""
+	default n
+config MALI_PMU_LP4
+	bool ""
+	default n
+config MALI_PMU_CPB128
+	bool ""
+	default n
+config MALI_MTK_MGMM
+	bool ""
+	default n
+config MALI_MTK_MEMTRACK
+	bool ""
+	default n
+config MALI_MTK_MEMORY_DEBUG
+	bool ""
+	default n
+config MALI_MTK_OOM_LOG_REDUCE
+	bool ""
+	default n
+config MALI_MTK_JIT_RECLAIM_ANTITHRASHING
+	bool ""
+	default n
+config MALI_MTK_TRIGGER_KE
+	bool ""
+	default n
+config MALI_MTK_DIAGNOSIS_MODE
+	bool ""
+	default n
+config MALI_MTK_GPU_BM_2
+	bool ""
+	default n
+config MALI_MTK_GHPM_STAGE1_ENABLE
+	bool ""
+	default n
+config MALI_MTK_PAGE_FAULT_WB_TILER_RECLAIM
+	bool ""
+	default n
+config MALI_MTK_KBASE_MMU_DBG_LOG
+	bool ""
+	default n
+config MALI_MTK_UNHANDLED_PAGE_FAULT_DEBUG
+	bool ""
+	default n
+config MALI_MTK_UNHANDLED_PAGE_FAULT_DEBUG_NO_KLOG
+	bool ""
+	default n
+config MALI_MTK_MMU_DUMP
+	bool ""
+	default n
+config MALI_MTK_SOI_DEBUG
+	bool ""
+	default n
+config MALI_MTK_DISABLE_SOI
+	bool ""
+	default n
+config MALI_MTK_GOV_CORE_MASK_DISABLE
+	bool ""
+	default n
+config MALI_MTK_GOV_CORE_MASK_DEBUG
+	bool ""
+	default n
+config MALI_MTK_CORE_MASK_SET
+	bool ""
+	default n
+config MALI_MTK_KCPUQ_PRIORITZED
+	bool ""
+	default n
+config MALI_MTK_USE_WORKQUEUE_FOR_CSF_SCHEDULE
+	bool ""
+	default n
+config MALI_MTK_KBASE_TRACE_DEBUG
+	bool ""
+	default n
+config MALI_MTK_KBASE_THREAD_DEBUG
+	bool ""
+	default n
+config MALI_MTK_TIMELINE_TRACE_DEBUG
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_MEMORY_FOOTPRINT
+	bool ""
+	default n
+config MALI_MTK_GPU_DVFS_HINT_26M_LOADING
+	bool ""
+	default n
+config MALI_MTK_GPU_DVFS_ASYNC
+	bool ""
+	default n
+config MALI_MTK_GPU_DVFS_READ_SOC_TIMER
+	bool ""
+	default n
+config MALI_MTK_CREATE_KCPU_QUEUE_DEBUG
+	bool ""
+	default n
+config MALI_MTK_ADAPTIVE_POWER_POLICY
+	bool ""
+	default n
+config MALI_MTK_AUTOSUSPEND_DELAY
+	bool ""
+	default n
+config MALI_MTK_SLC_ALL_CACHE_MODE
+	bool ""
+	default n
+config MALI_MTK_MBRAIN_SUPPORT
+	bool ""
+	default n
+config MALI_MTK_ITER_TIMEOUT_DBG_LOG
+	bool ""
+	default n
+config MALI_MTK_GPU_RESET_DEBUG
+	bool ""
+	default n
+config MALI_MTK_FIX_TIMEOUT_WHITELIST
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_SCHEDULER
+	bool ""
+	default n
+config MALI_MTK_WHITEBOX_SYNC_UPDATE
+	bool ""
+	default n
+config MALI_SCMI_ENABLE
+	bool ""
+	default n
+config MALI_MTK_ACP_DSU_REQ
+	bool ""
+	default n
+config MALI_MTK_ACP_FORCE_SYNC_DEBUG
+	bool ""
+	default n
+config MALI_MTK_SLC_DYNAMIC_POLICY_V2
+	bool ""
+	default n
+config MALI_MTK_WORKER_TOO_LONG_DEBUG
+	bool ""
+	default n
+config MALI_MTK_IDLE_HYSTERESIS_TIME
+	bool ""
+	default n
+config MALI_MTK_GLB_PWROFF_TIMEOUT
+	bool ""
+	default n
+config MALI_MTK_SCHEDULER_KTHREAD_PATCH
+	bool ""
+	default n
+config MALI_MTK_API_SYNC_UPDATE
+	bool ""
+	default n
+config MALI_MTK_GPU_FREQUENCY_TRACE
+	bool "provide gpu_frequency trace event"
+	default n
+endmenu

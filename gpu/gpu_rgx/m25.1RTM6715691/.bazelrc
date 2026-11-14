@@ -1,0 +1,34 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+build:pc_android --//powervr/rogue_km:SUPPORT_RGXKICKSYNC_BRIDGE=1
+build:pc_android --//powervr/rogue_km:SUPPORT_DMA_HEAP=1
+build:pc_android --//powervr/rogue_km:SUPPORT_USC_BREAKPOINT=1
+build:pc_android --//powervr/rogue_km:PVRSRV_ENABLE_HTB=1
+build:pc_android --//powervr/rogue_km:PVRSRV_ENABLE_DYNAMIC_PHYSHEAPS=0
+build:pc_android --//powervr/rogue_km:SUPPORT_DMA_TRANSFER=0
+build:pc_android --//powervr/rogue_km:SUPPORT_WRAP_EXTMEM=1
+build:pc_android --//powervr/rogue_km:SUPPORT_PHYSMEM_TEST=1
+build:pc_android --//powervr/rogue_km:PVRSRV_ANDROID_TRACE_GPU_WORK_PERIOD=0
+build:pc_android --//powervr/rogue_km:PVRSRV_TRACE_ROGUE_EVENTS=1
+build:pc_android --//powervr/rogue_km:PVRSRV_ANDROID_TRACE_GPU_FREQ=1
+build:pc_android --//powervr/rogue_km:SUPPORT_PDVFS=0
+build:pc_android --//powervr/rogue_km:SUPPORT_WORKLOAD_ESTIMATION=0
+build:pc_android --//powervr/rogue_km:SUPPORT_RGX=1
+build:pc_android --//powervr/rogue_km:PDUMP=0
+build:pc_android --//powervr/rogue_km:PVR_ARCH="volcanic"
+build:pc_android --//powervr/rogue_km:PVR_SYSTEM="rgx_linux_tc"
+build:pc_android --//powervr/rogue_km:SUPPORT_SECURE_EXPORT=0
+build:pc_android --//powervr/rogue_km:PVRSRV_ENABLE_GPU_MEMORY_INFO=0
+build:pc_android --//powervr/rogue_km:PVR_TESTING_UTILS=0
+build:pc_android --//powervr/rogue_km:PVRSRV_PHYSMEM_CPUMAP_HISTORY=0
+build:pc_android --//powervr/rogue_km:PVR_HANDLE_BACKEND=idr
+build:pc_android --//powervr/rogue_km:PVRSRV_ENABLE_LINUX_MMAP_STATS=0
+build:pc_android --//powervr/rogue_km:USE_PVRSYNC_DEVNODE=1
+build:pc_android --//powervr/rogue_km:SUPPORT_NATIVE_FENCE_SYNC=1
+build:pc_android --//powervr/rogue_km:SUPPORT_FALLBACK_FENCE_SYNC=0
+build:pc_android --//powervr/rogue_km:PVRSRV_ENABLE_PVR_ION_STATS=0
+build:pc_android --//powervr/rogue_km:SUPPORT_ION=0
+build:pc_android --//powervr/rogue_km:SUPPORT_VALIDATION=0

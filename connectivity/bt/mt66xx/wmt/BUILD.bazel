@@ -1,0 +1,44 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "wmt",
+    srcs = [
+	"stp_chrdev_bt.c",
+	"btmtk_dbg.c",
+	"btmtk_dbg_tp_evt_if.c",
+	"fw_log_bt.c"
+    ],
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv_headers",
+	"//vendor/mediatek/kernel_modules/connectivity/bt/mt66xx:bt_headers",
+    ],
+    hdrs = glob([
+        "**/*.h"
+    ]),
+    copts = [
+        "-Wall",
+        "-Werror",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+    ],
+    local_defines = [
+        "FW_LOG_DEFAULT_ON=0",
+        "BUILD_QA_DBG=0",
+	"WMT_IDC_SUPPORT=1",
+	"MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT",
+	"CREATE_NODE_DYNAMIC=1",
+        "ENABLE_LOW_POWER_DEBUG=0"
+    ],
+    out = "bt_drv_connac1x.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv",
+	"//vendor/mediatek/kernel_modules/connectivity/bt/mt66xx:btif",
+    ],
+)

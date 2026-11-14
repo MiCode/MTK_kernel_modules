@@ -1,0 +1,52 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "mcupm_api_headers",
+    hdrs = glob(["**/*.h"]),
+    includes = ["."],
+)
+
+define_mgk_ddk_ko(
+    name = "met_mcupm_api_int",
+    hdrs = [":mcupm_api_headers"],
+    srcs = glob(["met_mcupm_api.c"]),
+    out = "met_mcupm_api.ko",
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm:mcupm_public_headers".format(kernel_version),
+    ],
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v2:mcupm".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v3:mcupm".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_MCUPM",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "met_mcupm_api_cus",
+    hdrs = [":mcupm_api_headers"],
+    srcs = glob(["met_mcupm_api.c"]),
+    out = "met_mcupm_api.ko",
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm:mcupm_public_headers".format(kernel_version),
+    ],
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v2:mcupm".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v3:mcupm".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_MCUPM",
+    ],
+)

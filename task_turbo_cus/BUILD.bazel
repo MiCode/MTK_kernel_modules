@@ -1,0 +1,86 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_prebuilt_object", "kernel_build")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_api_cfi_ini",
+	src = "src/task_turbo_api_cfi_ini.o",
+	config = "CONFIG_MTK_VE_CFI_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_api_no_ini",
+	src = "src/task_turbo_api_no_ini.o",
+	config = "CONFIG_MTK_VE_NO_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_api_no_cfi",
+	src = "src/task_turbo_api_no_cfi.o",
+	config = "CONFIG_MTK_VE_NO_CFI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_hook_cfi_ini",
+	src = "src/task_turbo_hook_cfi_ini.o",
+	config = "CONFIG_MTK_VE_CFI_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_hook_no_ini",
+	src = "src/task_turbo_hook_no_ini.o",
+	config = "CONFIG_MTK_VE_NO_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "task_turbo_hook_no_cfi",
+	src = "src/task_turbo_hook_no_cfi.o",
+	config = "CONFIG_MTK_VE_NO_CFI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+define_mgk_ddk_ko(
+    name = "task_turbo_cus",
+    srcs = glob([
+        "src/task_turbo_main.c",
+        #"**/*.o_shipped",
+        #"**/.*.o.cmd_shipped"
+    ]),
+    prebuilt_srcs = [
+        ":task_turbo_api_cfi_ini",
+        ":task_turbo_api_no_ini",
+        ":task_turbo_api_no_cfi",
+        ":task_turbo_hook_cfi_ini",
+        ":task_turbo_hook_no_ini",
+        ":task_turbo_hook_no_cfi",
+    ],
+    includes = [
+        "include"
+    ],
+    kconfig = "task_turbo_cus.Kconfig",
+    hdrs = glob(["**/*.h"]),
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/sched:scheduler".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/task_turbo:vip_engine".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/fpsgo_v8:mtk_fpsgo_v8".format(kernel_version),
+    ],
+    out = "task_turbo_v.ko",
+)

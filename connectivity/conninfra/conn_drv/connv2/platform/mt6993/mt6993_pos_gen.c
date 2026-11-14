@@ -1,0 +1,958 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (c) 2024 MediaTek Inc.
+ */
+
+
+/* AUTO-GENERATED FILE.  DO NOT MODIFY.
+ *
+ * This file, mt6993_pos_gen.c was automatically generated
+ * by the tool from the POS data DE provided.
+ * It should not be modified by hand.
+ *
+ * Reference POS file,
+ * - Jxxxr_power_on_sequence_20250121.xlsx
+ * - Jxxxr_conn_infra_sub_task_initial.xlsx
+ * - conn_infra_cmdbt_instr_autogen_20250303.txt
+ */
+
+
+#ifndef CFG_CONNINFRA_ON_CTP
+#include <linux/types.h>
+#include <linux/clk.h>
+#include <linux/io.h>
+#include <connectivity_build_in_adapter.h>
+#endif
+#include "consys_hw.h"
+#include "consys_reg_util.h"
+#include "mt6993_consys_reg_offset.h"
+#include "mt6993.h"
+#include "mt6993_pos.h"
+#include "mt6993_pos_gen.h"
+#include "conninfra.h"
+
+#define CONN_WLA_ENABLE 1
+
+const unsigned int g_cmdbt_dwn_value_ary_mt6993[1024] = {
+	0x16000400, 0x16011805, 0x16100A00, 0x16111805, 0x1620003D, 0x16210000, 0xCCCCCCCC, 0x06000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x16000400, 0x16011805, 0x16100A00, 0x16111805, 0x1620003D, 0x16210000, 0xBBBBBBBB, 0x06000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x18041014, 0x180410F4, 0x1804100C, 0x18041004, 0x18041010, 0x18011050, 0x18011100, 0x18011104,
+	0x18012000, 0x18012004, 0x18012020, 0x18012050, 0x1804B000, 0x1804B004, 0x1804B008, 0x1804B010,
+	0x1804B12C, 0x1804B024, 0x1804B070, 0x1804B074, 0x1804B350, 0x1804B354, 0x1804B358, 0x1804B35C,
+	0x1804B360, 0x1804B364, 0x1804B368, 0x1804B36C, 0x1804B370, 0x1804B374, 0x1804B3C8, 0x1804B3CC,
+	0x1804B3D0, 0x1804B3D4, 0x1804B3D8, 0x1804B3DC, 0x1804B3E0, 0x1804B3E4, 0x1804B3E8, 0x1804B3EC,
+	0x18040004, 0x18040008, 0x1804000C, 0x18040010, 0x18040014, 0x18040018, 0x18040000, 0x1804001C,
+	0x18040020, 0x18040024, 0x18040028, 0x18042008, 0x18012030, 0x18012038, 0x18012000, 0x18011420,
+	0x18011424, 0x18011428, 0x1801142C, 0x18011430, 0x1804B148, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+};
+
+
+int consys_conninfra_on_power_ctrl_mt6993_gen(
+		unsigned int pbus_mode,
+		unsigned int trapping,
+		unsigned int enable)
+{
+	mapped_addr vir_addr_consys_gen_cksys_tse_base = NULL;
+	mapped_addr vir_addr_0x1c00d000 = NULL;
+	int check = 0;
+	mapped_addr vir_addr_0x1c00e000 = NULL;
+
+	vir_addr_consys_gen_cksys_tse_base =
+		ioremap(CONSYS_GEN_CKSYS_TSE_BASE_ADDR, 0x78);
+	vir_addr_0x1c00d000 =
+		ioremap(0x1C00D000, 0x10);
+	vir_addr_0x1c00e000 =
+		ioremap(0x1C00E000, 0x4);
+
+	if (!vir_addr_consys_gen_cksys_tse_base) {
+		pr_notice("vir_addr_consys_gen_cksys_tse_base(%x) ioremap fail\n",
+			CONSYS_GEN_CKSYS_TSE_BASE_ADDR);
+		return -1;
+	}
+
+	if (!vir_addr_0x1c00d000) {
+		pr_notice("vir_addr_0x1c00d000(%x) ioremap fail\n",
+			0x1C00D000);
+		iounmap(vir_addr_consys_gen_cksys_tse_base);
+		return -1;
+	}
+
+	if (!vir_addr_0x1c00e000) {
+		pr_notice("vir_addr_0x1c00e000(%x) ioremap fail\n",
+			0x1C00E000);
+		iounmap(vir_addr_consys_gen_cksys_tse_base);
+		iounmap(vir_addr_0x1c00d000);
+		return -1;
+	}
+
+	if (enable == 1) {
+		/* turn on f_fap2conn_host_ck  clock */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(vir_addr_consys_gen_cksys_tse_base +
+				CONSYS_GEN_CLK_CFG_6_CLR_OFFSET_ADDR, (0x1U << 31));
+		#endif
+
+		/* turn on f_fap2conn_osc_ck  clock */
+		CONSYS_SET_BIT(vir_addr_consys_gen_cksys_tse_base +
+			CONSYS_GEN_CLK_CFG_6_SET_OFFSET_ADDR, (0x1U << 24));
+
+		/* power on connsys_on_top_pwr_wrap mtcmos */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(vir_addr_0x1c00d000 +
+				0x0, (0x1U << 4));
+		#endif
+
+		/* check connsys_on_top_pwr_wrap mtcmos power on done */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			check = 0;
+			CONSYS_REG_BIT_POLLING(vir_addr_0x1c00d000 +
+				0x0,
+				31, 1, 0, 1000, check);
+			if (check != 0) {
+				pr_notice("check connsys_on_top_pwr_wrap mtcmos power on done fail, Status=0x%08x\n",
+					CONSYS_REG_READ(vir_addr_0x1c00d000 +
+						0x0));
+			}
+		#endif
+
+		mdelay(5);
+	} else {
+		/* power off conn mtcmos */
+		CONSYS_REG_WRITE(vir_addr_0x1c00e000 + 0x4, 0x0);
+
+		/* check connsys_on_top_pwr_wrap mtcmos power off done */
+		check = 0;
+		CONSYS_REG_BIT_POLLING(vir_addr_0x1c00e000 +
+			0x4,
+			31, 0, 0, 1000, check);
+		if (check != 0) {
+			pr_notice("check connsys_on_top_pwr_wrap mtcmos power off done fail, Status=0x%08x\n",
+				CONSYS_REG_READ(vir_addr_0x1c00e000 +
+					0x4));
+		}
+
+		/* turn on f_fap2conn_osc_ck  clock */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(vir_addr_consys_gen_cksys_tse_base +
+				CONSYS_GEN_CLK_CFG_6_CLR_OFFSET_ADDR, (0x1U << 24));
+		#endif
+
+		/* turn on f_fap2conn_host_ck  clock */
+		CONSYS_SET_BIT(vir_addr_consys_gen_cksys_tse_base +
+			CONSYS_GEN_CLK_CFG_6_SET_OFFSET_ADDR, (0x1U << 31));
+	}
+
+	if (vir_addr_consys_gen_cksys_tse_base)
+		iounmap(vir_addr_consys_gen_cksys_tse_base);
+
+	if (vir_addr_0x1c00d000)
+		iounmap(vir_addr_0x1c00d000);
+
+	if (vir_addr_0x1c00e000)
+		iounmap(vir_addr_0x1c00e000);
+
+	return 0;
+}
+
+int consys_polling_chipid_mt6993_gen(unsigned int *pconsys_ver_id)
+{
+	int check = 0;
+	int retry = 0;
+	unsigned int consys_ver_id = 0;
+
+	if (CONN_CFG_BASE == 0) {
+		pr_notice("CONN_CFG_BASE is not defined\n");
+		return -1;
+	}
+
+	/* check CONN_INFRA IP Version */
+	/* (polling "10 times" for specific project code and each polling interval is "1ms") */
+	retry = 11;
+	while (retry-- > 0) {
+		consys_ver_id = CONSYS_REG_READ(
+			CONN_CFG_BASE +
+			CONSYS_GEN_IP_VERSION_OFFSET_ADDR);
+		if (consys_ver_id == CONSYS_GEN_CONN_HW_VER) {
+			check = 0;
+			pr_info("Consys HW version id(0x%08x), retry(%d)\n", consys_ver_id, retry);
+			if (pconsys_ver_id != NULL)
+				*pconsys_ver_id = consys_ver_id;
+			break;
+		}
+		check = -1;
+		usleep_range(1000, 2000);
+	}
+
+	if (check != 0) {
+		pr_notice("Read CONSYS version id fail. Expect 0x%08x but get 0x%08x\n",
+			CONSYS_GEN_CONN_HW_VER, consys_ver_id);
+		#if defined(KERNEL_clk_buf_show_status_info)
+			KERNEL_clk_buf_show_status_info();  /* dump clock buffer */
+		#endif
+		return -1;
+	}
+
+	return 0;
+}
+
+unsigned int consys_emi_set_remapping_reg_mt6993_gen(
+		phys_addr_t con_emi_base_addr,
+		phys_addr_t md_shared_emi_base_addr,
+		phys_addr_t gps_emi_base_addr,
+		unsigned int emi_base_addr_offset)
+{
+	mapped_addr vir_addr_0x40068000 = NULL;
+
+	if (CONN_BUS_CR_BASE == 0) {
+		pr_notice("CONN_BUS_CR_BASE is not defined\n");
+		return -1;
+	}
+
+	vir_addr_0x40068000 =
+		ioremap(0x40068000, 0x360);
+
+	if (!vir_addr_0x40068000) {
+		pr_notice("vir_addr_0x40068000(%x) ioremap fail\n",
+			0x40068000);
+		return -1;
+	}
+
+	/* ap_emi_base[19:0]  (related to emi) */
+	if (con_emi_base_addr) {
+		CONSYS_REG_WRITE_OFFSET_RANGE(vir_addr_0x40068000 +
+			0x354,
+			con_emi_base_addr, 0, emi_base_addr_offset, 20);
+	}
+
+	pr_info("connsys_emi_base=[0x%lx] remap cr: connsys=[0x%08x]\n",
+		con_emi_base_addr,
+		CONSYS_REG_READ(vir_addr_0x40068000 +
+			0x354));
+
+	if (md_shared_emi_base_addr) {
+		CONSYS_REG_WRITE_OFFSET_RANGE(vir_addr_0x40068000 +
+			0x35C,
+			md_shared_emi_base_addr, 0, emi_base_addr_offset, 20);
+	}
+
+	pr_info("mcif_emi_base=[0x%lx] remap cr: mcif=[0x%08x]\n",
+		md_shared_emi_base_addr,
+		CONSYS_REG_READ(vir_addr_0x40068000 +
+			0x35C));
+
+	if (gps_emi_base_addr) {
+		CONSYS_REG_WRITE_OFFSET_RANGE(vir_addr_0x40068000 +
+			0x360,
+			gps_emi_base_addr, 0, emi_base_addr_offset, 20);
+	}
+
+	pr_info("gps_emi_base=[0x%lx] remap cr: gps=[0x%08x]\n",
+		gps_emi_base_addr,
+		CONSYS_REG_READ(vir_addr_0x40068000 +
+			0x360));
+
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN2AP_REMAP_WF_PERI_BASE_ADDR_OFFSET_ADDR, 0x1000, 0xFFFFF);
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN2AP_REMAP_BT_PERI_BASE_ADDR_OFFSET_ADDR, 0x1300, 0xFFFFF);
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN2AP_REMAP_GPS_PERI_BASE_ADDR_OFFSET_ADDR, 0x1C00, 0xFFFFF);
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_SCPSYS_SRAM_BASE_ADDR_OFFSET_ADDR, 0x1DE0, 0xFFFFF);
+
+	if (vir_addr_0x40068000)
+		iounmap(vir_addr_0x40068000);
+
+	return 0;
+}
+
+void consys_init_conninfra_sysram_mt6993_gen(void)
+{
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+	#ifndef CFG_CONNINFRA_ON_CTP
+	mapped_addr addr = NULL;
+	#endif
+	#endif
+
+	if (CONN_BUS_CR_BASE == 0) {
+		pr_notice("CONN_BUS_CR_BASE is not defined\n");
+		return;
+	}
+
+	/* initial conn_infra_sysram value */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		if (CONN_INFRA_SYSRAM_SIZE == 0) {
+			pr_notice("CONN_INFRA_SYSRAM_SIZE is 0.\n");
+			return;
+		}
+
+		#ifdef CFG_CONNINFRA_ON_CTP
+			memset_io(CONSYS_GEN_CONN_INFRA_SYSRAM_OFFSET_ADDR, 0x0,
+				CONN_INFRA_SYSRAM_SIZE);
+		#else
+			addr = ioremap(CONSYS_GEN_CONN_INFRA_SYSRAM_OFFSET_ADDR,
+				CONN_INFRA_SYSRAM_SIZE);
+			if (addr != NULL) {
+				memset_io(addr, 0x0, CONN_INFRA_SYSRAM_SIZE);
+				iounmap(addr);
+			} else
+				pr_notice("[%s] remap 0x%08x fail", __func__,
+					CONSYS_GEN_CONN_INFRA_SYSRAM_OFFSET_ADDR);
+		#endif
+	#endif
+
+	/* set infra top emi address range */
+	CONSYS_REG_WRITE(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN_INFRA_CONN2AP_EMI_PATH_ADDR_START_OFFSET_ADDR, 0x8000000);
+	CONSYS_REG_WRITE(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN_INFRA_CONN2AP_EMI_PATH_ADDR_END_OFFSET_ADDR, 0xBFFFFFFF);
+}
+
+void connsys_get_d_die_efuse_mt6993_gen(unsigned int *p_d_die_efuse)
+{
+	if (CONN_CFG_BASE == 0) {
+		pr_notice("CONN_CFG_BASE is not defined\n");
+		return;
+	}
+
+	/* read D-die Efuse */
+	if (p_d_die_efuse != NULL) {
+		*p_d_die_efuse = CONSYS_REG_READ(CONN_CFG_BASE +
+			CONSYS_GEN_EFUSE_OFFSET_ADDR);
+	}
+}
+
+int connsys_d_die_cfg_mt6993_gen(void)
+{
+	if (CONN_RGU_ON_BASE == 0) {
+		pr_notice("CONN_RGU_ON_BASE is not defined\n");
+		return -1;
+	}
+
+	/* conn_infra sysram hw control setting -> disable hw power dowm */
+	CONSYS_REG_WRITE(CONN_RGU_ON_BASE +
+		CONSYS_GEN_SYSRAM_HWCTL_PDN_OFFSET_ADDR, 0x0);
+
+	/* conn_infra sysram hw control setting -> enable hw sleep */
+	CONSYS_REG_WRITE(CONN_RGU_ON_BASE +
+		CONSYS_GEN_SYSRAM_HWCTL_SLP_OFFSET_ADDR, 0x1);
+
+	/* conn_mawd memory  hw control setting -> disable hw power dowm */
+	CONSYS_REG_WRITE(CONN_RGU_ON_BASE +
+		CONSYS_GEN_MAWD_MEM_HWCTL_PDN_OFFSET_ADDR, 0x1F);
+
+	/* conn_mawd memory  hw control setting -> enable hw sleep */
+	CONSYS_REG_WRITE(CONN_RGU_ON_BASE +
+		CONSYS_GEN_MAWD_MEM_HWCTL_SLP_OFFSET_ADDR, 0x0);
+
+	/* conn_infra MTCMOS memory control ack no mask to avoid receive fake ack */
+	CONSYS_REG_WRITE_MASK(CONN_RGU_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_OFF_TOP_PWR_CTL_OFFSET_ADDR, 0x494E0000, 0xFFFF0040);
+
+	return 0;
+}
+
+void connsys_wt_slp_top_ctrl_adie6686_mt6993_gen(void)
+{
+	if (CONN_WT_SLP_CTL_REG_BASE == 0) {
+		pr_notice("CONN_WT_SLP_CTL_REG_BASE is not defined\n");
+		return;
+	}
+
+	/* wt_slp CR for A-die ck_en/wake_en control (ref. A-die low power control) */
+	CONSYS_REG_WRITE_MASK(CONN_WT_SLP_CTL_REG_BASE +
+		CONSYS_GEN_WB_TOP_CK_ADDR_OFFSET_ADDR, 0xA00, 0xFFF);
+	CONSYS_REG_WRITE_MASK(CONN_WT_SLP_CTL_REG_BASE +
+		CONSYS_GEN_WB_GPS_CK_ADDR_OFFSET_ADDR, 0xAFC0A0C, 0xFFF0FFF);
+	CONSYS_REG_WRITE_MASK(CONN_WT_SLP_CTL_REG_BASE +
+		CONSYS_GEN_WB_GPS_RFBUF_ADR_OFFSET_ADDR, 0xFC, 0xFFF);
+	CONSYS_REG_WRITE_MASK(CONN_WT_SLP_CTL_REG_BASE +
+		CONSYS_GEN_WB_GPS_L5_EN_ADDR_OFFSET_ADDR, 0xF8, 0xFFF);
+}
+
+int connsys_subsys_pll_initial_xtal_26000k_mt6993_gen(void)
+{
+	if (CONN_AFE_CTL_BASE == 0) {
+		pr_notice("CONN_AFE_CTL_BASE is not defined\n");
+		return -1;
+	}
+
+	/* CASE SYS_XTAL_26000K */
+	CONSYS_REG_WRITE_MASK(CONN_AFE_CTL_BASE +
+		CONSYS_GEN_RG_PLL_STB_TIME_OFFSET_ADDR, 0x20D0521, 0x7FFF7FFF);
+	CONSYS_REG_WRITE_MASK(CONN_AFE_CTL_BASE +
+		CONSYS_GEN_RG_DIG_EN_02_OFFSET_ADDR, 0x30047, 0x300CF);
+	CONSYS_REG_WRITE_MASK(CONN_AFE_CTL_BASE +
+		CONSYS_GEN_RG_DIG_TOP_01_OFFSET_ADDR, 0x68000, 0x78000);
+
+	return 0;
+}
+
+int connsys_low_power_setting_mt6993_gen(void)
+{
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+	int i = 0;
+	unsigned int addr_offset = 0;
+	#endif
+	mapped_addr vir_addr_consys_gen_conn_infra_sysram_offset = NULL;
+
+	if (CONN_CFG_ON_BASE == 0) {
+		pr_notice("CONN_CFG_ON_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_RGU_ON_BASE == 0) {
+		pr_notice("CONN_RGU_ON_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_CFG_BASE == 0) {
+		pr_notice("CONN_CFG_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_BUS_CR_ON_BASE == 0) {
+		pr_notice("CONN_BUS_CR_ON_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_BUS_CR_BASE == 0) {
+		pr_notice("CONN_BUS_CR_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_OFF_DEBUG_CTRL_AO_BASE == 0) {
+		pr_notice("CONN_OFF_DEBUG_CTRL_AO_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_CLKGEN_TOP_BASE == 0) {
+		pr_notice("CONN_CLKGEN_TOP_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_HOST_CSR_TOP_BASE == 0) {
+		pr_notice("CONN_HOST_CSR_TOP_BASE is not defined\n");
+		return -1;
+	}
+
+	vir_addr_consys_gen_conn_infra_sysram_offset =
+		ioremap(CONSYS_GEN_CONN_INFRA_SYSRAM_OFFSET_ADDR, 0x1000);
+
+	if (!vir_addr_consys_gen_conn_infra_sysram_offset) {
+		pr_notice("vir_addr_consys_gen_conn_infra_sysram_offset(%x) ioremap fail\n",
+			CONSYS_GEN_CONN_INFRA_SYSRAM_OFFSET_ADDR);
+		return -1;
+	}
+
+	/* Unmask off2on slpprot_rdy enable checker @conn_infra off power off=> check slpprot_rdy = 1'b1 and go to sleep */
+	CONSYS_REG_WRITE_MASK(CONN_CFG_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_PWRCTRL0_OFFSET_ADDR, 0x1000, 0xF000);
+
+	if (!consys_is_rc_mode_enable_mt6993()) {
+		/* disable conn_top rc osc_ctrl_top */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_0_OFFSET_ADDR, (0x1U << 7));
+		#endif
+
+		/* Legacy OSC control stable time */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_REG_WRITE_MASK(CONN_CFG_ON_BASE +
+				CONSYS_GEN_OSC_CTL_0_OFFSET_ADDR, 0x80706, 0xFFFFFF);
+		#endif
+
+		/* Legacy OSC control unmask conn_srcclkena_ack */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_OSC_CTL_1_OFFSET_ADDR, (0x1U << 16));
+		#endif
+	} else {
+		/* GPS RC OSC control stable time */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_REG_WRITE(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_1_GPS_OFFSET_ADDR, 0x2080706);
+		#endif
+
+		/* GPS RC OSC control unmask conn_srcclkena_ack */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_0_GPS_OFFSET_ADDR, (0x1U << 15));
+		#endif
+
+		/* TOP RC OSC control stable time */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_REG_WRITE(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_1_TOP_OFFSET_ADDR, 0x2080706);
+		#endif
+
+		/* TOP RC OSC control unmask conn_srcclkena_ack */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_0_TOP_OFFSET_ADDR, (0x1U << 15));
+		#endif
+
+		/* enable conn_infra rc osc_ctl_top output */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_RC_CTL_1_OFFSET_ADDR, (0x1U << 3));
+		#endif
+
+		udelay(30);
+
+		/* enable conn_top rc osc_ctrl_gps output */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_RC_CTL_1_OFFSET_ADDR, (0x1U << 0));
+		#endif
+
+		/* enable conn_top rc osc_ctrl_gps */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_RC_CTL_0_OFFSET_ADDR, (0x1U << 4));
+		#endif
+
+		/* set conn_srcclkena control by conn_infra_emi_ctl */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_RC_CTL_1_OFFSET_ADDR, (0x1U << 20));
+		#endif
+
+		/* disable legacy osc control output */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_RC_CTL_0_OFFSET_ADDR, (0x1U << 31));
+		#endif
+
+		/* disable legacy osc control */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_RC_CTL_0_OFFSET_ADDR, (0x1U << 0));
+		#endif
+
+		/* Legacy OSC control stable time */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_REG_WRITE_MASK(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_OSC_CTL_0_OFFSET_ADDR, 0x80706, 0xFFFFFF);
+		#endif
+
+		/* Legacy OSC control unmask conn_srcclkena_ack */
+		#ifndef CONFIG_FPGA_EARLY_PORTING
+			CONSYS_CLR_BIT(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_ON_OSC_CTL_1_OFFSET_ADDR, (0x1U << 16));
+		#endif
+	}
+
+	/* prevent subsys from power on/off in a short time interval */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_REG_WRITE_MASK(CONN_RGU_ON_BASE +
+			CONSYS_GEN_BGFYS_ON_TOP_PWR_CTL_OFFSET_ADDR, 0x42540000, 0xFFFF0040);
+	#endif
+
+	/* conn_vrf18_req switch as conn_apsrc _req */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_EMI_CTL_0_OFFSET_ADDR, (0x1U << 30));
+	#endif
+
+	/* conn2ap sleep protect release bypass ddr_en_ack check */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_0_OFFSET_ADDR, (0x1U << 18));
+	#endif
+
+	/* enable ddr_en timeout, timeout value = 1023 T (Bus clock) */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_REG_WRITE_MASK(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_0_OFFSET_ADDR, 0x3FF0, 0x7FF0);
+	#endif
+
+	/* update ddr_en timeout value enable */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_0_OFFSET_ADDR, (0x1U << 15));
+	#endif
+
+	/* conn_infra off domain bus dcm mode setting to off mode */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+			CONSYS_GEN_CONN_OFF_BUS_DCM_CTL_1_OFFSET_ADDR, (0x1U << 14));
+	#endif
+
+	/* conn_infra off domain bus dcm enable */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+			CONSYS_GEN_CONN_INFRA_BUS_CR_ON_CONN_OFF_BUS_DCM_CTL_1_OFFSET_ADDR, (0x1U << 16));
+	#endif
+
+	/* conn_infra von domain bus dcm mode setting to off mode */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+			CONSYS_GEN_CONN_VON_BUS_DCM_CTL_1_OFFSET_ADDR, (0x1U << 14));
+	#endif
+
+	/* conn_infra von domain bus dcm enable */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+			CONSYS_GEN_CONN_INFRA_BUS_CR_ON_CONN_VON_BUS_DCM_CTL_1_OFFSET_ADDR, (0x1U << 16));
+	#endif
+
+	/* conn_infra bus host ck request hw mode */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+			CONSYS_GEN_CONN_INFRA_CKSYS_CK_CTRL_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* set light security start address to prevent gps mcu accessing cmdbt code */
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_M3_LIGHT_SECURITY_START_ADDR_2_OFFSET_ADDR, 0x18050, 0xFFFFF);
+
+	/* set light security end address to prevent gps mcu accessing cmdbt code */
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_M3_LIGHT_SECURITY_END_ADDR_2_OFFSET_ADDR, 0x18050, 0xFFFFF);
+
+	/* set light security enable to prevent gps mcu accessing cmdbt code */
+	CONSYS_SET_BIT(CONN_BUS_CR_BASE +
+		CONSYS_GEN_LIGHT_SECURITY_CTRL_OFFSET_ADDR, (0x1U << 12));
+
+	/* set conn_infra_off bus apb/ahb/axi layer timeout - step 1 set timing */
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN_INFRA_OFF_BUS_TIMEOUT_CTRL_OFFSET_ADDR, 0x7F8, 0x7F8);
+
+	/* set conn_infra_off bus apb/ahb/axi layer timeout - step 2 enable function */
+	CONSYS_SET_BIT(CONN_BUS_CR_BASE +
+		CONSYS_GEN_CONN_INFRA_BUS_CR_CONN_INFRA_OFF_BUS_TIMEOUT_CTRL_OFFSET_ADDR,
+		(0x1U << 0));
+
+	/* set conn_infra_on bus apb timeout - step 1 set timing */
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_ON_BUS_TIMEOUT_CTRL_OFFSET_ADDR, 0x200, 0x7F8);
+
+	/* set conn_infra_on bus apb timeout - step 2 enable function */
+	CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_BUS_CR_ON_CONN_INFRA_ON_BUS_TIMEOUT_CTRL_OFFSET_ADDR,
+		(0x1U << 0));
+
+	/* set conn_von_top bus apb timeout - step 1 set timing */
+	CONSYS_REG_WRITE_MASK(CONN_BUS_CR_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_VON_BUS_TIMEOUT_CTRL_OFFSET_ADDR, 0x600, 0x7F8);
+
+	/* set conn_von_top bus apb timeout - step 2 enable function */
+	CONSYS_SET_BIT(CONN_BUS_CR_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_BUS_CR_ON_CONN_INFRA_VON_BUS_TIMEOUT_CTRL_OFFSET_ADDR,
+		(0x1U << 0));
+
+	/* enable conn_infra off bus tool auto gen timeout feature */
+	CONSYS_SET_BIT(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_CONN_INFRA_VDNR_GEN_U_DEBUG_CTRL_AO_CONN_INFRA_OFF_CTRL0_OFFSET_ADDR,
+		(0x1U << 9));
+
+	/* write 0x4004d000[31:16] = 0xfde0000 */
+	CONSYS_REG_WRITE_MASK(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_INFRA_OFF_DCTRL_AO_1804D000_OFFSET, 0xFDE0000, 0xFFFF0000);
+
+	/* write 0x4004d000[2] = 0x4 */
+	CONSYS_SET_BIT(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_INFRA_OFF_DCTRL_AO_1804D000_OFFSET, (0x1U << 2));
+
+	/* write 0x4004d000[3] = 0x8 */
+	CONSYS_SET_BIT(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_INFRA_OFF_DCTRL_AO_1804D000_OFFSET, (0x1U << 3));
+
+	/* write 0x4004d000[4] = 0x10 */
+	CONSYS_SET_BIT(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_INFRA_OFF_DCTRL_AO_1804D000_OFFSET, (0x1U << 4));
+
+	/* write 0x4004d000[9] = 0x0 */
+	CONSYS_CLR_BIT(CONN_OFF_DEBUG_CTRL_AO_BASE +
+		CONSYS_GEN_INFRA_OFF_DCTRL_AO_1804D000_OFFSET, (0x1U << 9));
+
+	/* enable conn_infra bus bpll div_1 */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CLKGEN_TOP_BASE +
+			CONSYS_GEN_CKGEN_BUS_BPLL_DIV_1_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* enable conn_infra bus bpll div_2 */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CLKGEN_TOP_BASE +
+			CONSYS_GEN_CKGEN_BUS_BPLL_DIV_2_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* set rfspi pll to bpll div 13 */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_CLR_BIT(CONN_CLKGEN_TOP_BASE +
+			CONSYS_GEN_CLKGEN_RFSPI_CK_CTRL_OFFSET_ADDR, (0x1U << 7));
+	#endif
+
+	/* set rfsp bpll div 13 en */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CLKGEN_TOP_BASE +
+			CONSYS_GEN_CONN_INFRA_CLKGEN_TOP_CLKGEN_RFSPI_CK_CTRL_OFFSET_ADDR, (0x1U << 6));
+	#endif
+
+	/* set rfspi pll to bpll */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CLKGEN_TOP_BASE +
+			CONSYS_GEN_CONN_INFRA_CLKGEN_TOP_CLKGEN_RFSPI_CK_CTRL_OFFSET_ADDR, (0x1U << 4));
+	#endif
+
+	/* set conn_infra sleep count to host side control */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_HOST_CSR_TOP_BASE +
+			CONSYS_GEN_HOST_CONN_INFRA_SLP_CNT_CTL_OFFSET_ADDR, (0x1U << 31));
+	#endif
+
+	/* set conn_infra sleep count enable (host side) */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_HOST_CSR_TOP_BASE +
+			CONSYS_GEN_CONN_HOST_CSR_TOP_HOST_CONN_INFRA_SLP_CNT_CTL_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* disable conn_infra bus clock sw control  ==> conn_infra bus clock hw control */
+	CONSYS_CLR_BIT(CONN_CLKGEN_TOP_BASE +
+		CONSYS_GEN_CKGEN_BUS_OFFSET_ADDR, (0x1U << 0));
+#ifdef CONN_WLA_ENABLE
+
+	/* mask wla xt1 vio irq */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_BUS_CR_BASE +
+			CONSYS_GEN_CONN_INFRA_EMI_WLA_DEBUG_CTRL_ADDR, (0x1U << 4));
+	#endif
+
+	/* set HRT mode */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_REG_WRITE_MASK(CONN_HOST_CSR_TOP_BASE +
+			CONSYS_GEN_CONN_INFRA_EMI_THROTTLE_CFG_OFFSET_ADDR, 0x1, 0x7F);
+	#endif
+
+	/* enable HRT */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_HOST_CSR_TOP_BASE +
+			CONSYS_GEN_CONN_HOST_CSR_TOP_CONN_INFRA_EMI_THROTTLE_CFG_OFFSET_ADDR, (0x1U << 7));
+	#endif
+
+	/* enable WLA */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_WLA_OFFSET_ADDR, (0x1U << 1));
+	#endif
+
+	/* set resource detect node */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_CLR_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_CONN_INFRA_CFG_EMI_CTL_WLA_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* WLA debug (ddren_req2ack) */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_WLA_REQ2ACK_TIMEOUT_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	/* WLA debug (ddren_urg2ack) */
+	CONSYS_SET_BIT(CONN_CFG_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_WLA_URG2ACK_TIMEOUT_OFFSET_ADDR, (0x1U << 0));
+
+	/* WLA debug (bus_prot_en2rdy) */
+	CONSYS_SET_BIT(CONN_CFG_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_WLA_EN2RDY_TIMEOUT_OFFSET_ADDR, (0x1U << 0));
+
+	/* WLA debug (hrt_throttle_timeout - threshold) */
+	CONSYS_REG_WRITE_MASK(CONN_CFG_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_HRT_TIMEOUT_OFFSET_ADDR, 0x3FFF0, 0x3FFF0);
+
+	/* WLA debug (hrt_throttle_timeout) */
+	CONSYS_SET_BIT(CONN_CFG_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_EMI_CTL_HRT_TIMEOUT_OFFSET_ADDR, (0x1U << 0));
+#endif
+	/* conn_infra cmdbt code download */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_REG_WRITE(CONN_CFG_BASE +
+			CONSYS_GEN_CMDBT_FETCH_START_ADDR0_OFFSET_ADDR, 0x18050200);
+	#endif
+
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		addr_offset = 0x0;
+		for (i = 0; i < 1024; i++) {
+			CONSYS_REG_WRITE(vir_addr_consys_gen_conn_infra_sysram_offset +
+				addr_offset, g_cmdbt_dwn_value_ary_mt6993[i]);
+			addr_offset += 0x4;
+		}
+	#endif
+
+	/* conn_infra wakeup need restore first */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_PWRCTRL0_OFFSET_ADDR, (0x1U << 6));
+	#endif
+
+	/* Conn_infra HW_CONTROL => conn_infra enter dsleep mode */
+	#ifndef CONFIG_FPGA_EARLY_PORTING
+		CONSYS_SET_BIT(CONN_CFG_ON_BASE +
+			CONSYS_GEN_CONN_INFRA_CFG_ON_CONN_INFRA_CFG_PWRCTRL0_OFFSET_ADDR, (0x1U << 0));
+	#endif
+
+	if (vir_addr_consys_gen_conn_infra_sysram_offset)
+		iounmap(vir_addr_consys_gen_conn_infra_sysram_offset);
+
+	return 0;
+}
+
+int consys_conninfra_wakeup_mt6993_gen(void)
+{
+	int check = 0;
+
+	if (CONN_HOST_CSR_TOP_BASE == 0) {
+		pr_notice("CONN_HOST_CSR_TOP_BASE is not defined\n");
+		return -1;
+	}
+
+	if (CONN_CFG_ON_BASE == 0) {
+		pr_notice("CONN_CFG_ON_BASE is not defined\n");
+		return -1;
+	}
+
+	/* wake up conn_infra */
+	CONSYS_REG_WRITE(CONN_HOST_CSR_TOP_BASE +
+		CONSYS_GEN_CONN_INFRA_WAKEPU_TOP_OFFSET_ADDR, 0x1);
+
+	udelay(200);
+
+	/* check CONN_INFRA IP version */
+	/* (polling "10 times" for specific project code and each polling interval is "1ms") */
+	if (consys_polling_chipid_mt6993_gen(NULL))
+		return -1;
+
+	/* check CONN_INFRA cmdbt restore done */
+	/* (polling "10 times" for specific project code and each polling interval is "0.5ms") */
+	check = 0;
+	CONSYS_REG_BIT_POLLING(CONN_CFG_ON_BASE +
+		CONSYS_GEN_CONN_INFRA_CFG_PWRCTRL1_OFFSET_ADDR,
+		16, 1, 10, 500, check);
+	if (check != 0) {
+		pr_notice("check CONN_INFRA cmdbt restore done fail, Status=0x%08x\n",
+			CONSYS_REG_READ(CONN_CFG_ON_BASE +
+				CONSYS_GEN_CONN_INFRA_CFG_PWRCTRL1_OFFSET_ADDR));
+	}
+
+	return 0;
+}

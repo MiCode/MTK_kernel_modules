@@ -1,0 +1,50 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "gpueb_api_headers",
+    hdrs = glob(["**/*.h"]),
+    includes = ["."],
+)
+
+define_mgk_ddk_ko(
+    name = "met_gpueb_api_int",
+    hdrs = [":gpueb_api_headers"],
+    srcs = glob(["met_gpueb_api.c"]),
+    out = "met_gpueb_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:mtk_gpueb".format(kernel_version),
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:gpueb_public_headers".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_GPUEB",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "met_gpueb_api_cus",
+    hdrs = [":gpueb_api_headers"],
+    srcs = glob(["met_gpueb_api.c"]),
+    out = "met_gpueb_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:mtk_gpueb".format(kernel_version),
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:gpueb_public_headers".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_GPUEB",
+    ],
+)

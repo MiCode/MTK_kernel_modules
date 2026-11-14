@@ -1,0 +1,2 @@
+export MTK_PLATFORM_VERSION := mt6993
+

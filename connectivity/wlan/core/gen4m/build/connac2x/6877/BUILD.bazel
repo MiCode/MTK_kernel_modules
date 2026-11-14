@@ -1,0 +1,24 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ko(
+    name = "wlan_drv_gen4m_6877",
+    srcs = glob([
+        "**",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m:sources",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:headers",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:headers",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:connfem",
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/wlan_page_pool:wlan_page_pool",
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/build/connac2x:wmt_chrdev_wifi_connac2",
+    ],
+)

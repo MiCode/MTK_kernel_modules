@@ -1,0 +1,63 @@
+The instructions are based on building bazel on top of rouge_km tarball, PVR_DDK_Android_MAIN@6728103_source_tree_km.tgz.
+
+- Prepare for the workspace 
+Downlaod kleaf // see https://source.android.com/docs/setup/build/building-kernels
+
+$ cd android-kernel 
+$ mkdir powervr
+$ cd powervr
+$ tar -xvf PVR_DDK_Android_MAIN@6728103_source_tree_km.tgz
+$ cd rogue_km
+
+apply patch or extract overlay tarball
+$ patch -Np1 -i //path/to/patch.diff
+or
+$ tar -xvf //path/to/bazel.rogue_km.overlay.tar.gz
+
+It shows as:
+	config_kernel.h
+	config_kernel.mk
+	.bazelrc
+	./kernel/drivers/staging/imgtec/tc/BUILD.bazel
+	./kernel/drivers/staging/imgtec/BUILD.bazel
+	./services/server/devices/rogue/BUILD.bazel
+	./services/server/devices/volcanic/BUILD.bazel
+	./services/system/rogue/BUILD.bazel
+	./services/system/volcanic/BUILD.bazel
+	./services/include/rogue/BUILD.bazel
+	./services/include/volcanic/BUILD.bazel
+	./BUILD.bazel
+	./hwdefs/rogue/BUILD.bazel
+	./hwdefs/volcanic/BUILD.bazel
+	./include/rogue/BUILD.bazel
+	./include/volcanic/BUILD.bazel
+	./include/BUILD.bazel
+	./generated/rogue/BUILD.bazel
+	./generated/volcanic/BUILD.bazel
+	pvr_config_setting.bzl
+	README
+
+- Prepare intermediate configuration files: config_kernel.h and config_kernel.mk
+The bazel.rogue_km.overlay.tar.gz  prepares config_kernel.h, config_kernel.mk,
+and .bazerc of Testchip platform for reference. Users need to customize the
+configuration files. In makefile build, do:
+$ make config
+$ cp //path/to/config_kernel.h //path/to/config_kernel.mk //path/to/android-kernel/powervr/rogue_km/
+
+- Check consistence of .bazelrc and config_kernel.mk
+This is under development. Not all configurations have corresponding define in 
+bazel build. Only modify configs that have exsited in .bazelrc. The value of
+configs should be the same in .bazelrc and config_kernel.mk.
+
+- Generate pvrsrvkm.ko
+bazel --bazelrc=.bazelrc build --config=pc_android --verbose_failures --sandbox_debug //powervr/rogue_km:pvrsrvkm
+- Generate .ko for platforms in example of testchip
+bazel --bazelrc=.bazelrc build --config=pc_android --verbose_failures --sandbox_debug //powervr/rogue_km/kernel/drivers/staging/imgtec/tc:tc
+bazel --bazelrc=.bazelrc build --config=pc_android --verbose_failures --sandbox_debug //powervr/rogue_km/kernel/drivers/staging/imgtec/tc:drm_pdp
+
+- Design
+The bazel build needs to depend on the intermediate configuration files,
+config_kernel.h and config_kernel.mk. In bazel build, it would include
+config_kernel.h and translate configurations from config_kernel.mk to
+config_setting in bazel. It uses the same logic of what files should be compiled
+based on combinations of configurations.

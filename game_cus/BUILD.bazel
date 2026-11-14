@@ -1,0 +1,87 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_prebuilt_object", "kernel_build")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_prebuilt_object(
+	name = "ec_no_cfi",
+	src = "src/game_ec_private_quark_no_cfi.o",
+	config = "CONFIG_CFI_CLANG",
+	config_bool_value = False,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "lc_no_cfi",
+	src = "src/game_lc_private_quark_no_cfi.o",
+	config = "CONFIG_CFI_CLANG",
+	config_bool_value = False,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "ec_cfi_ini",
+	src = "src/game_ec_private_quark.o",
+	config = "CONFIG_MTK_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "lc_cfi_ini",
+	src = "src/game_lc_private_quark.o",
+	config = "CONFIG_MTK_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "ec_cfi_only",
+	src = "src/game_ec_private_quark_no_ini.o",
+	config = "CONFIG_MTK_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "lc_cfi_only",
+	src = "src/game_lc_private_quark_no_ini.o",
+	config = "CONFIG_MTK_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+
+define_mgk_ddk_ko(
+    name = "game_cus",
+    srcs = [
+        "src/game_main.c",
+    ],
+    hdrs = glob([
+        "**/*.h",
+        ]),
+    prebuilt_srcs = [
+        ":ec_no_cfi",
+        ":ec_cfi_ini",
+        ":ec_cfi_only",
+        ":lc_no_cfi",
+        ":lc_cfi_ini",
+        ":lc_cfi_only",
+    ],
+    includes = [".", "src"],
+    kconfig = "game_cus.Kconfig",
+    header_deps =[
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/game:game_public_headers".format(kernel_version),
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/game:mtk_game".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/fpsgo_v8:mtk_fpsgo_v8".format(kernel_version),
+    ],
+    out = "game.ko",
+)

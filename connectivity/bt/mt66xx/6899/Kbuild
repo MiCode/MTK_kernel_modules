@@ -1,0 +1,5 @@
+BT_PLATFORM := 6899
+LOG_TAG := [BT_Drv][btif]
+KO_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+include $(KO_PATH)/../btif/Kbuild

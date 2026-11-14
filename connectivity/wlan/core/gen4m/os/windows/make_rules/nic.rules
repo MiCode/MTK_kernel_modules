@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+        <INCLUDES Condition="'$(OVERRIDE_INCLUDES)'!='true'">
+            $(INCLUDES);
+            $(SRC_ROOT)\..\..\..\include;
+            $(SRC_ROOT)\..\..\..\include\chips;
+            $(SRC_ROOT)\..\..\..\include\mgmt;
+            $(SRC_ROOT)\..\..\..\include\nan;
+            $(SRC_ROOT)\..\..\..\include\nic;
+            $(SRC_ROOT)\..\..\..\os;
+            $(SRC_ROOT)\..\include; <!-- for common part add new kal -->
+            $(SRC_ROOT)\include;
+            $(SRC_ROOT)\hif\pcie\include;
+            $(SRC_ROOT)\hif\common\include;
+		</INCLUDES>
+	</PropertyGroup>
+	<PropertyGroup>
+		<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+		$(SRC_ROOT)\..\..\..\nic\cmd_buf.c
+		$(SRC_ROOT)\..\..\..\nic\nic.c
+		$(SRC_ROOT)\..\..\..\nic\nic_cmd_event.c
+		$(SRC_ROOT)\..\..\..\nic\nic_ext_cmd_event.c
+		$(SRC_ROOT)\..\..\..\nic\nic_pwr_mgt.c
+		$(SRC_ROOT)\..\..\..\nic\nic_rate.c
+		$(SRC_ROOT)\..\..\..\nic\nic_rx.c
+		$(SRC_ROOT)\..\..\..\nic\nic_tx.c
+		$(SRC_ROOT)\..\..\..\nic\p2p_nic.c
+		$(SRC_ROOT)\..\..\..\nic\que_mgt.c
+		$(SRC_ROOT)\..\..\..\nic\radiotap.c
+		</SOURCES>
+	</PropertyGroup>
+	
+	<!-- BY GENERATION -->
+	<Choose>
+	<When Condition="'$(HWIP_GEN)'=='CONNAC3'">
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\nic\nic_rxd_v3.c
+			$(SRC_ROOT)\..\..\..\nic\nic_txd_v3.c
+			$(SRC_ROOT)\..\..\..\nic\nic_uni_cmd_event.c
+			</SOURCES>
+		</PropertyGroup>
+	</When>
+	<When Condition="'$(HWIP_GEN)'=='CONNAC2'">
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\nic\nic_rxd_v2.c
+			$(SRC_ROOT)\..\..\..\nic\nic_txd_v2.c
+			</SOURCES>
+		</PropertyGroup>
+	</When>
+	<Otherwise>
+		<PropertyGroup>
+			<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+			$(SOURCES)
+			$(SRC_ROOT)\..\..\..\nic\nic_rxd_v1.c
+			$(SRC_ROOT)\..\..\..\nic\nic_txd_v1.c
+			</SOURCES>
+		</PropertyGroup>
+	</Otherwise>
+	</Choose>
+</Project>

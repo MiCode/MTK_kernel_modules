@@ -1,0 +1,91 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_prebuilt_object", "kernel_build")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_prebuilt_object(
+	name = "xgf_v8_ko_k612_cfi_ini",
+	src = "src/xgf_v8_ko_k612.o",
+	config = "CONFIG_MTK_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "xgf_v8_ko_k612_cfi_only",
+	src = "src/xgf_v8_ko_k612_no_ini.o",
+	config = "CONFIG_MTK_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "xgf_v8_ko_k612_no_cfi",
+	src = "src/xgf_v8_ko_k612_no_cfi.o",
+	config = "CONFIG_CFI_CLANG",
+	config_bool_value = False,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "power_rl_k612_cfi_ini",
+	src = "src/power_rl_k612.o",
+	config = "CONFIG_MTK_POWER_RL_V2_CFI_N_INI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "power_rl_k612_cfi_only",
+	src = "src/power_rl_k612_no_ini.o",
+	config = "CONFIG_MTK_POWER_RL_V2_CFI_ONLY",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+ddk_prebuilt_object(
+	name = "power_rl_k612_no_cfi",
+	src = "src/power_rl_k612_no_cfi.o",
+	config = "CONFIG_MTK_POWER_RL_V2_NO_CFI",
+	config_bool_value = True,
+	visibility = ["//visibility:private"],
+)
+
+define_mgk_ddk_ko(
+    name = "fpsgo_cus",
+
+    srcs = [
+        "src/fpsgo_main.c",
+        # "src/xgf_v8_ko_k612.c",
+        # "src/power_rl_k612.c",
+    ],
+
+    prebuilt_srcs = [
+        ":xgf_v8_ko_k612_cfi_ini",
+        ":xgf_v8_ko_k612_cfi_only",
+        ":xgf_v8_ko_k612_no_cfi",
+        ":power_rl_k612_cfi_ini",
+        ":power_rl_k612_cfi_only",
+        ":power_rl_k612_no_cfi",
+    ],
+
+    hdrs = glob([
+        "**/*.h",
+        ]),
+    includes = [".", "src"],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/fpsgo_v8:mtk_fpsgo_v8".format(kernel_version),
+    ],
+
+    copts = [
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/performance/fpsgo_v8/",
+    ],
+    kconfig = "fpsgo_cus.Kconfig",
+    out = "fpsgo.ko",
+)

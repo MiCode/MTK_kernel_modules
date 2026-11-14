@@ -1,0 +1,17 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+ddk_headers(
+	name = "hwdefs_headers",
+	hdrs = glob(["**/*.h"])
+)

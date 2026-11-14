@@ -1,0 +1,517 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "**/.*",
+            "**/.*/**",
+            "**/BUILD.bazel",
+            "**/*.bzl",
+        ],
+    )
+)
+
+# connv2 platform
+connv2_folder="conn_drv/connv2/platform"
+connv2_mt6877_include_dirs=[
+    "conn_drv/connv2/platform/mt6877/include",
+    "conn_drv/connv2/platform/mt6877/include/CODA"
+]
+connv2_mt6878_include_dirs=[
+    "conn_drv/connv2/platform/mt6878/include",
+    "conn_drv/connv2/platform/mt6878/include/CODA"
+]
+connv2_mt6879_include_dirs=[
+    "conn_drv/connv2/platform/mt6879/include",
+    "conn_drv/connv2/platform/mt6879/include/CODA"
+]
+connv2_mt6885_include_dirs=[
+    "conn_drv/connv2/platform/mt6885/include",
+    "conn_drv/connv2/platform/mt6885/include/CODA"
+]
+connv2_mt6886_include_dirs=[
+    "conn_drv/connv2/platform/mt6886/include",
+    "conn_drv/connv2/platform/mt6886/include/CODA"
+]
+connv2_mt6893_include_dirs=[
+    "conn_drv/connv2/platform/mt6893/include",
+    "conn_drv/connv2/platform/mt6893/include/CODA"
+]
+connv2_mt6895_include_dirs=[
+    "conn_drv/connv2/platform/mt6895/include",
+    "conn_drv/connv2/platform/mt6895/include/CODA"
+]
+connv2_mt6897_include_dirs=[
+    "conn_drv/connv2/platform/mt6897/include",
+    "conn_drv/connv2/platform/mt6897/include/CODA"
+]
+connv2_mt6899_include_dirs=[
+    "conn_drv/connv2/platform/mt6899/include",
+    "conn_drv/connv2/platform/mt6899/include/CODA"
+]
+connv2_mt6983_include_dirs=[
+    "conn_drv/connv2/platform/mt6983/include",
+    "conn_drv/connv2/platform/mt6983/include/CODA"
+]
+connv2_mt6985_include_dirs=[
+    "conn_drv/connv2/platform/mt6985/include",
+    "conn_drv/connv2/platform/mt6985/include/CODA"
+]
+connv2_mt6989_include_dirs=[
+    "conn_drv/connv2/platform/mt6989/include",
+    "conn_drv/connv2/platform/mt6989/include/CODA"
+]
+connv2_mt6991_include_dirs=[
+    "conn_drv/connv2/platform/mt6991/include",
+    "conn_drv/connv2/platform/mt6991/include/CODA"
+]
+connv2_mt6993_include_dirs=[
+    "conn_drv/connv2/platform/mt6993/include",
+    "conn_drv/connv2/platform/mt6993/include/CODA"
+]
+connv2_mt6858_include_dirs=[
+    "conn_drv/connv2/platform/mt6858/include",
+    "conn_drv/connv2/platform/mt6858/include/CODA"
+]
+
+connv2_mt6877_srcs=[
+    "conn_drv/connv2/platform/mt6877/mt6877.c",
+    "conn_drv/connv2/platform/mt6877/mt6877_pmic.c",
+    "conn_drv/connv2/platform/mt6877/mt6877_emi.c",
+    "conn_drv/connv2/platform/mt6877/mt6877_consys_reg.c",
+    "conn_drv/connv2/platform/mt6877/mt6877_pos.c",
+    "conn_drv/connv2/platform/mt6877/mt6877_coredump.c"
+]
+connv2_mt6878_srcs=[
+    "conn_drv/connv2/platform/mt6878/mt6878.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_ops.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_soc.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_atf.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_pmic.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_emi.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_consys_reg.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_pos.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_pos_gen.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_coredump.c",
+    "conn_drv/connv2/platform/mt6878/mt6878_debug_gen.c"
+]
+connv2_mt6879_srcs=[
+    "conn_drv/connv2/platform/mt6879/mt6879.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_pmic.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_emi.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_consys_reg.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_pos.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_pos_gen.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_coredump.c",
+    "conn_drv/connv2/platform/mt6879/mt6879_debug_gen.c"
+]
+connv2_mt6885_srcs=[
+    "conn_drv/connv2/platform/mt6885/mt6885.c",
+    "conn_drv/connv2/platform/mt6885/mt6885_pmic.c",
+    "conn_drv/connv2/platform/mt6885/mt6885_emi.c",
+    "conn_drv/connv2/platform/mt6885/mt6885_consys_reg.c",
+    "conn_drv/connv2/platform/mt6885/mt6885_pos.c",
+    "conn_drv/connv2/platform/mt6885/mt6885_coredump.c",
+]
+connv2_mt6886_srcs=[
+    "conn_drv/connv2/platform/mt6886/mt6886.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_ops.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_soc.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_atf.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_pmic.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_emi.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_emi_atf.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_consys_reg.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_consys_reg_atf.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_pos.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_pos_gen.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_coredump.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_coredump_atf.c",
+    "conn_drv/connv2/platform/mt6886/mt6886_debug_gen.c"
+]
+connv2_mt6893_srcs=[
+    "conn_drv/connv2/platform/mt6893/mt6893.c",
+    "conn_drv/connv2/platform/mt6893/mt6893_pmic.c",
+    "conn_drv/connv2/platform/mt6893/mt6893_emi.c",
+    "conn_drv/connv2/platform/mt6893/mt6893_consys_reg.c",
+    "conn_drv/connv2/platform/mt6893/mt6893_pos.c",
+    "conn_drv/connv2/platform/mt6893/mt6893_coredump.c",
+]
+connv2_mt6895_srcs=[
+    "conn_drv/connv2/platform/mt6895/mt6895.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_pmic.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_emi.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_consys_reg.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_pos.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_pos_gen.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_coredump.c",
+    "conn_drv/connv2/platform/mt6895/mt6895_debug_gen.c"
+]
+connv2_mt6897_srcs=[
+    "conn_drv/connv2/platform/mt6897/mt6897.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_ops.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_soc.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_atf.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_pmic.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_emi.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_emi_atf.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_consys_reg.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_consys_reg_atf.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_pos.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_pos_gen.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_coredump.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_coredump_atf.c",
+    "conn_drv/connv2/platform/mt6897/mt6897_debug_gen.c"
+]
+connv2_mt6899_srcs=[
+    "conn_drv/connv2/platform/mt6899/mt6899.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_ops.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_soc.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_atf.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_pmic.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_emi.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_consys_reg.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_pos.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_pos_gen.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_coredump.c",
+    "conn_drv/connv2/platform/mt6899/mt6899_debug_gen.c"
+]
+connv2_mt6983_srcs=[
+    "conn_drv/connv2/platform/mt6983/mt6983.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_ops.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_soc.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_atf.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_pmic.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_emi.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_emi_atf.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_consys_reg.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_consys_reg_atf.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_pos.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_pos_gen.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_coredump.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_coredump_atf.c",
+    "conn_drv/connv2/platform/mt6983/mt6983_debug_gen.c"
+]
+connv2_mt6985_srcs=[
+    "conn_drv/connv2/platform/mt6985/mt6985.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_pmic.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_emi.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_consys_reg.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_pos.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_pos_gen.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_coredump.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_atf.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_debug_gen.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_ops.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_soc.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_consys_reg_atf.c",
+    "conn_drv/connv2/platform/mt6985/mt6985_coredump_atf.c"
+]
+connv2_mt6989_srcs=[
+    "conn_drv/connv2/platform/mt6989/mt6989.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_pmic.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_emi.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_consys_reg.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_pos.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_pos_gen.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_coredump.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_atf.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_debug_gen.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_ops.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_soc.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_consys_reg_atf.c",
+    "conn_drv/connv2/platform/mt6989/mt6989_coredump_atf.c"
+]
+connv2_mt6991_srcs=[
+    "conn_drv/connv2/platform/mt6991/mt6991.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_pmic.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_emi.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_consys_reg.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_pos.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_pos_gen.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_coredump.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_debug_gen.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_ops.c",
+    "conn_drv/connv2/platform/mt6991/mt6991_soc.c"
+]
+connv2_mt6993_srcs=[
+    "conn_drv/connv2/platform/mt6993/mt6993.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_pmic.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_emi.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_consys_reg.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_pos.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_pos_gen.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_coredump.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_debug_gen.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_ops.c",
+    "conn_drv/connv2/platform/mt6993/mt6993_soc.c"
+]
+connv2_mt6858_srcs=[
+    "conn_drv/connv2/platform/mt6858/mt6858.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_ops.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_soc.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_atf.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_pmic.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_emi.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_consys_reg.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_pos.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_pos_gen.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_coredump.c",
+    "conn_drv/connv2/platform/mt6858/mt6858_debug_gen.c"
+]
+connv2_test_srcs=[
+    "test/connv2/conninfra_core_test.c",
+    "test/connv2/conf_test.c",
+    "test/connv2/cal_test.c",
+    "test/connv2/msg_evt_test.c",
+    "test/connv2/chip_rst_test.c",
+    "test/connv2/conninfra_test.c",
+    "test/connv2/connsyslog_test.c",
+    "test/connv2/dump_test.c",
+    "test/connv2/connv2_pos_test.c",
+]
+
+# connv3 platform
+connv3_folder="conn_drv/connv3/platform"
+connv3_mt6983_include_dirs=[
+    "conn_drv/connv3/platform/mt6983/include"
+]
+connv3_mt6985_include_dirs=[
+    "conn_drv/connv3/platform/mt6985/include",
+]
+connv3_mt6989_include_dirs=[
+    "conn_drv/connv3/platform/mt6989/include",
+]
+connv3_mt6991_include_dirs=[
+    "conn_drv/connv3/platform/mt6991/include",
+]
+connv3_mt6993_include_dirs=[
+    "conn_drv/connv3/platform/mt6993/include",
+]
+connv3_mt6639_combo_include_dirs=[
+    "conn_drv/connv3/platform/mt6639/include"
+]
+connv3_mt6376_combo_include_dirs=[
+    "conn_drv/connv3/platform/mt6376/include"
+]
+connv3_mt6653_combo_include_dirs=[
+    "conn_drv/connv3/platform/mt6653/include"
+]
+
+connv3_mt6983_srcs=[
+    "conn_drv/connv3/platform/mt6983/mt6983.c",
+    "conn_drv/connv3/platform/mt6983/mt6983_pmic.c",
+    "conn_drv/connv3/platform/mt6983/mt6983_pinctrl.c",
+    "conn_drv/connv3/platform/mt6639/mt6639_dbg.c"
+]
+connv3_mt6985_srcs=[
+    "conn_drv/connv3/platform/mt6985/mt6985.c",
+    "conn_drv/connv3/platform/mt6985/mt6985_pmic.c",
+    "conn_drv/connv3/platform/mt6985/mt6985_pinctrl.c",
+    "conn_drv/connv3/platform/mt6639/mt6639_dbg.c"
+]
+connv3_mt6989_srcs=[
+    "conn_drv/connv3/platform/mt6989/mt6989.c",
+    "conn_drv/connv3/platform/mt6989/mt6989_pmic.c",
+    "conn_drv/connv3/platform/mt6989/mt6989_pinctrl.c",
+    "conn_drv/connv3/platform/mt6639/mt6639_dbg.c",
+    "conn_drv/connv3/platform/mt6989/mt6989_mt6653.c",
+    "conn_drv/connv3/platform/mt6653/mt6653_dbg.c"
+]
+connv3_mt6991_srcs=[
+    "conn_drv/connv3/platform/mt6991/mt6991.c",
+    "conn_drv/connv3/platform/mt6991/mt6991_pmic.c",
+    "conn_drv/connv3/platform/mt6991/mt6991_pinctrl.c",
+    "conn_drv/connv3/platform/mt6653/mt6653_dbg.c"
+]
+connv3_mt6993_srcs=[
+    "conn_drv/connv3/platform/mt6993/mt6993.c",
+    "conn_drv/connv3/platform/mt6993/mt6993_pmic.c",
+    "conn_drv/connv3/platform/mt6993/mt6993_pinctrl.c",
+    "conn_drv/connv3/platform/mt6653/mt6653_dbg.c"
+]
+connv3_test_srcs=[
+    "test/connv3/connv3_test.c",
+    "test/connv3/connv3_dump_test.c",
+]
+
+ddk_headers(
+    name = "conninfra_headers",
+    hdrs = glob(["**/*.h"])
+)
+
+define_mgk_ddk_ko(
+    name = "conninfra",
+    srcs = [
+        "base/ring.c",
+        "base/osal.c",
+        "base/osal_dbg.c",
+        "base/msg_thread.c",
+        "conf/conninfra_conf.c",
+        "adaptor/conninfra_dev.c",
+        "adaptor/conn_kern_adaptor.c",
+        "adaptor/connsyslog/fw_log_mcu.c",
+        "adaptor/connsyslog/connsyslog_to_user.c",
+        "adaptor/coredump/conndump_netlink.c",
+        "conn_drv/connv2/core/conninfra_core.c",
+        "conn_drv/connv2/src/conninfra.c",
+        "conn_drv/connv2/src/connv2_drv.c",
+        "conn_drv/connv2/platform/consys_hw.c",
+        "conn_drv/connv2/platform/consys_hw_plat_data.c",
+        "conn_drv/connv2/platform/clock_mng.c",
+        "conn_drv/connv2/platform/pmic_mng.c",
+        "conn_drv/connv2/platform/emi_mng.c",
+        "conn_drv/connv2/platform/consys_reg_mng.c",
+        "conn_drv/connv2/debug_utility/conninfra_dbg.c",
+        "conn_drv/connv2/debug_utility/connsyslog/ring_emi.c",
+        "conn_drv/connv2/debug_utility/connsyslog/connsyslog.c",
+        "conn_drv/connv2/debug_utility/coredump/connsys_coredump.c",
+        "conn_drv/connv2/debug_utility/coredump/coredump_mng.c",
+        "conn_drv/connv2/debug_utility/metlog/metlog.c",
+        "conn_drv/connv2/drv_init/bluetooth_drv_init.c",
+        "conn_drv/connv2/drv_init/conn_drv_init.c",
+        "conn_drv/connv2/drv_init/fm_drv_init.c",
+        "conn_drv/connv2/drv_init/gps_drv_init.c",
+        "conn_drv/connv2/drv_init/wlan_drv_init.c",
+        "conn_drv/connv3/src/connv3.c",
+        "conn_drv/connv3/src/connv3_drv.c",
+        "conn_drv/connv3/core/connv3_core.c",
+        "conn_drv/connv3/platform/connv3_clock_mng.c",
+        "conn_drv/connv3/platform/connv3_hw.c",
+        "conn_drv/connv3/platform/connv3_hw_plat_data.c",
+        "conn_drv/connv3/platform/connv3_pmic_mng.c",
+        "conn_drv/connv3/platform/connv3_pinctrl_mng.c",
+        "conn_drv/connv3/platform/connv3_hw_dbg.c",
+        "conn_drv/connv3/debug_utility/connsyslog/connv3_mcu_log.c",
+        "conn_drv/connv3/debug_utility/coredump/connv3_coredump.c",
+        "conn_drv/connv3/debug_utility/coredump/connv3_dump_mng.c",
+        "conn_drv/connv3/debug_utility/connv3_dbg.c",
+    ],
+    #] + connv3_test_srcs + connv2_test_srcs, // Uncomment this line to build test code
+
+    conditional_srcs = {
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6877": {
+            True: connv2_mt6877_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6877/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6878": {
+            True: connv2_mt6878_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6878/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6879": {
+            True: connv2_mt6879_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6879/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6885": {
+            True: connv2_mt6885_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6885/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6886": {
+            True: connv2_mt6886_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6886/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6893": {
+            True: connv2_mt6893_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6893/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6895":{
+            True: connv2_mt6895_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6895/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6897": {
+            True: connv2_mt6897_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6897/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6899": {
+            True: connv2_mt6899_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6899/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6983": {
+            True: connv2_mt6983_srcs + connv3_mt6983_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6983/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6985": {
+            True: connv2_mt6985_srcs + connv3_mt6985_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6985/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6989": {
+            True: connv2_mt6989_srcs + connv3_mt6989_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6989/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6991": {
+            True: connv2_mt6991_srcs + connv3_mt6991_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6991/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6993": {
+            True: connv2_mt6993_srcs + connv3_mt6993_srcs,
+        } if glob(["conn_drv/connv3/platform/mt6993/*"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6858": {
+            True: connv2_mt6858_srcs,
+        } if glob(["conn_drv/connv2/platform/mt6858/*"]) else {},
+    },
+    includes = [
+        "include",
+        "base/include",
+        "conf/include",
+        "adaptor/connsyslog",
+        "adaptor/coredump",
+        "adaptor/include",
+        "conn_drv/connv2/src",
+        "conn_drv/connv2/core/include",
+        "conn_drv/connv2/drv_init/include",
+        "conn_drv/connv2/platform/include",
+        "conn_drv/connv2/debug_utility",
+        "conn_drv/connv2/debug_utility/include",
+        "conn_drv/connv2/debug_utility/connsyslog",
+        "conn_drv/connv2/debug_utility/coredump",
+        "conn_drv/connv2/debug_utility/metlog",
+        "test/connv2/include",
+        "conn_drv/connv3/src",
+        "conn_drv/connv3/core/include",
+        "conn_drv/connv3/platform/include",
+        "conn_drv/connv3/debug_utility",
+        "conn_drv/connv3/debug_utility/include",
+        "conn_drv/connv3/debug_utility/connsyslog",
+        "conn_drv/connv3/debug_utility/coredump",
+        "test/connv3/include",
+    ] + connv2_mt6885_include_dirs + connv2_mt6893_include_dirs + connv2_mt6877_include_dirs +
+        connv2_mt6886_include_dirs + connv2_mt6897_include_dirs + connv2_mt6983_include_dirs +
+        connv3_mt6983_include_dirs + connv3_mt6639_combo_include_dirs + connv2_mt6879_include_dirs +
+        connv2_mt6895_include_dirs + connv2_mt6985_include_dirs + connv3_mt6985_include_dirs +
+        connv2_mt6989_include_dirs + connv3_mt6989_include_dirs + connv3_mt6376_combo_include_dirs +
+        connv3_mt6653_combo_include_dirs + connv2_mt6878_include_dirs + connv2_mt6991_include_dirs +
+        connv3_mt6991_include_dirs + connv2_mt6993_include_dirs + connv3_mt6993_include_dirs +
+        connv2_mt6993_include_dirs + connv2_mt6899_include_dirs + connv2_mt6858_include_dirs,
+    hdrs = glob(["**/*.h"]),
+    copts = [
+        "-Werror",
+        "-Wno-error=format",
+        "-Wno-error=format-extra-args",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/clkbuf/src",
+        "-I$(DEVICE_MODULES_PATH)/include/linux/soc/mediatek",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+        "-I$(DEVICE_MODULES_PATH)/drivers/memory/mediatek",
+        "-include",
+        "$(location conn_def.h)",
+    ],
+    header_deps = [
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/aee/aed:aee_aed".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/soc/mediatek/devapc:device-apc-common-legacy".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/eccci:ccci_md_all".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/memory/mediatek:emi-mpu".format(kernel_version),
+    ],
+    local_defines = [
+        #"CFG_CONNINFRA_UT_SUPPORT", // Uncomment this line to build test code
+    ],
+)
+

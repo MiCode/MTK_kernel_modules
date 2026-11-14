@@ -1,0 +1,30 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_module")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+ddk_headers(
+	name = "include_headers",
+	hdrs = glob(["**/*.h"]),
+	includes = [".",
+				"drm",
+			    "public",
+				"system",
+				"system/rgx_tc",
+				],
+)
+
+# It is not allowed to have empty srcs, use img_defs.h as dummy file,
+# which is always included.
+filegroup(
+	name = "fg_dummy",
+	srcs = ["img_defs.h"],
+)

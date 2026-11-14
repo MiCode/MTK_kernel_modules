@@ -1,0 +1,352 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version",)
+load("@mgk_info//:dict.bzl","KERNEL_BUILD_VARIANT")
+load("@mgk_info//:dict.bzl", "DEFCONFIG_OVERLAYS",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+ddk_headers(
+    name = "btmtk_uart_unify_headers",
+    hdrs = glob(["**/*.h"])
+)
+
+
+print("[bt_drv] ddk start")
+
+# Common config macro
+CONFIG_SUPPORT_BT_DL_WIFI_PATCH="y"
+CONFIG_SUPPORT_BT_DL_ZB_PATCH="n"
+CONFIG_SUPPORT_BLUEZ="n"
+CONFIG_SUPPORT_DVT="n"
+CONFIG_SUPPORT_HW_DVT="n"
+CONFIG_SUPPORT_MULTI_DEV_NODE="n"
+CONFIG_SUPPORT_WAKEUP_SER="n"
+
+# for sp uart
+MTK_CHIP_IF="uart_tty"
+MTK_PROJ_TYPE="sp"
+CONFIG_SUPPORT_DEVICE_NODE="y"
+CFG_SUPPORT_FWLOG_OFF_WHEN_SUSPEND="y"
+BT_CONFIG_TRACING="n"
+CFG_SUPPORT_HOSTWAKE="n"
+CFG_MTK_BT_DFD_DUMP_SUPPORT="y"
+CFG_SUPPORT_RHW_DBG_SOP="n"
+CFG_SUPPORT_RHW_DUMP="n"
+CFG_SUPPORT_CONNSYSLOGGER_FWLOG="y"
+CFG_SUPPORT_FWLOG_TO_HOST="n"
+CONFIG_SUPPORT_UARTDBG="y"
+CFG_SUPPORT_TAS_HOST_CONTROL="y"
+CFG_SUPPORT_MD_CCCI="y"
+
+# for ce
+CONFIG_GKI_SUPPORT="n"
+SUPPORT_WAKEUP_IRQ="n"
+CONFIG_RUNTIME_SUSPEND="n"
+CONFIG_RUNTIME_SUSPEND="n"
+CONFIG_BT_SDK_SQC="n"
+CONFIG_BT_SWIP_SUPPORT="n"
+CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT="n"
+CONFIG_DISABLE_SYMBOL_GET_SET="n"
+
+############ src ############
+srcs = [
+    "btmtk_main.c",
+    "btmtk_fw_log.c",
+    "btmtk_buffer_mode.c",
+    "chip/btmtk_chip_7902.c",
+    "chip/btmtk_chip_common.c",
+    "chip/btmtk_chip_7961.c",
+    "chip/btmtk_chip_7922.c",
+    "chip/btmtk_chip_66xx.c",
+    "chip/btmtk_chip_connac3.c",
+    "chip/btmtk_chip_6639.c",
+    "chip/btmtk_chip_7663.c",
+]
+
+# for uart src
+srcs += [
+    "uart/btmtktty.c",
+    "btmtk_woble.c",
+    "btmtk_chip_reset.c",
+] if MTK_CHIP_IF == "uart_tty" else[]
+
+srcs += [
+    "btmtk_queue.c",
+    "btmtk_char_dev.c",
+] if CONFIG_SUPPORT_DEVICE_NODE == "y" else []
+
+srcs += [
+    "proj/btmtk_tasar.c",
+] if CFG_SUPPORT_TAS_HOST_CONTROL == "y" else []
+
+# for sp src
+srcs += [
+    "proj/btmtk_proj_sp.c",
+    "proj/btmtk_proj_sp_debug.c",
+] if MTK_PROJ_TYPE == "sp" else[]
+
+############ local_defines ############
+local_defines = [
+    "BTMTK_LOG_LVL=0",
+    "_FORTIFY_SOURCE=2",
+    "STPBTFWLOG_ENABLE=1",
+    "BTMTK_DEBUG_SOP",
+    "DEBUG_DUMP_TIME",
+    "BTMTK_ISOC_TEST=0",
+    "ANDROID_OS",
+]
+
+local_defines += [
+    "BUILD_QA_DBG=0",
+] if KERNEL_BUILD_VARIANT == "user" else [
+    "BUILD_QA_DBG=1",
+]
+
+local_defines += [
+    "CFG_INBAND_SUPPORT",
+    "CFG_UART_WAKEUP_SUPPORT",
+] if MTK_PROJ_TYPE == "sp" else[]
+
+local_defines += [
+    "USE_DEVICE_NODE=1",
+    "SLEEP_ENABLE=1",
+] if CONFIG_SUPPORT_DEVICE_NODE == "y" else [
+    "USE_DEVICE_NODE=0",
+    "SLEEP_ENABLE=0"
+]
+
+local_defines += [
+    "CONFIG_SUPPORT_UARTDBG=1",
+] if CONFIG_SUPPORT_UARTDBG == "y" else [
+    "CONFIG_SUPPORT_UARTDBG=0",
+]
+
+local_defines += [
+    "CHIP_IF_UART_TTY",
+] if MTK_CHIP_IF == "uart_tty" else [
+]
+
+local_defines += [
+    "BT_CONFIG_TRACING",
+] if BT_CONFIG_TRACING == "y" else []
+
+local_defines += [
+    "CFG_SUPPORT_FWLOG_OFF_WHEN_SUSPEND=1",
+] if CFG_SUPPORT_FWLOG_OFF_WHEN_SUSPEND == "y" else [
+    "CFG_SUPPORT_FWLOG_OFF_WHEN_SUSPEND=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_HOSTWAKE=1",
+] if CFG_SUPPORT_HOSTWAKE == "y" else [
+    "CFG_SUPPORT_HOSTWAKE=0"
+]
+
+local_defines += [
+    "CFG_MTK_BT_DFD_DUMP_SUPPORT=1",
+] if CFG_MTK_BT_DFD_DUMP_SUPPORT == "y" else [
+    "CFG_MTK_BT_DFD_DUMP_SUPPORT=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_RHW_DBG_SOP=1",
+] if CFG_SUPPORT_RHW_DBG_SOP == "y" else [
+    "CFG_SUPPORT_RHW_DBG_SOP=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_RHW_DUMP=1",
+] if CFG_SUPPORT_RHW_DUMP == "y" else [
+    "CFG_SUPPORT_RHW_DUMP=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_CONNSYSLOGGER_FWLOG=1",
+] if CFG_SUPPORT_CONNSYSLOGGER_FWLOG == "y" else [
+    "CFG_SUPPORT_CONNSYSLOGGER_FWLOG=0"
+]
+
+
+local_defines += [
+    "CFG_SUPPORT_FWLOG_TO_HOST=1",
+] if CFG_SUPPORT_FWLOG_TO_HOST == "y" else [
+    "CFG_SUPPORT_FWLOG_TO_HOST=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_BT_DL_WIFI_PATCH=1",
+] if CONFIG_SUPPORT_BT_DL_WIFI_PATCH == "y" else [
+    "CFG_SUPPORT_BT_DL_WIFI_PATCH=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_BT_DL_ZB_PATCH=1",
+] if CONFIG_SUPPORT_BT_DL_ZB_PATCH == "y" else [
+    "CFG_SUPPORT_BT_DL_ZB_PATCH=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_BLUEZ=1",
+] if CONFIG_SUPPORT_BLUEZ == "y" else [
+    "CFG_SUPPORT_BLUEZ=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_HW_DVT=1",
+] if CONFIG_SUPPORT_HW_DVT == "y" else [
+    "CFG_SUPPORT_HW_DVT=0"
+]
+
+local_defines += [
+    "CFG_GKI_SUPPORT=1",
+] if CONFIG_GKI_SUPPORT == "y" else [
+    "CFG_GKI_SUPPORT=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_WAKEUP_IRQ=1",
+] if SUPPORT_WAKEUP_IRQ == "y" else [
+    "CFG_SUPPORT_WAKEUP_IRQ=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_WAKEUP_IRQ=1",
+] if CONFIG_SUPPORT_WAKEUP_SER == "y" else [
+    "CFG_SUPPORT_WAKEUP_IRQ=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_DVT=1",
+] if CONFIG_SUPPORT_DVT == "y" else [
+    "CFG_SUPPORT_DVT=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_MULTI_DEV_NODE=1",
+] if CONFIG_SUPPORT_MULTI_DEV_NODE == "y" else [
+    "CFG_SUPPORT_MULTI_DEV_NODE=0"
+]
+
+local_defines += [
+    "MTK_RUNTIME_ENABLE=1",
+] if CONFIG_RUNTIME_SUSPEND == "y" else [
+    "MTK_RUNTIME_ENABLE=0"
+]
+
+local_defines += [
+    "ENABLE_BT_SDK_SQC=1",
+] if CONFIG_BT_SDK_SQC == "y" else [
+    "ENABLE_BT_SDK_SQC=0"
+]
+
+local_defines += [
+    "BT_SWIP_SUPPORT=1",
+] if CONFIG_BT_SWIP_SUPPORT == "y" else [
+    "BT_SWIP_SUPPORT=0"
+]
+
+local_defines += [
+    "CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT",
+] if CONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT == "y" else []
+
+local_defines += [
+    "CONFIG_DISABLE_SYMBOL_GET_SET",
+] if CONFIG_DISABLE_SYMBOL_GET_SET == "y" else []
+
+local_defines += [
+    "USE_DEVICE_NODE=1",
+    "SLEEP_ENABLE=1",
+] if CONFIG_SUPPORT_DEVICE_NODE == "y" else [
+    "USE_DEVICE_NODE=0",
+    "SLEEP_ENABLE=1",
+]
+
+local_defines += [
+    "CFG_SUPPORT_TAS_HOST_CONTROL=1",
+] if CFG_SUPPORT_TAS_HOST_CONTROL == "y" else [
+    "CFG_SUPPORT_TAS_HOST_CONTROL=0"
+]
+
+local_defines += [
+    "CFG_SUPPORT_MD_CCCI=1",
+] if (CFG_SUPPORT_MD_CCCI == "y" and "wifionly.config" not in DEFCONFIG_OVERLAYS) else [
+    "CFG_SUPPORT_MD_CCCI=0"
+]
+
+############ copts ############
+copts = [
+    "-Werror",
+    "-include",
+    "$(location include/btmtk_local_defines.h)",
+    "-I$(srctree)/include",
+    "-I$(srctree)/drivers/bluetooth",
+]
+
+copts += [
+    "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+] if MTK_PROJ_TYPE == "sp" else[]
+
+
+define_mgk_ddk_ko(
+    name = "btmtk_uart_unify",
+    srcs = srcs,
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/power_throttling:power_throttling_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:ddk_public_headers".format(kernel_version),
+    ],
+    ko_deps  = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:connfem",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+        "//kernel_device_modules-{}/drivers/tty/serial/8250:8250_mtk".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/aee/aed:aee_aed".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/eccci:ccci_md_all".format(kernel_version),
+    ],
+    hdrs = glob(["**/*.h"]),
+    includes = [
+        "include",
+        "include/chip",
+        "include/uart/tty",
+        "proj/include"
+    ],
+    local_defines = local_defines,
+    out = "btmtk_uart_unify.ko",
+    copts = copts,
+)
+
+define_mgk_ko(
+    name = "btmtk_uart_unify_noDDK",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/connectivity/common:headers",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:headers",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:headers",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/common:wmt_drv",
+        "//vendor/mediatek/kernel_modules/connectivity/connfem:connfem_no_ddk",
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra",
+    ],
+    outs = ["btmtk_uart_unify.ko"], # avoid building into btmtk_uart_unify_noDDK.ko
+)
+
+print("[bt_drv] ddk end")

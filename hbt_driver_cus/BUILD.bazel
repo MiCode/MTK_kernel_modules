@@ -1,0 +1,20 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "hbt_cus",
+    srcs = ["hbt_driver/src/hbt.c","hbt_driver/src/hbt.h"] if glob(["hbt_driver/Makefile"]) else ["src/hbt.c","src/hbt.h"],
+    copts = [
+        "-I$(srctree)/include/",
+        "-I$(srctree)/drivers/misc/mediatek/include/",
+    ],
+    local_defines = [
+        "CONFIG_MTK_HBT",
+    ],
+    out = "hbt.ko",
+)

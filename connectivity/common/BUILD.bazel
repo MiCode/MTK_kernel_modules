@@ -1,0 +1,277 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+load("@mgk_info//:dict.bzl","DEFCONFIG_OVERLAYS")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+wmt_mt6580_srcs=[
+    "common_main/platform/mt6580.c",
+]
+
+wmt_mt6739_srcs=[
+    "common_main/platform/mt6739.c",
+]
+
+wmt_mt6761_srcs=[
+    "common_main/platform/mt6761.c",
+    "common_main/platform/mt6761_dbg.c",
+]
+
+wmt_mt6765_srcs=[
+    "common_main/platform/mt6765.c",
+    "common_main/platform/mt6765_dbg.c",
+]
+
+wmt_mt6768_srcs=[
+    "common_main/platform/mt6768.c",
+    "common_main/platform/mt6768_dbg.c",
+]
+
+wmt_mt6771_srcs=[
+    "common_main/platform/mt6771.c",
+]
+
+wmt_mt6779_srcs=[
+    "common_main/platform/mt6779.c",
+    "common_main/platform/mt6779_dbg.c",
+]
+
+wmt_mt6781_srcs=[
+    "common_main/platform/mt6781.c",
+    "common_main/platform/mt6781_dbg.c",
+    "common_main/platform/mt6781_pos_gen.c",
+]
+
+wmt_mt6785_srcs=[
+    "common_main/platform/mt6785.c",
+    "common_main/platform/mt6785_dbg.c",
+]
+
+wmt_mt6789_srcs=[
+    "common_main/platform/mt6789.c",
+    "common_main/platform/mt6789_dbg.c",
+    "common_main/platform/mt6789_pos_gen.c",
+]
+
+wmt_mt6833_srcs=[
+    "common_main/platform/mt6833.c",
+    "common_main/platform/mt6833_dbg.c",
+]
+
+wmt_mt6835_srcs=[
+    "common_main/platform/mt6835.c",
+    "common_main/platform/mt6835_dbg.c",
+    "common_main/platform/mt6835_pos_gen.c",
+]
+
+wmt_mt6853_srcs=[
+    "common_main/platform/mt6853.c",
+    "common_main/platform/mt6853_dbg.c",
+]
+
+wmt_mt6855_srcs=[
+    "common_main/platform/mt6855.c",
+    "common_main/platform/mt6855_dbg.c",
+    "common_main/platform/mt6855_pos_gen.c",
+]
+
+wmt_mt6873_srcs=[
+    "common_main/platform/mt6873.c",
+    "common_main/platform/mt6873_dbg.c",
+]
+
+wmt_mt8163_srcs=[
+    "common_main/platform/mt8163.c",
+]
+
+wmt_mt8167_srcs=[
+    "common_main/platform/mt8167.c",
+]
+
+wmt_mt8168_srcs=[
+    "common_main/platform/mt8168.c",
+]
+
+ddk_headers(
+    name = "wmt_drv_headers",
+    hdrs = glob(["**/*.h"])
+)
+
+define_mgk_ddk_ko(
+    name = "wmt_drv",
+    srcs = [
+        "common_detect/mtk_wcn_stub_alps.c",
+        "common_detect/sdio_detect.c",
+        "common_detect/wmt_detect.c",
+        "common_detect/wmt_detect_pwr.c",
+        "common_detect/wmt_gpio.c",
+        "common_detect/drv_init/bluetooth_drv_init.c",
+        "common_detect/drv_init/common_drv_init.c",
+        "common_detect/drv_init/conn_drv_init.c",
+        "common_detect/drv_init/fm_drv_init.c",
+        "common_detect/drv_init/gps_drv_init.c",
+        "common_detect/drv_init/wlan_drv_init.c",
+        "common_main/core/btm_core.c",
+        "common_main/core/psm_core.c",
+        "common_main/core/stp_core.c",
+        "common_main/core/stp_exp.c",
+        "common_main/core/wmt_conf.c",
+        "common_main/core/wmt_core.c",
+        "common_main/core/wmt_ctrl.c",
+        "common_main/core/wmt_exp.c",
+        "common_main/core/wmt_func.c",
+        "common_main/core/wmt_ic_6620.c",
+        "common_main/core/wmt_ic_6628.c",
+        "common_main/core/wmt_ic_6630.c",
+        "common_main/core/wmt_ic_6632.c",
+        "common_main/core/wmt_ic_soc.c",
+        "common_main/core/wmt_lib.c",
+        "common_main/linux/bgw_desense.c",
+        "common_main/linux/fw_log_wmt.c",
+        "common_main/linux/hif_sdio.c",
+        "common_main/linux/osal.c",
+        "common_main/linux/stp_btif.c",
+        "common_main/linux/stp_dbg.c",
+        "common_main/linux/stp_dbg_combo.c",
+        "common_main/linux/stp_dbg_soc.c",
+        "common_main/linux/stp_sdio.c",
+        "common_main/linux/stp_uart.c",
+        "common_main/linux/wmt_alarm.c",
+        "common_main/linux/wmt_dbg.c",
+        "common_main/linux/wmt_dev.c",
+        "common_main/linux/wmt_idc.c",
+        "common_main/linux/wmt_proc_dbg.c",
+        "common_main/linux/wmt_user_proc.c",
+        "common_main/platform/mtk_wcn_cmb_hw.c",
+        "common_main/platform/mtk_wcn_consys_hw.c",
+        "common_main/platform/mtk_wcn_dump_util.c",
+        "common_main/platform/wmt_plat_alps.c",
+        "common_main/platform/wmt_plat_stub.c",
+        "debug_utility/connsys_debug_utility.c",
+        "debug_utility/ring.c",
+        "debug_utility/ring_emi.c",
+#        "test/wmt_step_test.c",
+    ],
+    conditional_srcs = {
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6580": {
+            True: wmt_mt6580_srcs,
+        } if glob(["common_main/platform/mt6580.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6739": {
+            True: wmt_mt6739_srcs,
+        } if glob(["common_main/platform/mt6739.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6761": {
+            True: wmt_mt6761_srcs,
+        } if glob(["common_main/platform/mt6761.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6765": {
+            True: wmt_mt6765_srcs,
+        } if glob(["common_main/platform/mt6765.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6768": {
+            True: wmt_mt6768_srcs,
+        } if glob(["common_main/platform/mt6768.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6771": {
+            True: wmt_mt6771_srcs,
+        } if glob(["common_main/platform/mt6771.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6779": {
+            True: wmt_mt6779_srcs,
+        } if glob(["common_main/platform/mt6779.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6781": {
+            True: wmt_mt6781_srcs,
+        } if glob(["common_main/platform/mt6781.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6785": {
+            True: wmt_mt6785_srcs,
+        } if glob(["common_main/platform/mt6785.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6789": {
+            True: wmt_mt6789_srcs,
+        } if glob(["common_main/platform/mt6789.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6833": {
+            True: wmt_mt6833_srcs,
+        } if glob(["common_main/platform/mt6833.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6835": {
+            True: wmt_mt6835_srcs,
+        } if glob(["common_main/platform/mt6835.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6855": {
+            True: wmt_mt6855_srcs,
+        } if glob(["common_main/platform/mt6855.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_6873": {
+            True: wmt_mt6873_srcs,
+        } if glob(["common_main/platform/mt6873.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_8163": {
+            True: wmt_mt8163_srcs,
+        } if glob(["common_main/platform/mt8163.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_8167": {
+            True: wmt_mt8167_srcs,
+        } if glob(["common_main/platform/mt8167.c"]) else {},
+        "CONFIG_MTK_COMBO_CHIP_CONSYS_8168": {
+            True: wmt_mt8168_srcs,
+        } if glob(["common_main/platform/mt8168.c"]) else {},
+    },
+    includes = [
+        "common_detect",
+        "common_detect/drv_init/inc",
+        "common_main/core/include",
+        "common_main/include",
+        "common_main/linux/include",
+        "common_main/platform/include",
+        "debug_utility",
+        "test/include",
+    ],
+    hdrs = glob([
+        "**/*.h",
+    ]),
+    local_defines = [
+        "CONSYS_PMIC_CTRL_6635=0",
+        "MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT",
+        "WMT_CREATE_NODE_DYNAMIC=1",
+        "WMT_PLAT_ALPS=1",
+        "WMT_SDIO_MODE=1",
+        "WMT_UART_RX_MODE_WORK=0",
+    ],
+    copts = [
+        "-Wall",
+        "-Werror",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/base/power/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/base/power/include/clkbuf_v1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/btif/common/inc",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/eccci",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/eccci/inc",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/eccci/port",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/eemcs",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/conn_md/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/emi/submodule",
+        "-I$(srctree)/drivers/mmc/core",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/connectivity/common",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+        "-include",
+        "$(location wmt_def.h)",
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/eccci:ccci_header".format(kernel_version),
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/aee/aed:aee_aed".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/btif:btif_drv".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/conn_md:conn_md_drv".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/eccci:ccci_md_all".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+    ] + (["//kernel_device_modules-{}/drivers/memory/mediatek:emimpu".format(kernel_version),]
+         if "entry_level" in DEFCONFIG_OVERLAYS or "mt6768_overlay.config" in DEFCONFIG_OVERLAYS else []),
+)

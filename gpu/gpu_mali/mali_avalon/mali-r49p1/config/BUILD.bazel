@@ -1,0 +1,348 @@
+# SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+#
+# (C) COPYRIGHT 2025 ARM Limited. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the
+# GNU General Public License version 2 as published by the Free Software
+# Foundation, and any use by you of this program is subject to the terms
+# of such GNU license.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, you can access it online at
+# http://www.gnu.org/licenses/gpl-2.0.html.
+#
+#
+
+load(
+    "@bazel_skylib//rules:common_settings.bzl",
+    "bool_flag",
+    "string_flag",
+)
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+package(
+    default_visibility = [
+        "//:__subpackages__",
+        "@kleaf//common:__pkg__",
+    ],
+)
+
+bool_flag(
+    name = "DMA_SHARED_BUFFER",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "dma_shared_buffer",
+    flag_values = {
+        ":DMA_SHARED_BUFFER": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_GCOV_KERNEL",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "cov_kernel",
+    flag_values = {":MALI_GCOV_KERNEL": "true"},
+)
+
+bool_flag(
+    name = "MALI_KCOV",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_kcov",
+    flag_values = {":MALI_KCOV": "true"},
+)
+
+string_flag(
+    name = "MALI_CONFIG",
+    build_setting_default = "MALI",
+    values = [
+        "NO_MALI",
+        "MALI",
+    ],
+)
+
+config_setting(
+    name = "no_mali",
+    flag_values = {
+        ":MALI_CONFIG": "NO_MALI",
+    },
+)
+
+config_setting(
+    name = "mali",
+    flag_values = {
+        ":MALI_CONFIG": "MALI",
+    },
+)
+
+bool_flag(
+    name = "MALI_EXPERT",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_expert",
+    flag_values = {":MALI_EXPERT": "true"},
+)
+
+bool_flag(
+    name = "MALI_HAS_CL",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_has_cl",
+    flag_values = {":MALI_HAS_CL": "true"},
+)
+
+bool_flag(
+    name = "MALI_HAS_GLES",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_has_gles",
+    flag_values = {":MALI_HAS_GLES": "true"},
+)
+
+bool_flag(
+    name = "MALI_DEBUG",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_debug",
+    flag_values = {":MALI_DEBUG": "true"},
+)
+
+bool_flag(
+    name = "MIDGARD_DVFS",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "midgard_dvfs",
+    flag_values = {":MIDGARD_DVFS": "true"},
+)
+
+bool_flag(
+    name = "MALI_KUTF",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_kutf",
+    flag_values = {":MALI_KUTF": "true"},
+)
+
+bool_flag(
+    name = "MALI_SYNC_FILE",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_sync_file",
+    flag_values = {
+        ":MALI_SYNC_FILE": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_CUSTOMER_RELEASE",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "mali_customer_release",
+    flag_values = {
+        ":MALI_CUSTOMER_RELEASE": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_ARBITRATION",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_arbitration",
+    flag_values = {
+        ":MALI_ARBITRATION": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_PARTITION_MANAGER",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_partition_manager",
+    flag_values = {
+        ":MALI_PARTITION_MANAGER": "true",
+    },
+)
+
+bool_flag(
+    name = "XEN",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "xen",
+    flag_values = {
+        ":XEN": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_ARBITER_SUPPORT",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_arbiter_support",
+    flag_values = {
+        ":MALI_ARBITER_SUPPORT": "true",
+    },
+)
+
+bool_flag(
+    name = "MALI_ARBITER_MODULES",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "mali_arbiter_modules",
+    flag_values = {
+        ":MALI_ARBITER_MODULES": "true",
+    },
+)
+
+selects.config_setting_group(
+    name = "mali_arbiter_test",
+    match_all = [
+        ":mali_arbiter_modules",
+        ":mali_arbitration",
+    ],
+)
+
+selects.config_setting_group(
+    name = "mali_expert_debug",
+    match_all = [
+        ":mali_expert",
+        ":mali_debug",
+    ],
+)
+
+selects.config_setting_group(
+    name = "expert_no_mali",
+    match_all = [
+        ":mali_expert",
+        ":no_mali",
+    ],
+)
+
+selects.config_setting_group(
+    name = "mali_debug_kutf",
+    match_all = [
+        ":mali_kutf",
+        ":mali_debug",
+    ],
+)
+
+selects.config_setting_group(
+    name = "mali_debug_kutf_devfreq_no_mali",
+    match_all = [
+        ":mali_debug_kutf",
+        ":no_mali",
+        ":mali_devfreq",
+    ],
+)
+
+selects.config_setting_group(
+    name = "mali_expert_debug_sync_file",
+    match_all = [
+        ":mali_expert_debug",
+        ":mali_sync_file",
+    ],
+)
+
+selects.config_setting_group(
+    name = "mali_expert_model",
+    match_all = [
+        ":mali_expert",
+        ":mali_model",
+    ],
+)
+
+selects.config_setting_group(
+    name = "xen_arbiter",
+    match_all = [
+        ":xen",
+        ":mali_arbiter_support",
+    ],
+)
+
+string_flag(
+    name = "mali_platform_name",
+    build_setting_default = "devicetree",
+    values = [
+        "devicetree",
+        "meson",
+        "vexpress",
+        "vexpress_1xv7_a57",
+        "vexpress_6xvirtex7_10mhz",
+    ],
+)
+
+config_setting(
+    name = "mali_platform_name_devicetree",
+    flag_values = {":mali_platform_name": "devicetree"},
+)
+
+config_setting(
+    name = "mali_platform_name_meson",
+    flag_values = {":mali_platform_name": "meson"},
+)
+
+config_setting(
+    name = "mali_platform_name_vexpress",
+    flag_values = {":mali_platform_name": "vexpress"},
+)
+
+config_setting(
+    name = "mali_platform_name_vexpress_1xv7_a57",
+    flag_values = {":mali_platform_name": "vexpress_1xv7_a57"},
+)
+
+config_setting(
+    name = "mali_platform_name_vexpress_6xvirtex7_10mhz",
+    flag_values = {":mali_platform_name": "vexpress_6xvirtex7_10mhz"},
+)
+
+string_flag(
+    name = "mali_release_name",
+    build_setting_default = "not_released",
+    values = [
+        "not_released",
+        "r49p1-03bet0",
+    ],
+)
+
+config_setting(
+    name = "mali_release_name_r49p1-03bet0",
+    flag_values = {":mali_release_name": "r49p1-03bet0"},
+)

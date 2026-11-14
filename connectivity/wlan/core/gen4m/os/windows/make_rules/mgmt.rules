@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- SRC_ROOT == os/windows/src_protected -->
+	<PropertyGroup>
+        <INCLUDES Condition="'$(OVERRIDE_INCLUDES)'!='true'">
+            $(INCLUDES);
+            $(SRC_ROOT)\..\..\..\include;
+            $(SRC_ROOT)\..\..\..\include\chips;
+            $(SRC_ROOT)\..\..\..\include\mgmt;
+            $(SRC_ROOT)\..\..\..\include\nan;
+            $(SRC_ROOT)\..\..\..\include\nic;
+            $(SRC_ROOT)\..\..\..\os;
+            $(SRC_ROOT)\..\include; <!-- for common part add new kal -->
+            $(SRC_ROOT)\include;
+            $(SRC_ROOT)\hif\pcie\include;
+            $(SRC_ROOT)\hif\common\include;
+		</INCLUDES>
+	</PropertyGroup>
+	<PropertyGroup>
+		<SOURCES Condition="'$(OVERRIDE_SOURCES)'!='true'">
+		$(SRC_ROOT)\..\..\..\mgmt\aaa_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\ais_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\ap_selection.c
+		$(SRC_ROOT)\..\..\..\mgmt\assoc.c
+		$(SRC_ROOT)\..\..\..\mgmt\auth.c
+		$(SRC_ROOT)\..\..\..\mgmt\bss.c
+		$(SRC_ROOT)\..\..\..\mgmt\cnm.c
+		$(SRC_ROOT)\..\..\..\mgmt\cnm_mem.c
+		$(SRC_ROOT)\..\..\..\mgmt\cnm_timer.c
+		$(SRC_ROOT)\..\..\..\mgmt\eht_rlm.c
+		$(SRC_ROOT)\..\..\..\mgmt\he_ie.c
+		$(SRC_ROOT)\..\..\..\mgmt\he_rlm.c
+		$(SRC_ROOT)\..\..\..\mgmt\hem_mbox.c
+		$(SRC_ROOT)\..\..\..\mgmt\hs20.c
+		$(SRC_ROOT)\..\..\..\mgmt\ie_sort.c
+		$(SRC_ROOT)\..\..\..\mgmt\mddp.c
+		$(SRC_ROOT)\..\..\..\mgmt\mib.c
+		$(SRC_ROOT)\..\..\..\mgmt\mlo.c
+		$(SRC_ROOT)\..\..\..\mgmt\mlr.c
+		$(SRC_ROOT)\..\..\..\mgmt\mscs.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_assoc.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_bss.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_dev_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_dev_state.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_func.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_ie.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_link.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_rlm.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_rlm_obss.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_role_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_role_state.c
+		$(SRC_ROOT)\..\..\..\mgmt\p2p_scan.c
+		$(SRC_ROOT)\..\..\..\mgmt\privacy.c
+		$(SRC_ROOT)\..\..\..\mgmt\qosmap.c
+		$(SRC_ROOT)\..\..\..\mgmt\rate.c
+		$(SRC_ROOT)\..\..\..\mgmt\reg_rule.c
+		$(SRC_ROOT)\..\..\..\mgmt\rtt.c
+		$(SRC_ROOT)\..\..\..\mgmt\rlm.c
+		$(SRC_ROOT)\..\..\..\mgmt\rlm_domain.c
+		$(SRC_ROOT)\..\..\..\mgmt\rlm_obss.c
+		$(SRC_ROOT)\..\..\..\mgmt\rlm_protection.c
+		$(SRC_ROOT)\..\..\..\mgmt\roaming_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\rrm.c
+		$(SRC_ROOT)\..\..\..\mgmt\rsn.c
+		$(SRC_ROOT)\..\..\..\mgmt\saa_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\scan.c
+		$(SRC_ROOT)\..\..\..\mgmt\scan_cache.c
+		$(SRC_ROOT)\..\..\..\mgmt\scan_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\stats.c
+		$(SRC_ROOT)\..\..\..\mgmt\swcr.c
+		$(SRC_ROOT)\..\..\..\mgmt\tdls.c
+		$(SRC_ROOT)\..\..\..\mgmt\thrm.c
+		$(SRC_ROOT)\..\..\..\mgmt\tkip_mic.c
+		$(SRC_ROOT)\..\..\..\mgmt\twt.c
+		$(SRC_ROOT)\..\..\..\mgmt\twt_planner.c
+		$(SRC_ROOT)\..\..\..\mgmt\twt_req_fsm.c
+		$(SRC_ROOT)\..\..\..\mgmt\wapi.c
+		$(SRC_ROOT)\..\..\..\mgmt\wmm.c
+		$(SRC_ROOT)\..\..\..\mgmt\wnm.c
+		$(SRC_ROOT)\..\..\..\mgmt\gcm.c
+		</SOURCES>
+	</PropertyGroup>
+</Project>

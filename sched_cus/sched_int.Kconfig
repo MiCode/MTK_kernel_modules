@@ -1,0 +1,34 @@
+config MTK_CFI_N_INI
+    bool "Enable feature MTK_CFI_N_INI"
+    depends on CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS
+    default y if CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS set
+
+config MTK_CFI_ONLY
+    bool "Enable feature MTK_CFI_ONLY"
+    depends on CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS
+    default y if CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS unset
+
+config MTK_GAS_CFI_N_INI
+    bool "Enable feature MTK_GAS_CFI_N_INI"
+    depends on CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS && MTK_SCHED_GROUP_AWARE
+    default y if CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS && MTK_SCHED_GROUP_AWARE
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS && CONFIG_MTK_SCHED_GROUP_AWARE set
+
+config MTK_GAS_CFI_ONLY
+    bool "Enable feature MTK_GAS_CFI_ONLY"
+    depends on CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS && MTK_SCHED_GROUP_AWARE
+    default y if CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS && MTK_SCHED_GROUP_AWARE
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS unset && CONFIG_MTK_SCHED_GROUP_AWARE set
+
+config MTK_GAS_NO_CFI
+    bool "Enable feature MTK_GAS_NO_CFI"
+    depends on !CFI_CLANG && MTK_SCHED_GROUP_AWARE
+    default y if !CFI_CLANG && MTK_SCHED_GROUP_AWARE
+    help
+        it is only work when CONFIG_CFI_CLANG unset && CONFIG_MTK_SCHED_GROUP_AWARE set

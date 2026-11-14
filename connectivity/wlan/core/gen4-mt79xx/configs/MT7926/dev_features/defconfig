@@ -1,0 +1,6 @@
+$(info dev config)
+
+# For Pwr table compatibility
+CONFIG_MTK_WIFI_TXPWR_DAT_FN=y
+
+

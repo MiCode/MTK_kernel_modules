@@ -1,0 +1,42 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+filegroup(
+	name = "private_rgx_linux_tc_headers",
+	srcs = glob(["rgx_linux_tc/**/*.h"]),
+	visibility = ["//visibility:private"],
+)
+
+filegroup(
+	name = "private_rgx_linux_tc_sources",
+	srcs = glob(["rgx_linux_tc/**/*.c"]),
+	visibility = ["//visibility:private"],
+)
+
+ddk_headers(
+	name = "rgx_linux_tc_header",
+	hdrs = glob(["include/**/*.h"])
+		 + select({
+		   "//powervr/rogue_km:cs_PVR_SYSTEM_rgx_linux_tc": [":private_rgx_linux_tc_headers"],
+			"//conditions:default": [],
+		 })
+	)
+
+filegroup(
+	name = "rgx_linux_tc_sources",
+	srcs = glob(["common/**/*.c"])
+		 + select({
+			"//powervr/rogue_km:cs_PVR_SYSTEM_rgx_linux_tc": [":private_rgx_linux_tc_sources"],
+			"//conditions:default": [],
+		 })
+)

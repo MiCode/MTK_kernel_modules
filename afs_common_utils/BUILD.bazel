@@ -1,0 +1,32 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "include/*.h",
+    ]),
+)
+
+define_mgk_ddk_ko(
+    name = "jank_detection_common_utils",
+    srcs = [
+        "src/jank_detection_common.c",
+        "src/jank_detection_utils.c",
+        "include/jank_detection_common.h",
+        "include/jank_detection_common_core.h",
+        "include/jank_detection_utils.h",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/sbe:mtk_sbe".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/performance/fpsgo_v8:mtk_fpsgo_v8".format(kernel_version),
+    ],
+    includes = ["include"],
+    out = "jank_detection_common_utils.ko",
+)

@@ -1,0 +1,47 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "emi_api_headers",
+    hdrs = glob(["**/*.h"]),
+    includes = ["."],
+)
+
+define_mgk_ddk_ko(
+    name = "met_emi_api_int",
+    hdrs = [":emi_api_headers"],
+    srcs = glob(["met_emi_api.c"]),
+    out = "met_emi_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
+        "//kernel_device_modules-{}/drivers/memory/mediatek:mtk_dramc".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/dvfsrc:mtk-dvfsrc-helper".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_PLF_EXIST",
+        "MET_EMI",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "met_emi_api_cus",
+    hdrs = [":emi_api_headers"],
+    srcs = glob(["met_emi_api.c"]),
+    out = "met_emi_api.ko",
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
+        "//kernel_device_modules-{}/drivers/memory/mediatek:mtk_dramc".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/dvfsrc:mtk-dvfsrc-helper".format(kernel_version),
+    ],
+    local_defines = [
+        "MET_EMI",
+    ],
+)

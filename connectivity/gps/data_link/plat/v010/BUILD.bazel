@@ -1,0 +1,145 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("@mgk_info//:kernel_version.bzl","kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+#common source files
+gps_dl_srcs=[
+    "gps_dl_context.c",
+    "gps_dl_module.c",
+    "lib/gps_dl_dma_buf.c",
+    "lib/gps_dl_dma_buf_lock.c",
+    "lib/gps_dl_lib_misc.c",
+    "lib/gps_dl_hist_rec.c",
+    "lib/gps_dl_hist_rec2.c",
+    "lib/gps_dl_time_tick.c",
+    "lib/gps_dl_name_list.c",
+    "hw/gps_dl_hw_semaphore.c",
+    "hw/gps_dl_hw_bgf.c",
+    "hw/gps_dl_hw_util.c",
+    "hal/gps_dl_hal.c",
+    "hal/gps_dl_hal_util.c",
+    "hal/gps_dsp_fsm.c",
+    "hal/gps_dl_power_ctrl.c",
+    "hal/gps_dl_isr.c",
+    "hal/gps_dl_dma.c",
+    "hal/gps_dl_mcub.c",
+    "hal/gps_dl_zbus.c",
+    "hal/gps_dl_conn_infra.c",
+    "hal/gps_dl_hal_met2_0.c",
+    "link/gps_dl_link_event_proc.c",
+    "link/gps_dl_link_hal_ctrl.c",
+    "link/gps_dl_link_irq_ctrl.c",
+    "link/gps_dl_link_state.c",
+    "link/gps_dl_link_sync.c",
+    "link/gps_dl_link_util.c",
+    "link/gps_dl_subsys_reset.c",
+    "gps_each_link.c",
+    "linux/gps_data_link_devices.c",
+    "linux/gps_each_device.c",
+    "linux/gps_dl_linux.c",
+    "linux/gps_dl_linux_plat_drv.c",
+    "linux/gps_dl_linux_reserved_mem.c",
+    "linux/gps_dl_linux_reserved_mem_v2.c",
+    "linux/gps_dl_iomem_dump.c",
+    "linux/gps_dl_emi.c",
+    "linux/gps_dl_ctrld.c",
+    "linux/gps_dl_procfs.c",
+    "linux/gps_dl_osal.c",
+    "gps_dl_hw_dep_bgf.c",
+    "gps_dl_hw_dep_gps.c",
+    "gps_dl_hw_dep_debug.c",
+    "gps_dl_hw_dep_dma.c",
+    "gps_dl_hw_dep_met2_0.c",
+    "fw_log_gps.c",
+    "fw_log/fw_log_gps_lib.c"
+]
+
+#common header files
+gps_dl_include_dirs=[
+    ".",
+    "inc",
+    "hw/inc",
+    "hw/include",
+    "fw_log/inc",
+    "include",
+    "linux/inc",
+    "link/inc",
+    "lib/inc",
+    "hal/inc",
+    "hw",
+    "data_link_mock/mock/inc",
+]
+
+#common header files,not use in ddk
+conninfra_include_dirs=[
+    "../../../../conninfra/include",
+    "../../../../conninfra/conn_drv/connv2/debug_utility/metlog",
+    "../../../../conninfra/conn_drv/connv2/debug_utility/include",
+    "../../../../conninfra/conn_drv/connv2/debug_utility/connsyslog",
+    "../../../../conninfra/conn_drv/connv2/debug_utility/coredump",
+    "../../../../conninfra/conn_drv/connv2/debug_utility"
+]
+
+#Need Check, adie files depending on project
+gps_dl_adie_srcs=[
+    #"gps_dl_hw_dep_adie_ctrl_v051_1.c",
+]
+
+#Need Check, ATF files
+gps_dl_atf_srcs=[
+    "hw/gps_dl_hw_atf_conn_infra.c",
+    "hw/gps_dl_hw_atf_gps.c",
+    "hw/gps_dl_hw_atf_power_ctrl.c",
+    "hw/gps_dl_hw_atf_usrt_apb.c",
+    "hw/gps_dl_hw_atf_mvcd.c"
+]
+
+#Need Check, ATF files
+gps_dl_noatf_srcs=[
+    "hw/gps_dl_hw_conn_infra.c",
+    "hw/gps_dl_hw_gps.c",
+    "hw/gps_dl_hw_power_ctrl.c",
+    "hw/gps_dl_hw_usrt_apb.c",
+]
+
+define_mgk_ddk_ko(
+    name = "gps_drv_dl_v010",
+    srcs = [],
+    conditional_srcs = {
+        "CONFIG_MTK_GPS_SUPPORT": {
+            True: gps_dl_srcs + gps_dl_noatf_srcs + gps_dl_adie_srcs,
+        },
+    },
+    includes = gps_dl_include_dirs,
+    hdrs = glob(["**/*.h"]),
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra_headers"
+    ],
+    ko_deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/memory/mediatek:emi-mpu".format(kernel_version),
+    ],
+    copts = [
+        "-Werror",
+        "-Wno-error=format",
+        "-Wno-error=format-extra-args",
+        "-I$(DEVICE_MODULES_PATH)/drivers/memory/mediatek",
+        "-I$(DEVICE_MODULES_PATH)/include/linux/soc/mediatek",
+        "-include",
+        "$(location gps_def.h)",
+    ],
+    defconfig = "defconfig",
+    kconfig = "kconfig",
+)

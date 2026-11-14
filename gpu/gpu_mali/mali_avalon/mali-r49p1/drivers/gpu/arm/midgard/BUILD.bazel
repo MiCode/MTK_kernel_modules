@@ -1,0 +1,401 @@
+# SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+#
+# (C) COPYRIGHT 2025 ARM Limited. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the
+# GNU General Public License version 2 as published by the Free Software
+# Foundation, and any use by you of this program is subject to the terms
+# of such GNU license.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, you can access it online at
+# http://www.gnu.org/licenses/gpl-2.0.html.
+#
+#
+load(
+    "//build/bazel_mgk_rules:mgk_ddk_ko.bzl",
+    "define_mgk_ddk_ko",
+)
+
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:cflags.bzl", "CFLAGS_MODULE", "COPTS_KBASE", "COPTS_MTK")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "ddk_kconfigs",
+    srcs = glob([
+        "**/Kconfig",
+    ]),
+)
+
+genrule(
+    name = "remove_mali_kconfig_ext_prefix",
+    srcs = ["Kconfig"],
+    outs = ["post_process.kconfig"],
+    cmd = "sed -e '/MALI_KCONFIG_EXT_PREFIX/d' $(location Kconfig) > $@",
+    visibility = ["//visibility:public"],
+)
+
+ddk_headers(
+    name = "mali_kernel_headers",
+    hdrs = [
+        ":midgard_headers",
+        "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1:kernel_headers",
+        "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/drivers/gpu/arm:mali_arbitration_shared_config_defaults",
+    ],
+)
+
+ddk_headers(
+    name = "midgard_headers",
+    hdrs = glob(["**/*.h"]),
+    includes = [
+        "backend/gpu",
+        "context",
+        "debug",
+        "debug/backend",
+        "device",
+        "gpu",
+        "hw_access",
+        "hw_access/regmap",
+        "hwcnt",
+        "hwcnt/backend",
+        "ipa",
+        "ipa/backend",
+        "mmu",
+        "mmu/backend",
+        "thirdparty",
+        "tl",
+        "include",
+        "include/linux",
+        "platform",
+],
+)
+
+filegroup(
+    name = "midgard_kconfig",
+    srcs = [
+        "post_process.kconfig",
+        "MTK_Kconfig",
+    ] + select({
+        "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config:mali_debug_kutf": ["//drivers/gpu/arm/midgard/tests:kutf_kconfig"],
+        "//conditions:default": [],
+    }),
+)
+
+platforms = [
+    "mt6768",
+]
+
+[define_mgk_ddk_ko(
+    name = "mali_kbase_{}_r49".format(p),
+    srcs = [
+        "mali_kbase_cache_policy.c",
+        "mali_kbase_ccswe.c",
+        "mali_kbase_mem.c",
+        "mali_kbase_reg_track.c",
+        "mali_kbase_mem_migrate.c",
+        "mali_kbase_mem_pool_group.c",
+        "mali_kbase_native_mgm.c",
+        "mali_kbase_ctx_sched.c",
+        "mali_kbase_gpuprops.c",
+        "mali_kbase_pm.c",
+        "mali_kbase_config.c",
+        "mali_kbase_kinstr_prfcnt.c",
+        "mali_kbase_softjobs.c",
+        "mali_kbase_hw.c",
+        "mali_kbase_debug.c",
+        "mali_kbase_gpu_memory_debugfs.c",
+        "mali_kbase_mem_linux.c",
+        "mali_kbase_core_linux.c",
+        "mali_kbase_mem_profile_debugfs.c",
+        "mali_kbase_disjoint_events.c",
+        "mali_kbase_debug_mem_view.c",
+        "mali_kbase_debug_mem_zones.c",
+        "mali_kbase_debug_mem_allocs.c",
+        "mali_kbase_smc.c",
+        "mali_kbase_mem_pool.c",
+        "mali_kbase_mem_pool_debugfs.c",
+        "mali_kbase_debugfs_helper.c",
+        "mali_kbase_as_fault_debugfs.c",
+        "mali_kbase_regs_history_debugfs.c",
+        "mali_kbase_dvfs_debugfs.c",
+        "mali_power_gpu_frequency_trace.c",
+        "mali_kbase_trace_gpu_mem.c",
+        "mali_kbase_pbha.c",
+        "mali_kbase_jm.c",
+        "mali_kbase_dummy_job_wa.c",
+        "mali_kbase_debug_job_fault.c",
+        "mali_kbase_event.c",
+        "mali_kbase_jd.c",
+        "mali_kbase_jd_debugfs.c",
+        "mali_kbase_js.c",
+        "mali_kbase_js_ctx_attr.c",
+        "mali_kbase_kinstr_jm.c",
+        "mali_kbase_gator_api.c",
+        "context/mali_kbase_context.c",
+        "context/backend/mali_kbase_context_jm.c",
+        "debug/mali_kbase_debug_ktrace.c",
+        "debug/backend/mali_kbase_debug_ktrace_jm.c",
+        "device/mali_kbase_device.c",
+        "device/mali_kbase_device_hw.c",
+        "device/backend/mali_kbase_device_jm.c",
+        "device/backend/mali_kbase_device_hw_jm.c",
+        "backend/gpu/mali_kbase_cache_policy_backend.c",
+        "backend/gpu/mali_kbase_gpuprops_backend.c",
+        "backend/gpu/mali_kbase_irq_linux.c",
+        "backend/gpu/mali_kbase_pm_backend.c",
+        "backend/gpu/mali_kbase_pm_driver.c",
+        "backend/gpu/mali_kbase_pm_metrics.c",
+        "backend/gpu/mali_kbase_pm_ca.c",
+        "backend/gpu/mali_kbase_pm_always_on.c",
+        "backend/gpu/mali_kbase_pm_coarse_demand.c",
+        "backend/gpu/mali_kbase_pm_policy.c",
+        "backend/gpu/mali_kbase_time.c",
+        "backend/gpu/mali_kbase_l2_mmu_config.c",
+        "backend/gpu/mali_kbase_clk_rate_trace_mgr.c",
+        "backend/gpu/mali_kbase_instr_backend.c",
+        "backend/gpu/mali_kbase_jm_as.c",
+        "backend/gpu/mali_kbase_debug_job_fault_backend.c",
+        "backend/gpu/mali_kbase_jm_hw.c",
+        "backend/gpu/mali_kbase_jm_rb.c",
+        "backend/gpu/mali_kbase_js_backend.c",
+        "mmu/mali_kbase_mmu.c",
+        "mmu/mali_kbase_mmu_hw_direct.c",
+        "mmu/mali_kbase_mmu_faults_decoder_luts.c",
+        "mmu/mali_kbase_mmu_faults_decoder.c",
+        "mmu/mali_kbase_mmu_mode_aarch64.c",
+        "mmu/backend/mali_kbase_mmu_jm.c",
+        "mmu/backend/mali_kbase_mmu_faults_decoder_luts_jm.c",
+        "tl/mali_kbase_timeline.c",
+        "tl/mali_kbase_timeline_io.c",
+        "tl/mali_kbase_tlstream.c",
+        "tl/mali_kbase_tracepoints.c",
+        "tl/backend/mali_kbase_timeline_jm.c",
+        "hwcnt/mali_kbase_hwcnt.c",
+        "hwcnt/mali_kbase_hwcnt_gpu.c",
+        "hwcnt/mali_kbase_hwcnt_types.c",
+        "hwcnt/mali_kbase_hwcnt_virtualizer.c",
+        "hwcnt/mali_kbase_hwcnt_watchdog_if_timer.c",
+        "hwcnt/backend/mali_kbase_hwcnt_backend_jm.c",
+        "hwcnt/backend/mali_kbase_hwcnt_backend_jm_watchdog.c",
+        "gpu/backend/mali_kbase_gpu_fault_jm.c",
+        "gpu/mali_kbase_gpu.c",
+        "hw_access/mali_kbase_hw_access.c",
+        "hw_access/regmap/mali_kbase_regmap_jm.c",
+        "thirdparty/mali_kbase_mmap.c",
+     ] + glob(
+        [
+            "platform/*.c",
+	        "platform/{}/*.c".format(p),
+            "platform/mtk_platform_common/mtk_platform_common.c",
+            "platform/mtk_platform_common/mtk_platform_debug.c",
+            "platform/mtk_platform_common/mtk_mfg_counter.c",
+            "platform/mtk_platform_common/mtk_gpu_power_model_sspm_ipi.c",
+            "platform/mtk_platform_common/mtk_platform_devfreq_governor.c",
+
+        ],
+    ),
+    out = "mali_kbase_{}_r49.ko".format(p),
+    hdrs = [
+        ":mali_kernel_headers",
+    ],
+	#MTK add
+    includes = [
+        ".",
+        "platform/{}".format(p),
+        "platform/mtk_platform_common",
+    ],
+    conditional_srcs = {
+        "CONFIG_DEBUG_FS": {
+            True: [
+                "mali_kbase_pbha_debugfs.c",
+                "ipa/mali_kbase_ipa_debugfs.c",
+            ],
+        },
+        "CONFIG_SYNC_FILE": {
+            True: [
+                "mali_kbase_fence_ops.c",
+                "mali_kbase_sync_file.c",
+                "mali_kbase_sync_common.c",
+                "mali_kbase_fence.c",
+            ],
+        },
+        "CONFIG_MALI_TRACE_POWER_GPU_WORK_PERIOD": {
+            True: [
+                "mali_power_gpu_work_period_trace.c",
+                "mali_kbase_gpu_metrics.c",
+            ],
+        },
+        "CONFIG_MALI_NO_MALI": {
+            True: [
+                "backend/gpu/mali_kbase_model_linux.c",
+                "backend/gpu/mali_kbase_model_dummy.c",
+            ],
+        },
+        "CONFIG_MALI_REAL_HW": {
+            True: [
+                "hw_access/backend/mali_kbase_hw_access_real_hw.c",
+            ],
+            False: [
+                "hw_access/backend/mali_kbase_hw_access_model_linux.c",
+            ],
+        },
+        "CONFIG_MALI_DEVFREQ": {
+            True: [
+                "backend/gpu/mali_kbase_devfreq.c",
+                "ipa/mali_kbase_ipa_simple.c",
+                "ipa/mali_kbase_ipa.c",
+                "ipa/backend/mali_kbase_ipa_counter_jm.c",
+                "ipa/backend/mali_kbase_ipa_counter_common_jm.c",
+            ] + glob([
+                "ipa/*.h",
+                "ipa/backend/*.h",
+            ]),
+        },
+        "CONFIG_MALI_CINSTR_GWT": {
+            True: [
+                "mali_kbase_gwt.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_GPU_IDLE_STRESS_TEST": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_gpu_idle_test.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_LOG_BUFFER": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_logbuffer.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_DIAGNOSIS_MODE": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_diagnosis_mode.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_DEBUG_DUMP": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_debug_dump_csg.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_cpu.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_kcpu.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_gpu.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_gpu_debugfs.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_infra_status.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_pm_status.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_iter_cshw.c",
+                "platform/mtk_platform_common/mtk_platform_debug_dump_queue_data.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_MISSING_DOORBELL": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_missing_doorbell.c",
+            ],
+        },
+        "CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_dvfs.c",
+            ],
+        },
+        "CONFIG_MTK_GPU_SWPM_SUPPORT": {
+            True: [
+                "platform/mtk_platform_common/mtk_gpu_power_model_sspm_ipi.c",
+                "platform/mtk_platform_common/mtk_ltr_pmu.c",
+                "platform/mtk_platform_common/mtk_mfg_counter.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_FORCE_HARD_RESET": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_force_hard_reset.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_FORCE_TERMINATE_CSG": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_force_terminate_csg.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_DIRECTLY_HARD_RESET": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_directly_hard_reset.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_FAULT_WORKER": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_fault_worker.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_MEMTRACK": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_memtrack.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_MEMORY_FOOTPRINT": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_memory_footprint.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_SCHEDULER": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_scheduler.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_WHITEBOX_SYNC_UPDATE": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_whitebox_sync_update.c",
+            ],
+        },
+        "CONFIG_MALI_MTK_CROSS_QUEUE_SYNC_RECOVERY": {
+            True: [
+                "platform/mtk_platform_common/mtk_platform_qinspect.c",
+                "platform/mtk_platform_common/mtk_platform_qinspect_recovery.c",
+            ],
+        },
+        "CONFIG_MALI_ARBITER_SUPPORT": {
+            True: [
+                "arbiter/mali_kbase_arbif.c",
+                "arbiter/mali_kbase_arbiter_pm.c",
+            ] + glob([
+                "arbiter/*.h",
+                "arbiter/backend/*.h",
+            ]),
+        },
+    },
+    local_defines = COPTS_KBASE,
+    copts = CFLAGS_MODULE + COPTS_MTK,
+    defconfig = "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/mali-r49p1/config/fragment:kbase_defconfig_{}".format(p),
+    kconfig = ":midgard_kconfig",
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/ged:ged_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpufreq:mtk_gpufreq_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpufreq/v2_legacy:gpufreq_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/mt-plat:gpu_utility_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/tinysys_scmi:ddk_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/trusted_mem:tmem_hdrs".format(kernel_version),
+		"//kernel_device_modules-{}/drivers/misc/mediatek/perf_common:headers".format(kernel_version),
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/dma-buf/heaps:mtk_sec_heap".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/ged:ged".format(kernel_version),
+		"//kernel_device_modules-{}/drivers/gpu/mediatek/gpufreq/v2_legacy:mtk_gpufreq_wrapper_legacy".format(kernel_version),
+		"//kernel_device_modules-{}/drivers/gpu/mediatek/hal:mtk_gpu_hal".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/aee/aed:aee_aed".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/aee/mrdump:mrdump".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/geniezone:gz_tz_system".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/sda:irq-dbg".format(kernel_version),
+		"//kernel_device_modules-{}/drivers/misc/mediatek/trusted_mem:trusted_mem".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/irq_monitor:irq_monitor".format(kernel_version),
+    ] + ([
+         "//kernel_device_modules-{}/drivers/misc/mediatek/tinysys_scmi:tinysys-scmi".format(kernel_version),
+		 "//kernel_device_modules-{}/drivers/misc/mediatek/sspm/v3:sspm_v3".format(kernel_version),
+		 "//kernel_device_modules-{}/drivers/gpu/mediatek/gpu_bm:mtk_gpu_qos".format(kernel_version),
+    ] if p in ["mt6768"] else[]),
+) for p in platforms]

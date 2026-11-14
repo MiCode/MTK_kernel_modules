@@ -1,0 +1,55 @@
+###############################################################################
+# Bluetooth character device driver
+
+###############################################################################
+CONFIG_CHIP_RESET_KO_SUPPORT=y
+CONFIG_GKI_SUPPORT=n
+CONFIG_DISABLE_SYMBOL_GET_SET = y
+#
+# mtreset
+#
+
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+ifeq ($(CONFIG_CHIP_RESET_KO_SUPPORT), y)
+ccflags-y += -DCFG_SUPPORT_CHIP_RESET_KO=1
+ccflags-y += -I$(KO_CODE_PATH)/../../../wlan/core/gen4-mt7663/reset/include/
+else
+ccflags-y += -DCFG_SUPPORT_CHIP_RESET_KO=0
+endif
+
+ifeq ($(CONFIG_GKI_SUPPORT), y)
+    ccflags-y += -DCFG_GKI_SUPPORT=1
+else
+    ccflags-y += -DCFG_GKI_SUPPORT=0
+endif
+
+ifeq ($(CONFIG_DISABLE_SYMBOL_GET_SET), y)
+    ccflags-y += -DCONFIG_DISABLE_SYMBOL_GET_SET
+endif
+
+ifneq ($(TARGET_BUILD_VARIANT), user)
+ccflags-y += -DMTK_KERNEL_DEBUG
+endif
+
+ifneq ($(TARGET_BUILD_VARIANT), user)
+	ccflags-y += -DCFG_ENABLE_DEBUG_WRITE=1
+else
+	ccflags-y += -DCFG_ENABLE_DEBUG_WRITE=0
+endif
+# Necessary Check
+
+#ifeq ($(AUTOCONF_H),)
+#    $(error AUTOCONF_H is not defined)
+#endif
+
+#ccflags-y += -imacros $(AUTOCONF_H)
+ccflags-y += -DCONFIG_MP_WAKEUP_SOURCE_SYSFS_STAT
+
+MODULE_NAME := btmtksdio
+obj-m += $(MODULE_NAME).o
+
+#ccflags-y += -D CREATE_NODE_DYNAMIC=1
+
+$(MODULE_NAME)-objs += btmtk_sdio.o \
+                       btmtk_main.o

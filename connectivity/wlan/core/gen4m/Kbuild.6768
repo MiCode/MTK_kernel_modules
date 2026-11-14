@@ -1,0 +1,18 @@
+# Sources path
+KO_CODE_PATH := $(if $(filter /%,$(src)),,$(srctree)/)$(src)
+
+# KO specfied attributes
+WLAN_CHIP_ID := 6768
+MTK_COMBO_CHIP := CONNAC
+WIFI_IP_SET := 1
+CONNAC_VER := 1_0
+CONFIG_MTK_COMBO_WIFI_HIF := axi
+CONFIG_MTK_WIFI_CONNAC1X := y
+CONFIG_MTK_WIFI_MDDP_SUPPORT := n
+CONFIG_SUPPORT_ICS := n
+CONFIG_SUPPORT_PHY_ICS := n
+MTK_ANDROID_WMT := y
+MTK_ANDROID_EMI := y
+MODULE_NAME := wlan_drv_gen4m_6768
+
+include $(KO_CODE_PATH)/Kbuild.main

@@ -1,0 +1,29 @@
+load("//build/bazel_mgk_rules:mgk_ko.bzl", "define_mgk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "headers",
+    srcs = glob([
+        "**/*.h",
+    ]),
+)
+
+define_mgk_ko(
+    name = "btmtksdio",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+        "**/Kbuild",
+        "**/Makefile",
+    ]) + [
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4-mt7663:headers",
+    ],
+    deps = [
+        "//vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4-mt7663:wlan_mt7663",
+    ],
+)

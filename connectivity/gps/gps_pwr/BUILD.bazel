@@ -1,0 +1,25 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl","kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "gps_pwr",
+    srcs = [
+        "gpspwr.c",
+    ],
+    header_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp_headers".format(kernel_version),
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/misc/mediatek/connectivity:connadp".format(kernel_version),
+    ],
+    copts = [
+        "-Wall",
+        "-Werror",
+    ],
+)

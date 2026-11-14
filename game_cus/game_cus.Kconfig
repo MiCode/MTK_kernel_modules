@@ -1,0 +1,13 @@
+config MTK_CFI_N_INI
+    bool "Enable feature MTK_CFI_N_INI"
+    depends on CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS
+    default y if CFI_CLANG && CFI_ICALL_NORMALIZE_INTEGERS
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS set
+
+config MTK_CFI_ONLY
+    bool "Enable feature MTK_CFI_ONLY"
+    depends on CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS
+    default y if CFI_CLANG && !CFI_ICALL_NORMALIZE_INTEGERS
+    help
+        it is only work when CONFIG_CFI_CLANG set && CONFIG_CFI_ICALL_NORMALIZE_INTEGERS unset

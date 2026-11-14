@@ -1,0 +1,169 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl","kernel_version",)
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+FEATURE_SSPM_EMI = "y"
+FEATURE_GPU = "y"
+FEATURE_VCOREDVFS = "y"
+FEATURE_THERMAL = "y"
+FEATURE_CPUDSU = "y"
+FEATURE_WALLTIME = "y"
+FEATURE_SMI = "y"
+FEATURE_MET_BACKLIGHT = "y"
+FEATURE_EVENT_POWER = "y"
+FEATURE_SSPM = "y"
+FEATURE_MCUPM = "y"
+FEATURE_GPUEB = "y"
+FEATURE_PTPOD = "y"
+FEATURE_SMMU_PMU = "y"
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "common_headers",
+    hdrs = glob(["common/**/*.h"]),
+)
+
+filegroup(
+    name = "common_src",
+    srcs = [
+        "common/met_main.c",
+        "common/met_tag_ex.c",
+        "common/interface.c",
+        "common/sampler.c",
+        "common/dummy_header.c",
+        "common/util.c",
+        "common/stat.c",
+        "common/mem_stat.c",
+        "common/switch.c",
+        "common/trace_event.c",
+        "common/core_plf_init.c",
+        "common/core_plf_trace.c",
+        "common/met_workqueue.c",
+        "common/str_util.c",
+        "common/cookie.c",
+        "common/cpu_pmu.c",
+        "common/power.c",
+        "common/v8_pmu_hw.c",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "met_drv_v3",
+    local_defines = [
+         "CONFIG_MET_MODULE=True",
+         "MET_PLF_USE",
+         "SSPM_VERSION_V3",
+         "USE_KERNEL_SYNC_WRITE_H",
+         "MET_SCMI",
+         "MET_SSPM",
+         "MET_MCUPM",
+         "MET_GPUEB",
+         "MET_TINYSYS",
+         "MET_EMI",
+         "MET_GPU",
+         "MET_GPU_LOAD_MONITOR",
+         "MET_GPU_DVFS_MONITOR",
+         "MET_GPU_PMU_MONITOR",
+         "MET_VCOREDVFS",
+         "MET_THERMAL",
+         "MET_CPUDSU",
+         "MET_WALLTIME",
+         "MET_SMI",
+         "MET_BACKLIGHT",
+         "MET_PTPOD",
+         "MET_EVENT_POWER",
+         "MET_SMMU_PMU",
+         "SMI_MASTER_8BIT",
+    ],
+
+    copts = [
+        "-I$(srctree)/include/",
+        "-I$(srctree)/drivers/misc/mediatek/include/",
+        "-I$(srctree)/drivers/misc/mediatek/include/mt-plat/",
+        "-I$(srctree)/drivers/misc/mediatek/met_drv/core/",
+        "-I$(srctree)/drivers/thermal/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/met_drv/core/",
+        "-I$(srctree)/drivers/gpu/mediatek/mt-plat/",
+        "-I$(DEVICE_MODULES_PATH)/include/linux/soc/mediatek",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mcupm/include/",
+    ],
+
+    includes = [
+        "common",
+        "common/tinysys/v1",
+        "common/tinysys/v1/sspm",
+        "common/tinysys/v1/mcupm",
+        "common/tinysys/v1/gpueb",
+    ],
+
+    srcs = [
+        "common/met_main.c",
+        "common/met_tag_ex.c",
+        "common/interface.c",
+        "common/sampler.c",
+        "common/dummy_header.c",
+        "common/util.c",
+        "common/stat.c",
+        "common/mem_stat.c",
+        "common/switch.c",
+        "common/trace_event.c",
+        "common/core_plf_init.c",
+        "common/core_plf_trace.c",
+        "common/met_workqueue.c",
+        "common/str_util.c",
+        "common/cookie.c",
+        "common/cpu_pmu.c",
+        "common/power.c",
+        "common/v8_pmu_hw.c",
+        "common/tinysys/v1/tinysys_log.c",
+        "common/tinysys/v1/tinysys_mgr.c",
+    ] + (["common/smmu_pmu.c", "common/smmu_pmu_hw.c"] if FEATURE_SMMU_PMU == "y" else [])
+      + (["common/met_wall_time.c"] if FEATURE_WALLTIME == "y" else [])
+      + (["common/met_ptpod.c"] if FEATURE_PTPOD == "y" else [])
+      + (["common/met_backlight.c"] if FEATURE_MET_BACKLIGHT == "y" else [])
+      + (["common/met_thermal.c"] if FEATURE_THERMAL == "y" else [])
+      + (["common/mtk_gpu_metmonitor.c"] if FEATURE_GPU == "y" else [])
+      + (["common/cpu_dsu.c","common/v8_dsu_hw.c"] if FEATURE_CPUDSU == "y" else [])
+      + (["common/met_emi.c","common/mtk_emi_bm.c"] if FEATURE_SSPM_EMI == "y" else [])
+      + (["common/tinysys/v1/sspm/sspm_met_common.c","common/tinysys/v1/sspm/sspm_met_log.c","common/tinysys/v1/sspm/sspm_met_ipi_handle.c"] if FEATURE_SSPM == "y" else [])
+      + (["common/tinysys/v1/mcupm/mcupm_met.c","common/tinysys/v1/mcupm/mcupm_met_log.c","common/tinysys/v1/mcupm/mcupm_met_ipi_handle.c","common/tinysys/v1/mcupm/mcupm_met_common.c"] if FEATURE_MCUPM == "y" else [])
+      + (["common/tinysys/v1/gpueb/gpueb_met.c","common/tinysys/v1/gpueb/gpueb_met_log.c","common/tinysys/v1/gpueb/gpueb_met_ipi_handle.c","common/tinysys/v1/gpueb/gpueb_met_common.c"] if FEATURE_GPUEB == "y" else [])
+      + (["common/met_vcoredvfs.c"] if FEATURE_VCOREDVFS == "y" else [])
+      + (["common/tinysys/v1/sspm/sspm_met_smi.c"] if FEATURE_SMI == "y" else []),
+
+    hdrs = [
+        ":common_headers",
+    ],
+    header_deps = [
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_backlight_api:backlight_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_emi_api:emi_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_gpu_adv_api:gpu_adv_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_gpu_api:gpu_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_gpueb_api:gpueb_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_ipi_api:ipi_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_mcupm_api:mcupm_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_scmi_api:scmi_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_sspm_api:sspm_api_headers",
+        "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_vcore_api:vcore_api_headers",
+        "//kernel_device_modules-{}/drivers/iommu/arm/arm-smmu-v3:smmu_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm:mcupm_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:gpueb_public_headers".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/gpu/mediatek/mt-plat:gpu_utility_headers".format(kernel_version),
+    ],
+    ko_deps = [
+    "//kernel_device_modules-{}/drivers/misc/mediatek/tinysys_scmi:tinysys-scmi".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/misc/mediatek/sspm/v3:sspm_v3".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v2:mcupm".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v3:mcupm".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/gpu/mediatek/gpueb:mtk_gpueb".format(kernel_version),
+    ],
+
+    out = "met.ko",
+)

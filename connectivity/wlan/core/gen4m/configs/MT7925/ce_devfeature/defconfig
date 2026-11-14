@@ -1,0 +1,5 @@
+# Note:  To disable feature, please set CONFIG_AAA=n.
+#        "# CONFIG_AAA is not set" won't work.
+
+CONFIG_SUPPORT_MLO_HYBRID=y
+CONFIG_SUPPORT_FORCE_LINK_SORT=y

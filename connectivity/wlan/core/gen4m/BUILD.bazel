@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: BSD-2-Clause
+load(":module_definition.bzl","gen4m_modules")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "**/.*",
+            "**/.*/**",
+            "**/BUILD.bazel",
+            "**/*.bzl",
+        ],
+    )
+)
+
+
+filegroup(
+    name = "srcs_nan",
+    srcs = glob(
+        ["nan/**/*.c", "wpa_supp/**/*.c", "os/**/*nan*.c"],
+    )
+)
+filegroup(
+    name = "headers",
+    srcs = glob(["**/*.h"])
+)
+platforms = [
+    "6789",
+    "6855",
+    "6895",
+    "6858",
+    "6858_mcl50",
+    "6991_6653",
+    "6991_6653_dx5",
+    "6991_6653_dx5_triband",
+    "6993_6653",
+    "6993_6653_triband",
+    "6993_6653_mcl50",
+]
+
+gen4m_modules(platforms)

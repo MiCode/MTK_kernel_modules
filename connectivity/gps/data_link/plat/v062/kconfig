@@ -1,0 +1,38 @@
+config GPS_DL_HAS_MOCK
+    bool "Enable mock for gps"
+    default n
+    help
+        Not used
+
+config GPS_DRV_CONTROL_LNA
+    bool "Enable control lna by driver"
+    default n
+    help
+        Is the lna controlled by driver
+
+config GPSMDL
+    bool "Enable offload mode"
+    default y
+    help
+        If enable offload mode
+
+config GPSMDL_HAL
+    bool "Enable offload mode HAL part"
+    depends on GPSMDL
+    default y
+    help
+        If enable offload mode HAL part
+
+config GPSMDL_HW
+    bool "Enable offload mode HW part"
+    depends on GPSMDL
+    default y
+    help
+        If enable offload mode HW part
+
+config GPSMDL_FW
+    bool "Enable offload mode FW part"
+    depends on GPSMDL
+    default y
+    help
+        If enable offload mode FW part

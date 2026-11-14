@@ -1,0 +1,6 @@
+# Note:  To disable feature, please set CONFIG_AAA=n.
+#        "# CONFIG_AAA is not set" won't work.
+
+# For SDK3.8 Dual Card Single Driver
+CONFIG_SUPPORT_MULTI_CARD=y
+CONFIG_WIFI_RAM_COEX_SPDT_SHR_ANT_CTRL=y

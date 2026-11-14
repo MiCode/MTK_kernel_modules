@@ -1,0 +1,43 @@
+################################################################################
+#@Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
+#@License        Strictly Confidential.
+################################################################################
+
+load("@kleaf//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+	default_visibility = [
+		"//visibility:public",
+	]
+)
+
+filegroup(
+	name = "private_rgx_linux_tc_headers",
+	srcs = glob(["rgx_mtk/**/*.h"]),
+	visibility = ["//visibility:public"],
+)
+
+filegroup(
+	name = "private_rgx_linux_tc_srcs",
+	srcs = glob(["rgx_mtk/**/*.c"]),
+	visibility = ["//visibility:public"],
+)
+
+ddk_headers(
+	name = "rgx_linux_tc_header",
+	hdrs = glob(["include/**/*.h"])
+	+ select({
+		"//vendor/mediatek/kernel_modules/gpu/gpu_rgx/m25.1RTM6715691:cs_PVR_SYSTEM_rgx_linux_tc": [":private_rgx_linux_tc_headers"],
+		"//conditions:default": [":private_rgx_linux_tc_headers"],
+	}),
+
+)
+
+filegroup(
+	name = "rgx_linux_tc_sources",
+	srcs = glob(["common/**/*.c"])
+		 + select({
+			"//vendor/mediatek/kernel_modules/gpu/gpu_rgx/m25.1RTM6715691:cs_PVR_SYSTEM_rgx_linux_tc": [":private_rgx_linux_tc_srcs"],
+			"//conditions:default": [":private_rgx_linux_tc_srcs"],
+		 }),
+)

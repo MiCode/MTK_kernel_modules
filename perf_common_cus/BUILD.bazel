@@ -1,0 +1,53 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "ddk_configs",
+    srcs = glob([
+        "**/Kconfig",
+    ]),
+)
+
+define_mgk_ddk_ko(
+    name = "perf_common_cus",
+    srcs = glob([
+        "**/*.h",
+    ]),
+    conditional_srcs = {
+        "CONFIG_ARM64_AND_MTK_PERF_COMMON_AND_CFI_CLANG":{
+            True:glob([
+                "**/*_cfi_only.o_shipped",
+                "**/.*_cfi_only.o.cmd_shipped",
+                "**/perf_common_main.c",
+            ]),
+        },
+        "CONFIG_ARM64_AND_MTK_PERF_COMMON_AND_NO_CFI_CLANG":{
+            True:glob([
+                "**/*_no_cfi.o_shipped",
+                "**/.*_no_cfi.o.cmd_shipped",
+                "**/perf_common_main.c",
+            ]),
+        },
+        "CONFIG_ARM64_AND_MTK_PERF_COMMON":{
+            False:glob([
+                "**/perf_common_main_shell.c",
+            ]),
+        },
+
+    },
+    ko_deps = [
+		"//kernel_device_modules-{}/drivers/misc/mediatek/perf_common:mtk_perf_common".format(kernel_version)
+    ],
+    kconfig = "ddk_configs",
+    out = "perf_common_v.ko",
+    copts = [
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sched/eas/"
+    ],
+)
